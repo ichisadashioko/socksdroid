@@ -1,14 +1,15 @@
 package net.typeblog.socks.util;
 
+import static net.typeblog.socks.util.Constants.*;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 
+import net.typeblog.socks.R;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import net.typeblog.socks.R;
-import static net.typeblog.socks.util.Constants.*;
 
 public class ProfileManager {
 
@@ -63,8 +64,10 @@ public class ProfileManager {
         } else {
             mProfiles.add(name);
             mProfiles.remove(0);
-            mPref.edit().putString(PREF_PROFILE, Utility.join(mProfiles, "\n"))
-                    .putString(PREF_LAST_PROFILE, name).apply();
+            mPref.edit()
+                    .putString(PREF_PROFILE, Utility.join(mProfiles, "\n"))
+                    .putString(PREF_LAST_PROFILE, name)
+                    .apply();
             return getDefault();
         }
     }
@@ -80,8 +83,10 @@ public class ProfileManager {
         mProfiles.remove(0);
         mProfiles.remove(name);
 
-        mPref.edit().putString(PREF_PROFILE, Utility.join(mProfiles, "\n"))
-                .remove(PREF_LAST_PROFILE).apply();
+        mPref.edit()
+                .putString(PREF_PROFILE, Utility.join(mProfiles, "\n"))
+                .remove(PREF_LAST_PROFILE)
+                .apply();
 
         return true;
     }

@@ -1,5 +1,8 @@
 package net.typeblog.socks;
 
+import static net.typeblog.socks.BuildConfig.DEBUG;
+import static net.typeblog.socks.util.Constants.*;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -17,9 +20,6 @@ import net.typeblog.socks.util.Utility;
 
 import java.util.Locale;
 import java.util.Objects;
-
-import static net.typeblog.socks.util.Constants.*;
-import static net.typeblog.socks.BuildConfig.DEBUG;
 
 public class SocksVpnService extends VpnService {
     class VpnBinder extends IVpnService.Stub {
@@ -73,8 +73,11 @@ public class SocksVpnService extends VpnService {
         Notification.Builder builder;
         if (Build.VERSION.SDK_INT >= 26) {
             String NOTIFICATION_CHANNEL_ID = "net.typeblog.socks";
-            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
-                    getString(R.string.channel_name), NotificationManager.IMPORTANCE_NONE);
+            NotificationChannel channel =
+                    new NotificationChannel(
+                            NOTIFICATION_CHANNEL_ID,
+                            getString(R.string.channel_name),
+                            NotificationManager.IMPORTANCE_NONE);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             Objects.requireNonNull(notificationManager).createNotificationChannel(channel);
             builder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
@@ -84,21 +87,25 @@ public class SocksVpnService extends VpnService {
 
         // Create the notification
         int NOTIFICATION_ID = 1;
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        startForeground(NOTIFICATION_ID, builder
-                .setContentTitle(getString(R.string.notify_title))
-                .setContentText(String.format(getString(R.string.notify_msg), name))
-                .setPriority(Notification.PRIORITY_MIN)
-                .setSmallIcon(android.R.drawable.stat_notify_sync_noanim)
-                .setContentIntent(contentIntent)
-                .build());
+        PendingIntent contentIntent =
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        new Intent(this, MainActivity.class),
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+        startForeground(
+                NOTIFICATION_ID,
+                builder.setContentTitle(getString(R.string.notify_title))
+                        .setContentText(String.format(getString(R.string.notify_msg), name))
+                        .setPriority(Notification.PRIORITY_MIN)
+                        .setSmallIcon(android.R.drawable.stat_notify_sync_noanim)
+                        .setContentIntent(contentIntent)
+                        .build());
 
         // Create an fd.
         configure(name, route, perApp, appBypass, appList, ipv6);
 
-        if (DEBUG)
-            Log.d(TAG, "fd: " + mInterface.getFd());
+        if (DEBUG) Log.d(TAG, "fd: " + mInterface.getFd());
 
         if (mInterface != null)
             start(mInterface.getFd(), server, port, username, passwd, dns, dnsPort, ipv6, udpgw);
@@ -140,17 +147,19 @@ public class SocksVpnService extends VpnService {
         stopSelf();
     }
 
-    private void configure(String name, String route, boolean perApp, boolean bypass, String[] apps, boolean ipv6) {
+    private void configure(
+            String name,
+            String route,
+            boolean perApp,
+            boolean bypass,
+            String[] apps,
+            boolean ipv6) {
         Builder b = new Builder();
-        b.setMtu(1500)
-                .setSession(name)
-                .addAddress("26.26.26.1", 24)
-                .addDnsServer("8.8.8.8");
+        b.setMtu(1500).setSession(name).addAddress("26.26.26.1", 24).addDnsServer("8.8.8.8");
 
         if (ipv6) {
             // Route all IPv6 traffic
-            b.addAddress("fdfe:dcba:9876::1", 126)
-                    .addRoute("::", 0);
+            b.addAddress("fdfe:dcba:9876::1", 126).addRoute("::", 0);
         }
 
         Routes.addRoutes(this, b, route);
@@ -178,8 +187,7 @@ public class SocksVpnService extends VpnService {
                 }
 
                 for (String p : apps) {
-                    if (TextUtils.isEmpty(p))
-                        continue;
+                    if (TextUtils.isEmpty(p)) continue;
 
                     try {
                         b.addDisallowedApplication(p.trim());
@@ -205,23 +213,43 @@ public class SocksVpnService extends VpnService {
         mInterface = b.establish();
     }
 
-    private void start(int fd, String server, int port, String user, String passwd, String dns, int dnsPort, boolean ipv6, String udpgw) {
+    private void start(
+            int fd,
+            String server,
+            int port,
+            String user,
+            String passwd,
+            String dns,
+            int dnsPort,
+            boolean ipv6,
+            String udpgw) {
         // Start DNS daemon first
         Utility.makePdnsdConf(this, dns, dnsPort);
 
-        Utility.exec(String.format(Locale.US, "%s/libpdnsd.so -c %s/pdnsd.conf",
-                getApplicationInfo().nativeLibraryDir, getFilesDir()));
+        Utility.exec(
+                String.format(
+                        Locale.US,
+                        "%s/libpdnsd.so -c %s/pdnsd.conf",
+                        getApplicationInfo().nativeLibraryDir,
+                        getFilesDir()));
 
-        String command = String.format(Locale.US,
-                "%s/libtun2socks.so --netif-ipaddr 26.26.26.2"
-                        + " --netif-netmask 255.255.255.0"
-                        + " --socks-server-addr %s:%d"
-                        + " --tunfd %d"
-                        + " --tunmtu 1500"
-                        + " --loglevel 3"
-                        + " --pid %s/tun2socks.pid"
-                        + " --sock %s/sock_path"
-                , getApplicationInfo().nativeLibraryDir, server, port, fd, getFilesDir(), getApplicationInfo().dataDir);
+        String command =
+                String.format(
+                        Locale.US,
+                        "%s/libtun2socks.so --netif-ipaddr 26.26.26.2"
+                                + " --netif-netmask 255.255.255.0"
+                                + " --socks-server-addr %s:%d"
+                                + " --tunfd %d"
+                                + " --tunmtu 1500"
+                                + " --loglevel 3"
+                                + " --pid %s/tun2socks.pid"
+                                + " --sock %s/sock_path",
+                        getApplicationInfo().nativeLibraryDir,
+                        server,
+                        port,
+                        fd,
+                        getFilesDir(),
+                        getApplicationInfo().dataDir);
 
         if (user != null) {
             command += " --username " + user;

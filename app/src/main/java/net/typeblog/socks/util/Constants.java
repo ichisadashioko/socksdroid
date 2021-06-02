@@ -1,9 +1,7 @@
 package net.typeblog.socks.util;
 
-public class Constants
-{
-    public static final String ROUTE_ALL = "all",
-            ROUTE_CHN = "chn";
+public class Constants {
+    public static final String ROUTE_ALL = "all", ROUTE_CHN = "chn";
 
     private static final String INTENT_PREFIX = "SOCKS";
     public static final String INTENT_NAME = INTENT_PREFIX + "NAME",
@@ -19,7 +17,6 @@ public class Constants
             INTENT_APP_LIST = INTENT_PREFIX + "APPLIST",
             INTENT_IPV6_PROXY = INTENT_PREFIX + "IPV6",
             INTENT_UDP_GW = INTENT_PREFIX + "UDPGW";
-
     public static final String PREF = "profile",
             PREF_PROFILE = "profile",
             PREF_LAST_PROFILE = "last_profile",

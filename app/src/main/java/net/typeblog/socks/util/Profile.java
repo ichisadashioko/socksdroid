@@ -1,8 +1,8 @@
 package net.typeblog.socks.util;
 
-import android.content.SharedPreferences;
-
 import static net.typeblog.socks.util.Constants.*;
+
+import android.content.SharedPreferences;
 
 public class Profile {
     private final SharedPreferences mPref;

@@ -1,18 +1,19 @@
 package net.typeblog.socks.util;
 
+import static net.typeblog.socks.util.Constants.*;
+
 import android.content.Context;
 import android.net.VpnService;
 
 import net.typeblog.socks.R;
-import static net.typeblog.socks.util.Constants.*;
 
 public class Routes {
     public static void addRoutes(Context context, VpnService.Builder builder, String name) {
         String[] routes;
-        if(ROUTE_CHN.equals(name)) {
+        if (ROUTE_CHN.equals(name)) {
             routes = context.getResources().getStringArray(R.array.simple_route);
         } else {
-            routes = new String[]{"0.0.0.0/0"};
+            routes = new String[] {"0.0.0.0/0"};
         }
 
         for (String r : routes) {
