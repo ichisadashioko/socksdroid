@@ -90,7 +90,7 @@ public class SocksVpnService extends VpnService {
                 .setContentTitle(getString(R.string.notify_title))
                 .setContentText(String.format(getString(R.string.notify_msg), name))
                 .setPriority(Notification.PRIORITY_MIN)
-                .setSmallIcon(R.drawable.ic_vpn)
+                .setSmallIcon(android.R.drawable.stat_notify_sync_noanim)
                 .setContentIntent(contentIntent)
                 .build());
 
