@@ -33,6 +33,14 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name="io.github.ichisadashioko.android.vpn.SocksVpnService"
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <intent-filter>
+                <action android:name="android.net.VpnService"/>
+            </intent-filter>
+        </service>
+
         <receiver
             android:name=".BootReceiver">
             <intent-filter>
