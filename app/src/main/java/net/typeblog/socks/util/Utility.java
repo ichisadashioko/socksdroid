@@ -111,7 +111,7 @@ public class Utility {
     }
 
     public static void startVpn(Context context, Profile profile) {
-        Intent i =
+        Intent intent =
                 new Intent(context, SocksVpnService.class)
                         .putExtra(INTENT_NAME, profile.getName())
                         .putExtra(INTENT_SERVER, profile.getServer())
@@ -123,19 +123,19 @@ public class Utility {
                         .putExtra(INTENT_IPV6_PROXY, profile.hasIPv6());
 
         if (profile.isUserPw()) {
-            i.putExtra(INTENT_USERNAME, profile.getUsername())
+            intent.putExtra(INTENT_USERNAME, profile.getUsername())
                     .putExtra(INTENT_PASSWORD, profile.getPassword());
         }
 
         if (profile.isPerApp()) {
-            i.putExtra(INTENT_APP_BYPASS, profile.isBypassApp())
+            intent.putExtra(INTENT_APP_BYPASS, profile.isBypassApp())
                     .putExtra(INTENT_APP_LIST, profile.getAppList().split("\n"));
         }
 
         if (profile.hasUDP()) {
-            i.putExtra(INTENT_UDP_GW, profile.getUDPGW());
+            intent.putExtra(INTENT_UDP_GW, profile.getUDPGW());
         }
 
-        context.startService(i);
+        context.startService(intent);
     }
 }

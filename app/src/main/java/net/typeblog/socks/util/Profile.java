@@ -20,7 +20,7 @@ public class Profile {
     }
 
     public String getServer() {
-        return mPref.getString(key("server"), "127.0.0.1");
+        return mPref.getString(key("server"), "192.168.0.7");
     }
 
     public void setServer(String server) {
@@ -28,7 +28,7 @@ public class Profile {
     }
 
     public int getPort() {
-        return mPref.getInt(key("port"), 1080);
+        return mPref.getInt(key("port"), 10000);
     }
 
     public void setPort(int port) {
@@ -108,7 +108,7 @@ public class Profile {
     }
 
     public boolean hasIPv6() {
-        return mPref.getBoolean(key("ipv6"), false);
+        return mPref.getBoolean(key("ipv6"), true);
     }
 
     public void setHasIPv6(boolean has) {
@@ -116,7 +116,7 @@ public class Profile {
     }
 
     public boolean hasUDP() {
-        return mPref.getBoolean(key("udp"), false);
+        return mPref.getBoolean(key("udp"), true);
     }
 
     public void setHasUDP(boolean has) {
@@ -124,7 +124,7 @@ public class Profile {
     }
 
     public String getUDPGW() {
-        return mPref.getString(key("udpgw"), "127.0.0.1:7300");
+        return mPref.getString(key("udpgw"), "192.168.0.7:10000");
     }
 
     public void setUDPGW(String gw) {
