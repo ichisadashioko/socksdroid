@@ -1,9 +1,9 @@
 /**
  * @file net_ipv4_addr.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,15 +25,15 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * IPv4 address module.
- * 
+ *
  * Synopsis:
  *     net.ipv4.addr(string ifname, string addr, string prefix)
  *     net.ipv4.addr(string ifname, string cidr_addr)
- * 
+ *
  * Description:
  *     Adds the given address to the given network interface on initialization,
  *     and removes it on deinitialization. The second form takes the address and
@@ -60,7 +60,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef ifname_arg;
     NCDValRef addr_arg;
@@ -77,13 +77,13 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // null terminate ifname
     if (!NCDVal_StringNullTerminate(ifname_arg, &o->ifname_nts)) {
         ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
         goto fail0;
     }
-    
+
     if (NCDVal_IsInvalid(prefix_arg)) {
         if (!ipaddr_parse_ipv4_ifaddr_bin(NCDVal_StringData(addr_arg), NCDVal_StringLength(addr_arg), &o->ifaddr)) {
             ModuleLog(o->i, BLOG_ERROR, "wrong CIDR notation address");
@@ -94,23 +94,23 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
             ModuleLog(o->i, BLOG_ERROR, "wrong address");
             goto fail1;
         }
-        
+
         if (!ipaddr_parse_ipv4_prefix_bin(NCDVal_StringData(prefix_arg), NCDVal_StringLength(prefix_arg), &o->ifaddr.prefix)) {
             ModuleLog(o->i, BLOG_ERROR, "wrong prefix");
             goto fail1;
         }
     }
-    
+
     // add address
     if (!NCDIfConfig_add_ipv4_addr(o->ifname_nts.data, o->ifaddr)) {
         ModuleLog(o->i, BLOG_ERROR, "failed to add IP address");
         goto fail1;
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(o->i);
     return;
-    
+
 fail1:
     NCDValNullTermString_Free(&o->ifname_nts);
 fail0:
@@ -120,15 +120,15 @@ fail0:
 static void func_die (void *vo)
 {
     struct instance *o = vo;
-    
+
     // remove address
     if (!NCDIfConfig_remove_ipv4_addr(o->ifname_nts.data, o->ifaddr)) {
         ModuleLog(o->i, BLOG_ERROR, "failed to remove IP address");
     }
-    
+
     // free ifname nts
     NCDValNullTermString_Free(&o->ifname_nts);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 

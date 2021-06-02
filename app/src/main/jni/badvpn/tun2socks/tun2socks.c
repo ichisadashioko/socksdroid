@@ -494,7 +494,7 @@ int main (int argc, char **argv)
 
 #ifdef ANDROID
     // use supplied file descriptor
-    
+
     int sock, fd;
     struct sockaddr_un addr;
 
@@ -524,7 +524,7 @@ int main (int argc, char **argv)
         int sock2;
         struct sockaddr_un remote;
         int t = sizeof(remote);
-        if ((sock2 = accept(sock, (struct sockaddr *)&remote, &t)) == -1) { 
+        if ((sock2 = accept(sock, (struct sockaddr *)&remote, &t)) == -1) {
             BLog(BLOG_ERROR, "accept() failed: %s (sock = %d)\n", strerror(errno), sock);
             continue;
         }

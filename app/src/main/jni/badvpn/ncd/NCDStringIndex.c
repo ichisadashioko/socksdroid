@@ -1,9 +1,9 @@
 /**
  * @file NCDStringIndex.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -89,70 +89,70 @@ static const char *static_strings[] = {
 static NCD_string_id_t do_get (NCDStringIndex *o, const char *str, size_t str_len)
 {
     ASSERT(str)
-    
+
     NCDStringIndex_hash_key key = {str, str_len};
     NCDStringIndex__HashRef ref = NCDStringIndex__Hash_Lookup(&o->hash, o->entries, key);
     ASSERT(ref.link == -1 || ref.link >= 0)
     ASSERT(ref.link == -1 || ref.link < o->entries_size)
     ASSERT(ref.link == -1 || (ref.ptr->str_len == str_len && !memcmp(ref.ptr->str, str, str_len)))
-    
+
     if (ref.link != -1) {
         return ref.link;
     }
-    
+
     if (o->entries_size == o->entries_capacity) {
         if (!Array_DoubleUp(o)) {
             BLog(BLOG_ERROR, "Array_DoubleUp failed");
             return -1;
         }
-        
+
         if (!NCDStringIndex__Hash_MultiplyBuckets(&o->hash, o->entries, 1)) {
             BLog(BLOG_ERROR, "NCDStringIndex__Hash_MultiplyBuckets failed");
             return -1;
         }
     }
-    
+
     ASSERT(o->entries_size < o->entries_capacity)
-    
+
     struct NCDStringIndex__entry *entry = &o->entries[o->entries_size];
-    
+
     if (!(entry->str = b_strdup_bin(str, str_len))) {
         BLog(BLOG_ERROR, "b_strdup_bin failed");
         return -1;
     }
     entry->str_len = str_len;
     entry->has_nulls = !!memchr(str, '\0', str_len);
-    
+
     NCDStringIndex__HashRef newref = {entry, o->entries_size};
     int res = NCDStringIndex__Hash_Insert(&o->hash, o->entries, newref, NULL);
     ASSERT_EXECUTE(res)
-    
+
     return o->entries_size++;
 }
 
 int NCDStringIndex_Init (NCDStringIndex *o)
 {
     o->entries_size = 0;
-    
+
     if (!Array_Init(o, NCDSTRINGINDEX_INITIAL_CAPACITY)) {
         BLog(BLOG_ERROR, "Array_Init failed");
         goto fail0;
     }
-    
+
     if (!NCDStringIndex__Hash_Init(&o->hash, NCDSTRINGINDEX_INITIAL_HASH_BUCKETS)) {
         BLog(BLOG_ERROR, "NCDStringIndex__Hash_Init failed");
         goto fail1;
     }
-    
+
     for (size_t i = 0; i < B_ARRAY_LENGTH(static_strings); i++) {
         if (do_get(o, static_strings[i], strlen(static_strings[i])) < 0) {
             goto fail2;
         }
     }
-    
+
     DebugObject_Init(&o->d_obj);
     return 1;
-    
+
 fail2:
     for (NCD_string_id_t i = 0; i < o->entries_size; i++) {
         free(o->entries[i].str);
@@ -167,11 +167,11 @@ fail0:
 void NCDStringIndex_Free (NCDStringIndex *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     for (NCD_string_id_t i = 0; i < o->entries_size; i++) {
         free(o->entries[i].str);
     }
-    
+
     NCDStringIndex__Hash_Free(&o->hash);
     Array_Free(o);
 }
@@ -180,7 +180,7 @@ NCD_string_id_t NCDStringIndex_Lookup (NCDStringIndex *o, const char *str)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(str)
-    
+
     return NCDStringIndex_LookupBin(o, str, strlen(str));
 }
 
@@ -188,13 +188,13 @@ NCD_string_id_t NCDStringIndex_LookupBin (NCDStringIndex *o, const char *str, si
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(str)
-    
+
     NCDStringIndex_hash_key key = {str, str_len};
     NCDStringIndex__HashRef ref = NCDStringIndex__Hash_Lookup(&o->hash, o->entries, key);
     ASSERT(ref.link == -1 || ref.link >= 0)
     ASSERT(ref.link == -1 || ref.link < o->entries_size)
     ASSERT(ref.link == -1 || (ref.ptr->str_len == str_len && !memcmp(ref.ptr->str, str, str_len)))
-    
+
     return ref.link;
 }
 
@@ -202,7 +202,7 @@ NCD_string_id_t NCDStringIndex_Get (NCDStringIndex *o, const char *str)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(str)
-    
+
     return NCDStringIndex_GetBin(o, str, strlen(str));
 }
 
@@ -210,7 +210,7 @@ NCD_string_id_t NCDStringIndex_GetBin (NCDStringIndex *o, const char *str, size_
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(str)
-    
+
     return do_get(o, str, str_len);
 }
 
@@ -220,7 +220,7 @@ const char * NCDStringIndex_Value (NCDStringIndex *o, NCD_string_id_t id)
     ASSERT(id >= 0)
     ASSERT(id < o->entries_size)
     ASSERT(o->entries[id].str)
-    
+
     return o->entries[id].str;
 }
 
@@ -230,7 +230,7 @@ size_t NCDStringIndex_Length (NCDStringIndex *o, NCD_string_id_t id)
     ASSERT(id >= 0)
     ASSERT(id < o->entries_size)
     ASSERT(o->entries[id].str)
-    
+
     return o->entries[id].str_len;
 }
 
@@ -240,7 +240,7 @@ int NCDStringIndex_HasNulls (NCDStringIndex *o, NCD_string_id_t id)
     ASSERT(id >= 0)
     ASSERT(id < o->entries_size)
     ASSERT(o->entries[id].str)
-    
+
     return o->entries[id].has_nulls;
 }
 
@@ -248,7 +248,7 @@ int NCDStringIndex_GetRequests (NCDStringIndex *o, struct NCD_string_request *re
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(requests)
-    
+
     while (requests->str) {
         NCD_string_id_t id = NCDStringIndex_Get(o, requests->str);
         if (id < 0) {
@@ -257,6 +257,6 @@ int NCDStringIndex_GetRequests (NCDStringIndex *o, struct NCD_string_request *re
         requests->id = id;
         requests++;
     }
-    
+
     return 1;
 }

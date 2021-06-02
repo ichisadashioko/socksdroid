@@ -5,7 +5,7 @@ process main {
     call_with_caller_target("func1", {}, "helper") c;
     val_equal(c.x, "good_x") a;
     assert(a);
-    
+
     exit("0");
 }
 

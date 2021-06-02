@@ -1,9 +1,9 @@
 /**
  * @file log.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -24,28 +24,28 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Message logging using the BLog system provided by the BadVPN framework.
  * Each message has an associated loglevel, which must be one of: "error, "warning",
  * "notice", "info", "debug", or a numeric identifier (1=error to 5=debug).
- * 
+ *
  * Synopsis:
  *   log(string level [, string ...])
- * 
+ *
  * Description:
  *   On init, logs the concatenation of the given strings.
- * 
+ *
  * Synopsis:
  *   log_r(string level [, string ...])
- * 
+ *
  * Description:
  *   On deinit, logs the concatenation of the given strings.
- * 
+ *
  * Synopsis:
  *   log_fr(string level, list(string) strings_init, list(string) strings_deinit)
- * 
+ *
  * Description:
  *   On init, logs the concatenation of the strings in 'strings_init',
  *   and on deinit, logs the concatenation of the strings in 'strings_deinit'.
@@ -79,16 +79,16 @@ static const char *strings[] = {
 static int check_strings (NCDValRef list, size_t start)
 {
     ASSERT(NCDVal_IsList(list))
-    
+
     size_t count = NCDVal_ListCount(list);
-    
+
     for (size_t j = start; j < count; j++) {
         NCDValRef string = NCDVal_ListGet(list, j);
         if (!NCDVal_IsString(string)) {
             return 0;
         }
     }
-    
+
     return 1;
 }
 
@@ -97,21 +97,21 @@ static void do_log (int level, NCDValRef list, size_t start)
     ASSERT(level >= BLOG_ERROR)
     ASSERT(level <= BLOG_DEBUG)
     ASSERT(check_strings(list, start))
-    
+
     if (!BLog_WouldLog(BLOG_CHANNEL_ncd_log_msg, level)) {
         return;
     }
-    
+
     size_t count = NCDVal_ListCount(list);
-    
+
     BLog_Begin();
-    
+
     for (size_t j = start; j < count; j++) {
         NCDValRef string = NCDVal_ListGet(list, j);
         ASSERT(NCDVal_IsString(string))
         BLog_AppendBytes(NCDVal_StringData(string), NCDVal_StringLength(string));
     }
-    
+
     BLog_Finish(BLOG_CHANNEL_ncd_log_msg, level);
 }
 
@@ -120,9 +120,9 @@ static int parse_level (NCDModuleInst *i, NCDValRef level_arg, int *out_level)
     if (!NCDVal_IsString(level_arg)) {
         return 0;
     }
-    
+
     NCDStringIndex *string_index = i->params->iparams->string_index;
-    
+
     uintmax_t level_numeric;
     if (ncd_read_uintmax(level_arg, &level_numeric) && level_numeric >= BLOG_ERROR && level_numeric <= BLOG_DEBUG) {
         *out_level = level_numeric;
@@ -145,7 +145,7 @@ static int parse_level (NCDModuleInst *i, NCDValRef level_arg, int *out_level)
     else {
         return 0;
     }
-    
+
     return 1;
 }
 
@@ -154,22 +154,22 @@ static void rlog_func_new_common (void *vo, NCDModuleInst *i, int level, NCDValR
     ASSERT(level >= BLOG_ERROR)
     ASSERT(level <= BLOG_DEBUG)
     ASSERT(check_strings(list, start))
-    
+
     struct rlog_instance *o = vo;
     o->i = i;
     o->level = level;
     o->list = list;
     o->start = start;
-    
+
     NCDModuleInst_Backend_Up(i);
 }
 
 static void rlog_func_die (void *vo)
 {
     struct rlog_instance *o = vo;
-    
+
     do_log(o->level, o->list, o->start);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
@@ -179,23 +179,23 @@ static void log_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst
         ModuleLog(i, BLOG_ERROR, "missing level argument");
         goto fail0;
     }
-    
+
     int level;
     if (!parse_level(i, NCDVal_ListGet(params->args, 0), &level)) {
         ModuleLog(i, BLOG_ERROR, "wrong level argument");
         goto fail0;
     }
-    
+
     if (!check_strings(params->args, 1)) {
         ModuleLog(i, BLOG_ERROR, "wrong string arguments");
         goto fail0;
     }
-    
+
     do_log(level, params->args, 1);
-    
+
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -206,21 +206,21 @@ static void log_r_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIn
         ModuleLog(i, BLOG_ERROR, "missing level argument");
         goto fail0;
     }
-    
+
     int level;
     if (!parse_level(i, NCDVal_ListGet(params->args, 0), &level)) {
         ModuleLog(i, BLOG_ERROR, "wrong level argument");
         goto fail0;
     }
-    
+
     if (!check_strings(params->args, 1)) {
         ModuleLog(i, BLOG_ERROR, "wrong string arguments");
         goto fail0;
     }
-    
+
     rlog_func_new_common(vo, i, level, params->args, 1);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -234,28 +234,28 @@ static void log_fr_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleI
         ModuleLog(i, BLOG_ERROR, "wrong arity");
         goto fail0;
     }
-    
+
     int level;
     if (!parse_level(i, level_arg, &level)) {
         ModuleLog(i, BLOG_ERROR, "wrong level argument");
         goto fail0;
     }
-    
+
     if (!NCDVal_IsList(strings_init_arg) || !check_strings(strings_init_arg, 0)) {
         ModuleLog(i, BLOG_ERROR, "wrong string_init argument");
         goto fail0;
     }
-    
+
     if (!NCDVal_IsList(strings_deinit_arg) || !check_strings(strings_deinit_arg, 0)) {
         ModuleLog(i, BLOG_ERROR, "wrong strings_deinit argument");
         goto fail0;
     }
-    
+
     do_log(level, strings_init_arg, 0);
-    
+
     rlog_func_new_common(vo, i, level, strings_deinit_arg, 0);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }

@@ -1,9 +1,9 @@
 /**
  * @file RouteBuffer.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Packet buffer for zero-copy packet routing.
  */
 
@@ -46,7 +46,7 @@ struct RouteBuffer_packet {
 
 /**
  * Packet buffer for zero-copy packet routing.
- * 
+ *
  * Packets are buffered using {@link RouteBufferSource} objects.
  */
 typedef struct {
@@ -59,7 +59,7 @@ typedef struct {
 
 /**
  * Object through which packets are buffered into {@link RouteBuffer} objects.
- * 
+ *
  * A packet is routed by calling {@link RouteBufferSource_Pointer}, writing it to
  * the returned address, then calling {@link RouteBufferSource_Route}.
  */
@@ -71,7 +71,7 @@ typedef struct {
 
 /**
  * Initializes the object.
- * 
+ *
  * @param o the object
  * @param mtu maximum packet size. Must be >=0. It will only be possible to route packets to this buffer
  *            from {@link RouteBufferSource}.s with the same MTU.
@@ -88,14 +88,14 @@ void RouteBuffer_Free (RouteBuffer *o);
 
 /**
  * Retuns the buffer's MTU (mtu argument to {@link RouteBuffer_Init}).
- * 
+ *
  * @return MTU
  */
 int RouteBuffer_GetMTU (RouteBuffer *o);
 
 /**
  * Initializes the object.
- * 
+ *
  * @param o the object
  * @param mtu maximum packet size. Must be >=0. The object will only be able to route packets
  *            to {@link RouteBuffer}'s with the same MTU.
@@ -105,7 +105,7 @@ int RouteBufferSource_Init (RouteBufferSource *o, int mtu) WARN_UNUSED;
 
 /**
  * Frees the object.
- * 
+ *
  * @param o the object
  */
 void RouteBufferSource_Free (RouteBufferSource *o);
@@ -114,7 +114,7 @@ void RouteBufferSource_Free (RouteBufferSource *o);
  * Returns a pointer to the current packet.
  * The pointed to memory area will have space for MTU bytes.
  * The pointer is only valid until {@link RouteBufferSource_Route} succeeds.
- * 
+ *
  * @param o the object
  * @return pointer to the current packet
  */
@@ -124,7 +124,7 @@ uint8_t * RouteBufferSource_Pointer (RouteBufferSource *o);
  * Routes the current packet to a given buffer.
  * On success, this invalidates the pointer previously returned from
  * {@link RouteBufferSource_Pointer}.
- * 
+ *
  * @param o the object
  * @param len length of the packet. Must be >=0 and <=MTU.
  * @param b buffer to route to. Its MTU must equal this object's MTU.

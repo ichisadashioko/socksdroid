@@ -1,4 +1,3 @@
-
 sbin_PROGRAMS = pdnsd
 
 pdnsd_CFLAGS = $(thread_CFLAGS)
@@ -21,4 +20,3 @@ $(pdnsd_OBJECTS): rr_types.h
 
 rr_types.h: make_rr_types_h.pl rr_types.in
 	perl make_rr_types_h.pl rr_types.in > rr_types.h
-

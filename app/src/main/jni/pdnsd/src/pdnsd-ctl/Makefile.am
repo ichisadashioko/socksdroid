@@ -1,4 +1,3 @@
-
 sbin_PROGRAMS = pdnsd-ctl
 
 pdnsd_ctl_SOURCES = pdnsd-ctl.c
@@ -15,4 +14,3 @@ pdnsd-ctl.o rr_types.o: ../rr_types.h
 
 rr_types.o: %.o: ../%.c
 	$(COMPILE) -DCLIENT_ONLY -c $<
-

@@ -1,9 +1,9 @@
 /**
  * @file PacketRouter.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Object which simplifies routing packets to {@link RouteBuffer}'s from a
  * {@link PacketRecvInterface} input.
  */
@@ -43,7 +43,7 @@
 /**
  * Handler called when a packet is received, allowing the user to route it
  * to one or more buffers using {@link PacketRouter_Route}.
- * 
+ *
  * @param user as in {@link PacketRouter_Init}
  * @param buf the buffer for the packet. May be modified by the user.
  *            Will have space for mtu bytes. Only valid in the job context of
@@ -55,7 +55,7 @@ typedef void (*PacketRouter_handler) (void *user, uint8_t *buf, int recv_len);
 /**
  * Object which simplifies routing packets to {@link RouteBuffer}'s from a
  * {@link PacketRecvInterface} input.
- * 
+ *
  * Packets are routed by calling {@link PacketRouter_Route} (possibly multiple times)
  * from the job context of the {@link PacketRouter_handler} handler.
  */
@@ -72,7 +72,7 @@ typedef struct {
 
 /**
  * Initializes the object.
- * 
+ *
  * @param o the object
  * @param mtu maximum packet size. Must be >=0. It will only be possible to route packets to
  *            {@link RouteBuffer}'s with the same MTU.
@@ -89,7 +89,7 @@ int PacketRouter_Init (PacketRouter *o, int mtu, int recv_offset, PacketRecvInte
 
 /**
  * Frees the object.
- * 
+ *
  * @param o the object
  */
 void PacketRouter_Free (PacketRouter *o);
@@ -99,7 +99,7 @@ void PacketRouter_Free (PacketRouter *o);
  * Must be called from the job context of the {@link PacketRouter_handler} handler.
  * On success, copies part of the current packet to next one (regardless if next_buf
  * is provided or not; if not, copies before receiving another packet).
- * 
+ *
  * @param o the object
  * @param len total packet length (e.g. recv_offset + (recv_len from handler)).
  *            Must be >=0 and <=mtu.
@@ -118,7 +118,7 @@ int PacketRouter_Route (PacketRouter *o, int len, RouteBuffer *output, uint8_t *
 
 /**
  * Asserts that {@link PacketRouter_Route} can be called.
- * 
+ *
  * @param o the object
  */
 void PacketRouter_AssertRoute (PacketRouter *o);

@@ -1,9 +1,9 @@
 /**
  * @file NCDBuildProgram.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,7 +38,7 @@
  * by opening and parsing it, as well as recursively processing any included files.
  * The resulting program will not contain any 'include' or 'include_guard' elements;
  * these will be resolved and removed.
- * 
+ *
  * @param file_path path to the main file of the program
  * @param out_program on success, *out_program will contain the resulting program.
  *                    On failure, *out_program will be unchanged.

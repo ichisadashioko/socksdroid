@@ -14,7 +14,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 define('LIME_DIR', dirname(__FILE__));
 
 function emit($str) { fputs(STDERR, $str."\n"); }
@@ -63,19 +63,19 @@ class shift extends step {
 		# shift-accept conflicts are a bug.
 		# so we can infer:
 		bug_unless($that instanceof reduce);
-		
+
 		# That being said, the resolution is a matter of precedence.
 		$shift_prec = $this->sym->right_prec;
 		$reduce_prec = $that->rule->prec;
-		
+
 		# If we don't have defined precedence levels for both options,
 		# then we default to shifting:
 		if (!($shift_prec and $reduce_prec)) return $this;
-		
+
 		# Otherwise, use the step with higher precedence.
 		if ($shift_prec > $reduce_prec) return $this;
 		if ($reduce_prec > $shift_prec) return $that;
-		
+
 		# The "nonassoc" works by giving equal precedence to both options,
 		# which means to put an error instruction in the parse table.
 		return new error($this->sym);
@@ -171,7 +171,7 @@ class state {
 				$table[$glyph] = $step;
 			}
 		}
-		
+
 		# Now that we have the correct steps chosen, this routine is oddly
 		# also responsible for turning that table into the form that will
 		# eventually be passed to the parse engine. (So FIXME?)
@@ -230,7 +230,7 @@ class rule {
 		# BISON does. People probably expect that. The leftmost terminal
 		# is a reasonable alternative behaviour, but I don't see the big
 		# deal just now.
-		
+
 		#$prec_sym = $this->prec_sym;
 		#if (!$prec_sym)
 		$prec_sym = $this->rightmost_terminal();
@@ -403,7 +403,7 @@ class lime {
 	function trump_up_bogus_lhs($real) {
 		return "'$real'".count($this->rule);
 	}
-	function add_raw_rule($lhs, $rhs, $code, $look, $replace) { 
+	function add_raw_rule($lhs, $rhs, $code, $look, $replace) {
 		$sym = $this->sym($lhs);
 		$sym->term=false;
 		if (empty($rhs)) $sym->lambda = true;
@@ -469,7 +469,7 @@ class lime {
 	function find_states() {
 		/*
 		Build an initial state. This is a recursive process which digs out
-		the LR(0) state graph. 
+		the LR(0) state graph.
 		*/
 		$start_glyph = "'start'";
 		$sym = $this->sym($start_glyph);
@@ -508,10 +508,10 @@ class lime {
 				continue;
 			}
 			$close[$config->key] = $config;
-			
+
 			$symbol_after_the_dot = $config->symbol_after_the_dot;
 			if (!$symbol_after_the_dot) continue;
-			
+
 			if (! $symbol_after_the_dot->term) {
 				foreach ($symbol_after_the_dot->rule as $r) {
 					$station = $r->leftmost($config->simple_follow());
@@ -523,7 +523,7 @@ class lime {
 				#	$q[] = $config->next();
 				#}
 			}
-			
+
 		}
 		return $close;
 	}
@@ -613,23 +613,23 @@ class lime {
 			case 'left':
 			$this->left_assoc($args);
 			break;
-			
+
 			case 'right':
 			$this->right_assoc($args);
 			break;
-			
+
 			case 'nonassoc':
 			$this->non_assoc($args);
 			break;
-			
+
 			case 'start':
 			$this->start_symbol_set = $args;
 			break;
-			
+
 			case 'class':
 			$this->parser_class = $args[0];
 			break;
-			
+
 			default:
 			emit(sprintf("Bad Parser Pragma: (%s)", $type));
 			exit(1);
@@ -654,8 +654,8 @@ class lime_language_php extends lime_language {
 		$code = "class $parser_class extends lime_parser {\n";
 		$code .= 'var $qi = '.var_export($ptab['qi'], true).";\n";
 		$code .= 'var $i = '.var_export($ptab['i'], true).";\n";
-		
-		
+
+
 		$rc = array();
 		$method = array();
 		$rules = array();
@@ -667,18 +667,18 @@ class lime_language_php extends lime_language {
 			$comment = "#\n# $a[text]\n#\n";
 			$php = $this->to_php($a['code']);
 			$code .= "function $mn(".LIME_CALL_PROTOCOL.") {\n$comment$php\n}\n\n";
-			
-			
+
+
 			unset($a['code']);
 			unset($a['text']);
 			$rules[$k] = $a;
 		}
-		
+
 		$code .= 'var $method = '.var_export($method, true).";\n";
 		$code .= 'var $a = '.var_export($rules, true).";\n";
-		
-		
-		
+
+
+
 		$code .= "}\n";
 		#echo $code;
 		return $code;
@@ -689,7 +689,7 @@ class lime_rhs {
 		/**
 		Construct and add glyphs and actions in whatever order.
 		Then, add this to a lime_rewrite.
-		
+
 		Don't call install_rule.
 		The rewrite will do that for you when you "update" with it.
 		*/
@@ -705,7 +705,7 @@ class lime_rhs {
 		# First, make sure this thing is well-formed.
 		if (!(end($rhs) instanceof lime_action)) $rhs[] = new lime_action('', NULL);
 		# Now, split it into chunks based on the actions.
-		
+
 		$lang = $lime->language();
 		$result_code = $lang->default_result();
 		$look = -1;
@@ -757,7 +757,7 @@ class lime_rewrite {
 	function update(lime $lime) {
 		foreach ($this->rhs as $rhs) {
 			$rhs->install_rule($lime, $this->glyph);
-			
+
 		}
 	}
 }
@@ -782,33 +782,33 @@ class lime_slot {
 class lime_glyph extends lime_slot {}
 class lime_action extends lime_slot {}
 function lime_bootstrap() {
-	
+
 	/*
-	
+
 	This function isn't too terribly interesting to the casual observer.
 	You're probably better off looking at parse_lime_grammar() instead.
-	
+
 	Ok, if you insist, I'll explain.
-	
+
 	The input to Lime is a CFG parser definition. That definition is
 	written in some language. (The Lime language, to be exact.)
 	Anyway, I have to parse the Lime language and compile it into a
 	very complex data structure from which a parser is eventually
 	built. What better way than to use Lime itself to parse its own
 	language? Well, it's almost that simple, but not quite.
-	
+
 	The Lime language is fairly potent, but a restricted subset of
 	its features was used to write a metagrammar. Then, I hand-translated
 	that metagrammar into another form which is easy to snarf up.
-	In the process of reading that simplified form, this function 
+	In the process of reading that simplified form, this function
 	builds the same sort of data structure that later gets turned into
 	a parser. The last step is to run the parser generation algorithm,
 	eval() the resulting PHP code, and voila! With no hard work, I can
 	suddenly read and comprehend the full range of the Lime language
 	without ever having written an algorithm to do so. It feels like magic.
-	
+
 	*/
-	
+
 	$bootstrap = LIME_DIR."/lime.bootstrap";
 	$lime = new lime();
 	$lime->parser_class = 'lime_metaparser';
@@ -841,7 +841,7 @@ function lime_bootstrap() {
 
 class voodoo_scanner extends flex_scanner {
 	/*
-	
+
 	The voodoo is in the way I do lexical processing on grammar definition
 	files. They contain embedded bits of PHP, and it's important to keep
 	track of things like strings, comments, and matched braces. It seemed
@@ -850,21 +850,21 @@ class voodoo_scanner extends flex_scanner {
 	the tokens in PHP, so I designed a simple binary wrapper for them which
 	also contains line-number information, guaranteed to help out if you
 	write a grammar which surprises the parser in any manner.
-	
+
 	*/
 	function executable() { return LIME_DIR.'/lime_scan_tokens'; }
 }
 
 function parse_lime_grammar($path) {
 	/*
-	
+
 	This is a good function to read because it teaches you how to interface
 	with a Lime parser. I've tried to isolate out the bits that aren't
 	instructive in that regard.
-	
+
 	*/
 	if (!class_exists('lime_metaparser')) lime_bootstrap();
-	
+
 	$parse_engine = new parse_engine(new lime_metaparser());
 	$scanner = new voodoo_scanner($path);
 	try {
@@ -884,7 +884,7 @@ if ($_SERVER['argv']) {
 	foreach ($_SERVER['argv'] as $path) {
 		$code .= parse_lime_grammar($path);
 	}
-	
+
 	echo "<?php\n\n";
 ?>
 

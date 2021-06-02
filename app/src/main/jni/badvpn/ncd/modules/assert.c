@@ -1,9 +1,9 @@
 /**
  * @file assert.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,13 +25,13 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Synopsis:
  *   assert(string cond)
  *   assert_false(string cond)
- * 
+ *
  * Description:
  *   If 'cond' is equal to the string "true" (assert) or "false" (assert_false),
  *   does nothing. Otherwise, logs an error and initiates interpreter termination
@@ -60,10 +60,10 @@ static void func_new_common (NCDModuleInst *i, const struct NCDModuleInst_new_pa
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(i);
-    
+
     // if failed, initiate exit (before up!)
     if ((!is_false && !NCDVal_StringEqualsId(cond_arg, NCD_STRING_TRUE, i->params->iparams->string_index)) ||
         (is_false && !NCDVal_StringEqualsId(cond_arg, NCD_STRING_FALSE, i->params->iparams->string_index))
@@ -71,9 +71,9 @@ static void func_new_common (NCDModuleInst *i, const struct NCDModuleInst_new_pa
         ModuleLog(i, BLOG_ERROR, "assertion failed");
         NCDModuleInst_Backend_InterpExit(i, 1);
     }
-    
+
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }

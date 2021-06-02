@@ -1,9 +1,9 @@
 /**
  * @file FrameDecider.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Mudule which decides to which peers frames from the device are to be
  * forwarded.
  */
@@ -125,7 +125,7 @@ typedef struct _FrameDeciderPeer {
 
 /**
  * Initializes the object.
- * 
+ *
  * @param o the object
  * @param max_peer_macs maximum number of MAC addresses a peer may posess. Must be >0.
  * @param max_peer_groups maximum number of multicast groups a peer may belong to. Must be >0.
@@ -142,7 +142,7 @@ void FrameDecider_Init (FrameDecider *o, int max_peer_macs, int max_peer_groups,
 /**
  * Frees the object.
  * There must be no {@link FrameDeciderPeer} objects using this decider.
- * 
+ *
  * @param o the object
  */
 void FrameDecider_Free (FrameDecider *o);
@@ -150,7 +150,7 @@ void FrameDecider_Free (FrameDecider *o);
 /**
  * Analyzes a frame read from the local device and starts deciding which peers
  * the frame should be forwarded to.
- * 
+ *
  * @param o the object
  * @param frame frame data
  * @param frame_len frame length. Must be >=0.
@@ -160,7 +160,7 @@ void FrameDecider_AnalyzeAndDecide (FrameDecider *o, const uint8_t *frame, int f
 /**
  * Returns the next peer that the frame submitted to {@link FrameDecider_AnalyzeAndDecide} should be
  * forwarded to.
- * 
+ *
  * @param o the object
  * @return peer to forward the frame to, or NULL if no more
  */
@@ -168,7 +168,7 @@ FrameDeciderPeer * FrameDecider_NextDestination (FrameDecider *o);
 
 /**
  * Initializes the object.
- * 
+ *
  * @param o the object
  * @param d decider this peer will belong to
  * @param user argument to log function
@@ -179,14 +179,14 @@ int FrameDeciderPeer_Init (FrameDeciderPeer *o, FrameDecider *d, void *user, BLo
 
 /**
  * Frees the object.
- * 
+ *
  * @param o the object
  */
 void FrameDeciderPeer_Free (FrameDeciderPeer *o);
 
 /**
  * Analyzes a frame received from the peer.
- * 
+ *
  * @param o the object
  * @param frame frame data
  * @param frame_len frame length. Must be >=0.

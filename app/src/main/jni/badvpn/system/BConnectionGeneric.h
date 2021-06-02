@@ -1,9 +1,9 @@
 /**
  * @file BConnectionGeneric.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -79,12 +79,12 @@ static int BListener_InitGeneric (BListener *o, struct BConnection_addr addr, BR
     ASSERT(handler)
     BNetwork_Assert();
     ASSERT(addr.type != BCONNECTION_ADDR_TYPE_UNIX || !memchr(addr.u.unix_socket_path.str, '\0', addr.u.unix_socket_path.len))
-    
+
     switch (addr.type) {
         case BCONNECTION_ADDR_TYPE_BADDR: {
             return BListener_Init(o, addr.u.baddr, reactor, user, handler);
         } break;
-        
+
         case BCONNECTION_ADDR_TYPE_UNIX: {
 #ifdef BADVPN_USE_WINAPI
             BLog_LogToChannel(BLOG_CHANNEL_BConnection, BLOG_ERROR, "unix sockets not supported");
@@ -100,7 +100,7 @@ static int BListener_InitGeneric (BListener *o, struct BConnection_addr addr, BR
             return res;
 #endif
         } break;
-        
+
         default:
             ASSERT(0);
             return 0;
@@ -113,12 +113,12 @@ static int BConnector_InitGeneric (BConnector *o, struct BConnection_addr addr, 
     ASSERT(handler)
     BNetwork_Assert();
     ASSERT(addr.type != BCONNECTION_ADDR_TYPE_UNIX || !memchr(addr.u.unix_socket_path.str, '\0', addr.u.unix_socket_path.len))
-    
+
     switch (addr.type) {
         case BCONNECTION_ADDR_TYPE_BADDR: {
             return BConnector_Init(o, addr.u.baddr, reactor, user, handler);
         } break;
-        
+
         case BCONNECTION_ADDR_TYPE_UNIX: {
 #ifdef BADVPN_USE_WINAPI
             BLog_LogToChannel(BLOG_CHANNEL_BConnection, BLOG_ERROR, "unix sockets not supported");
@@ -134,7 +134,7 @@ static int BConnector_InitGeneric (BConnector *o, struct BConnection_addr addr, 
             return res;
 #endif
         } break;
-        
+
         default:
             ASSERT(0);
             return 0;

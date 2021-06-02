@@ -1,9 +1,9 @@
 /**
  * @file load_module.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Synopsis:
  *   load_module(string name)
  */
@@ -78,25 +78,25 @@ static struct module * module_init (const char *name, NCDModuleInst *i)
 {
     struct global *g = ModuleGlobal(i);
     ASSERT(!find_module(name, g))
-    
+
     struct module *mod = BAlloc(sizeof(*mod));
     if (!mod) {
         ModuleLog(i, BLOG_ERROR, "BAlloc failed");
         goto fail0;
     }
-    
+
     mod->name = b_strdup(name);
     if (!mod->name) {
         ModuleLog(i, BLOG_ERROR, "b_strdup failed");
         goto fail1;
     }
-    
+
     mod->lib_handle = NULL;
     mod->ncdmodule_loaded = 0;
     LinkedList0_Prepend(&g->modules_list, &mod->modules_list_node);
-    
+
     return mod;
-    
+
 fail1:
     BFree(mod);
 fail0:
@@ -122,7 +122,7 @@ static char * x_read_link (const char *path)
     if (!buf) {
         goto fail0;
     }
-    
+
     ssize_t link_size;
     while (1) {
         link_size = readlink(path, buf, size);
@@ -142,10 +142,10 @@ static char * x_read_link (const char *path)
         }
         buf = new_buf;
     }
-    
+
     buf[link_size] = '\0';
     return buf;
-    
+
 fail1:
     BFree(buf);
 fail0:
@@ -155,22 +155,22 @@ fail0:
 static char * find_module_library (NCDModuleInst *i, const char *module_name)
 {
     char *ret = NULL;
-    
+
     char *self = x_read_link("/proc/self/exe");
     if (!self) {
         ModuleLog(i, BLOG_ERROR, "failed to read /proc/self/exe");
         goto fail0;
     }
-    
+
     char *slash = strrchr(self, '/');
     if (!slash) {
         ModuleLog(i, BLOG_ERROR, "contents of /proc/self/exe do not have a slash");
         goto fail1;
     }
     *slash = '\0';
-    
+
     const char *paths[] = {"../lib/badvpn-ncd", "../mcvpn", NULL};
-    
+
     size_t j;
     for (j = 0; paths[j]; j++) {
         char *module_path = concat_strings(6, self, "/", paths[j], "/libncdmodule_", module_name, ".so");
@@ -178,19 +178,19 @@ static char * find_module_library (NCDModuleInst *i, const char *module_name)
             ModuleLog(i, BLOG_ERROR, "concat_strings failed");
             goto fail1;
         }
-        
+
         if (access(module_path, F_OK) == 0) {
             ret = module_path;
             break;
         }
-        
+
         BFree(module_path);
     }
-    
+
     if (!paths[j]) {
         ModuleLog(i, BLOG_ERROR, "failed to find module");
     }
-    
+
 fail1:
     BFree(self);
 fail0:
@@ -204,23 +204,23 @@ static int func_globalinit (struct NCDInterpModuleGroup *group, const struct NCD
         BLog(BLOG_ERROR, "BAlloc failed");
         return 0;
     }
-    
+
     group->group_state = g;
     LinkedList0_Init(&g->modules_list);
-    
+
     return 1;
 }
 
 static void func_globalfree (struct NCDInterpModuleGroup *group)
 {
     struct global *g = group->group_state;
-    
+
     LinkedList0Node *ln;
     while ((ln = LinkedList0_GetFirst(&g->modules_list))) {
         struct module *mod = UPPER_OBJECT(ln, struct module, modules_list_node);
         module_free(mod, g);
     }
-    
+
     BFree(g);
 }
 
@@ -236,24 +236,24 @@ static void func_new (void *unused, NCDModuleInst *i, const struct NCDModuleInst
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     struct module *mod = find_module(NCDVal_StringData(name_arg), ModuleGlobal(i));
     ASSERT(!mod || mod->lib_handle)
-    
+
     if (!mod) {
         mod = module_init(NCDVal_StringData(name_arg), i);
         if (!mod) {
             ModuleLog(i, BLOG_ERROR, "module_init failed");
             goto fail0;
         }
-        
+
         // find module library
         char *module_path = find_module_library(i, NCDVal_StringData(name_arg));
         if (!module_path) {
             module_free(mod, ModuleGlobal(i));
             goto fail0;
         }
-        
+
         // load it as a dynamic library
         mod->lib_handle = dlopen(module_path, RTLD_NOW);
         BFree(module_path);
@@ -263,7 +263,7 @@ static void func_new (void *unused, NCDModuleInst *i, const struct NCDModuleInst
             goto fail0;
         }
     }
-    
+
     if (!mod->ncdmodule_loaded) {
         // build name of NCDModuleGroup structure symbol
         char *group_symbol = concat_strings(2, "ncdmodule_", NCDVal_StringData(name_arg));
@@ -271,7 +271,7 @@ static void func_new (void *unused, NCDModuleInst *i, const struct NCDModuleInst
             ModuleLog(i, BLOG_ERROR, "concat_strings failed");
             goto fail0;
         }
-        
+
         // resolve NCDModuleGroup structure symbol
         void *group = dlsym(mod->lib_handle, group_symbol);
         BFree(group_symbol);
@@ -279,20 +279,20 @@ static void func_new (void *unused, NCDModuleInst *i, const struct NCDModuleInst
             ModuleLog(i, BLOG_ERROR, "dlsym failed");
             goto fail0;
         }
-        
+
         // load module group
         if (!NCDModuleInst_Backend_InterpLoadGroup(i, (struct NCDModuleGroup *)group)) {
             ModuleLog(i, BLOG_ERROR, "NCDModuleInst_Backend_InterpLoadGroup failed");
             goto fail0;
         }
-        
+
         mod->ncdmodule_loaded = 1;
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }

@@ -1,9 +1,9 @@
 /**
  * @file StreamRecvConnector.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,11 +38,11 @@ static void output_handler_recv (StreamRecvConnector *o, uint8_t *data, int data
     ASSERT(data_avail > 0)
     ASSERT(o->out_avail == -1)
     DebugObject_Access(&o->d_obj);
-    
+
     // remember output packet
     o->out_avail = data_avail;
     o->out = data;
-    
+
     if (o->input) {
         // schedule receive
         StreamRecvInterface_Receiver_Recv(o->input, o->out, o->out_avail);
@@ -56,10 +56,10 @@ static void input_handler_done (StreamRecvConnector *o, int data_len)
     ASSERT(o->out_avail > 0)
     ASSERT(o->input)
     DebugObject_Access(&o->d_obj);
-    
+
     // have no output packet
     o->out_avail = -1;
-    
+
     // allow output to receive more packets
     StreamRecvInterface_Done(&o->output, data_len);
 }
@@ -68,20 +68,20 @@ void StreamRecvConnector_Init (StreamRecvConnector *o, BPendingGroup *pg)
 {
     // init output
     StreamRecvInterface_Init(&o->output, (StreamRecvInterface_handler_recv)output_handler_recv, o, pg);
-    
+
     // have no output packet
     o->out_avail = -1;
-    
+
     // have no input
     o->input = NULL;
-    
+
     DebugObject_Init(&o->d_obj);
 }
 
 void StreamRecvConnector_Free (StreamRecvConnector *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     // free output
     StreamRecvInterface_Free(&o->output);
 }
@@ -89,7 +89,7 @@ void StreamRecvConnector_Free (StreamRecvConnector *o)
 StreamRecvInterface * StreamRecvConnector_GetOutput (StreamRecvConnector *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return &o->output;
 }
 
@@ -97,13 +97,13 @@ void StreamRecvConnector_ConnectInput (StreamRecvConnector *o, StreamRecvInterfa
 {
     ASSERT(!o->input)
     DebugObject_Access(&o->d_obj);
-    
+
     // set input
     o->input = input;
-    
+
     // init input
     StreamRecvInterface_Receiver_Init(o->input, (StreamRecvInterface_handler_done)input_handler_done, o);
-    
+
     // if we have an output packet, schedule receive
     if (o->out_avail > 0) {
         StreamRecvInterface_Receiver_Recv(o->input, o->out, o->out_avail);
@@ -114,7 +114,7 @@ void StreamRecvConnector_DisconnectInput (StreamRecvConnector *o)
 {
     ASSERT(o->input)
     DebugObject_Access(&o->d_obj);
-    
+
     // set no input
     o->input = NULL;
 }

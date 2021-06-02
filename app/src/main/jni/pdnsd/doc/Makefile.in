@@ -173,7 +173,7 @@ man_MANS = pdnsd.8 pdnsd-ctl.8 pdnsd.conf.5
 EXTRA_DIST = pdnsd.conf.in pdnsd.8.in \
 	html/dl.html.in html/doc.html html/faq.html html/index.html \
 	doc_makefile html/doc_makefile txt/doc_makefile \
-	html2confman.pl html/htmlsubst.pl 
+	html2confman.pl html/htmlsubst.pl
 
 all: all-am
 

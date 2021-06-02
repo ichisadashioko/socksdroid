@@ -1,9 +1,9 @@
 /**
  * @file NCDUdevMonitor.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -43,7 +43,7 @@ static void report_error (NCDUdevMonitor *o)
 {
     ASSERT(!o->process_running)
     ASSERT(!o->input_running)
-    
+
     DEBUGERROR(&o->d_err, o->handler_error(o->user, (o->process_was_error || o->input_was_error)));
 }
 
@@ -51,15 +51,15 @@ static void process_handler_terminated (NCDUdevMonitor *o, int normally, uint8_t
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->process_running)
-    
+
     BLog(BLOG_INFO, "process terminated");
-    
+
     // set process not running (so we don't try to kill it)
     o->process_running = 0;
-    
+
     // remember process error
     o->process_was_error = !(normally && normally_exit_status == 0);
-    
+
     if (!o->input_running) {
         report_error(o);
         return;
@@ -70,22 +70,22 @@ static void process_handler_closed (NCDUdevMonitor *o, int is_error)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->input_running)
-    
+
     if (is_error) {
         BLog(BLOG_ERROR, "pipe error");
     } else {
         BLog(BLOG_INFO, "pipe closed");
     }
-    
+
     // disconnect connector
     StreamRecvConnector_DisconnectInput(&o->connector);
-    
+
     // set input not running
     o->input_running = 0;
-    
+
     // remember input error
     o->input_was_error = is_error;
-    
+
     if (!o->process_running) {
         report_error(o);
         return;
@@ -95,7 +95,7 @@ static void process_handler_closed (NCDUdevMonitor *o, int is_error)
 static void parser_handler (NCDUdevMonitor *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     o->handler_event(o->user);
     return;
 }
@@ -105,12 +105,12 @@ int NCDUdevMonitor_Init (NCDUdevMonitor *o, BReactor *reactor, BProcessManager *
                          NCDUdevMonitor_handler_error handler_error)
 {
     ASSERT(mode == NCDUDEVMONITOR_MODE_MONITOR_UDEV || mode == NCDUDEVMONITOR_MODE_INFO || mode == NCDUDEVMONITOR_MODE_MONITOR_KERNEL)
-    
+
     // init arguments
     o->user = user;
     o->handler_event = handler_event;
     o->handler_error = handler_error;
-    
+
     // find programs
     char *stdbuf_exec = badvpn_find_program("stdbuf");
     char *udevadm_exec = badvpn_find_program("udevadm");
@@ -122,12 +122,12 @@ int NCDUdevMonitor_Init (NCDUdevMonitor *o, BReactor *reactor, BProcessManager *
         BLog(BLOG_ERROR, "failed to find udevadm program");
         goto fail0;
     }
-    
+
     // construct arguments
     const char *argv_monitor_udev[] = {stdbuf_exec, "-o", "L", udevadm_exec, "monitor", "--udev", "--environment", NULL};
     const char *argv_monitor_kernel[] = {stdbuf_exec, "-o", "L", udevadm_exec, "monitor", "--kernel", "--environment", NULL};
     const char *argv_info[] = {stdbuf_exec, "-o", "L", udevadm_exec, "info", "--query", "all", "--export-db", NULL};
-    
+
     // choose arguments based on mode
     const char **argv = NULL; // to remove warning
     switch (mode) {
@@ -136,7 +136,7 @@ int NCDUdevMonitor_Init (NCDUdevMonitor *o, BReactor *reactor, BProcessManager *
         case NCDUDEVMONITOR_MODE_MONITOR_KERNEL: argv = argv_monitor_kernel; break;
         default: ASSERT(0);
     }
-    
+
     // init process
     if (!BInputProcess_Init(&o->process, reactor, manager, o,
                             (BInputProcess_handler_terminated)process_handler_terminated,
@@ -145,11 +145,11 @@ int NCDUdevMonitor_Init (NCDUdevMonitor *o, BReactor *reactor, BProcessManager *
         BLog(BLOG_ERROR, "BInputProcess_Init failed");
         goto fail0;
     }
-    
+
     // init connector
     StreamRecvConnector_Init(&o->connector, BReactor_PendingGroup(reactor));
     StreamRecvConnector_ConnectInput(&o->connector, BInputProcess_GetInput(&o->process));
-    
+
     // init parser
     if (!NCDUdevMonitorParser_Init(&o->parser, StreamRecvConnector_GetOutput(&o->connector), PARSER_BUF_SIZE, PARSER_MAX_PROPERTIES,
                                    (mode == NCDUDEVMONITOR_MODE_INFO), BReactor_PendingGroup(reactor), o,
@@ -158,24 +158,24 @@ int NCDUdevMonitor_Init (NCDUdevMonitor *o, BReactor *reactor, BProcessManager *
         BLog(BLOG_ERROR, "NCDUdevMonitorParser_Init failed");
         goto fail1;
     }
-    
+
     // start process
     if (!BInputProcess_Start(&o->process, stdbuf_exec, (char **)argv, NULL)) {
         BLog(BLOG_ERROR, "BInputProcess_Start failed");
         goto fail2;
     }
-    
+
     // set process running, input running
     o->process_running = 1;
     o->input_running = 1;
-    
+
     free(udevadm_exec);
     free(stdbuf_exec);
-    
+
     DebugError_Init(&o->d_err, BReactor_PendingGroup(reactor));
     DebugObject_Init(&o->d_obj);
     return 1;
-    
+
 fail2:
     NCDUdevMonitorParser_Free(&o->parser);
 fail1:
@@ -191,18 +191,18 @@ void NCDUdevMonitor_Free (NCDUdevMonitor *o)
 {
     DebugObject_Free(&o->d_obj);
     DebugError_Free(&o->d_err);
-    
+
     // free parser
     NCDUdevMonitorParser_Free(&o->parser);
-    
+
     // free connector
     StreamRecvConnector_Free(&o->connector);
-    
+
     // kill process it it's running
     if (o->process_running) {
         BInputProcess_Kill(&o->process);
     }
-    
+
     // free process
     BInputProcess_Free(&o->process);
 }
@@ -212,7 +212,7 @@ void NCDUdevMonitor_Done (NCDUdevMonitor *o)
     DebugObject_Access(&o->d_obj);
     DebugError_AssertNoError(&o->d_err);
     NCDUdevMonitorParser_AssertReady(&o->parser);
-    
+
     NCDUdevMonitorParser_Done(&o->parser);
 }
 
@@ -221,7 +221,7 @@ int NCDUdevMonitor_IsReadyEvent (NCDUdevMonitor *o)
     DebugObject_Access(&o->d_obj);
     DebugError_AssertNoError(&o->d_err);
     NCDUdevMonitorParser_AssertReady(&o->parser);
-    
+
     return NCDUdevMonitorParser_IsReadyEvent(&o->parser);
 }
 void NCDUdevMonitor_AssertReady (NCDUdevMonitor *o)
@@ -236,7 +236,7 @@ int NCDUdevMonitor_GetNumProperties (NCDUdevMonitor *o)
     DebugObject_Access(&o->d_obj);
     DebugError_AssertNoError(&o->d_err);
     NCDUdevMonitorParser_AssertReady(&o->parser);
-    
+
     return NCDUdevMonitorParser_GetNumProperties(&o->parser);
 }
 
@@ -245,6 +245,6 @@ void NCDUdevMonitor_GetProperty (NCDUdevMonitor *o, int index, const char **name
     DebugObject_Access(&o->d_obj);
     DebugError_AssertNoError(&o->d_err);
     NCDUdevMonitorParser_AssertReady(&o->parser);
-    
+
     NCDUdevMonitorParser_GetProperty(&o->parser, index, name, value);
 }

@@ -2167,4 +2167,3 @@ int report_thread_stat(int f)
 			   ncurrent,nactive,nqueued);
 	return 0;
 }
-

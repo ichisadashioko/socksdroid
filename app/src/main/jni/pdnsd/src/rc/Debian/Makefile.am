@@ -1,4 +1,3 @@
-
 install-exec-local:
 	if [ "$(distribution)" = "Debian" ] ; then \
 	  CURDIR=`pwd`; \

@@ -1,9 +1,9 @@
 /**
  * @file DHCPIpUdpDecoder.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -45,33 +45,33 @@ static void input_handler_send (DHCPIpUdpDecoder *o, uint8_t *data, int data_len
 {
     ASSERT(data_len >= 0)
     DebugObject_Access(&o->d_obj);
-    
+
     struct ipv4_header iph;
     uint8_t *pl;
     int pl_len;
-    
+
     if (!ipv4_check(data, data_len, &iph, &pl, &pl_len)) {
         goto fail;
     }
-    
+
     if (ntoh8(iph.protocol) != IPV4_PROTOCOL_UDP) {
         goto fail;
     }
-    
+
     if (pl_len < sizeof(struct udp_header)) {
         goto fail;
     }
     struct udp_header udph;
     memcpy(&udph, pl, sizeof(udph));
-    
+
     if (ntoh16(udph.source_port) != DHCP_SERVER_PORT) {
         goto fail;
     }
-    
+
     if (ntoh16(udph.dest_port) != DHCP_CLIENT_PORT) {
         goto fail;
     }
-    
+
     int udph_length = ntoh16(udph.length);
     if (udph_length < sizeof(udph)) {
         goto fail;
@@ -79,7 +79,7 @@ static void input_handler_send (DHCPIpUdpDecoder *o, uint8_t *data, int data_len
     if (udph_length > data_len - (pl - data)) {
         goto fail;
     }
-    
+
     if (ntoh16(udph.checksum) != 0) {
         uint16_t checksum_in_packet = udph.checksum;
         udph.checksum = 0;
@@ -88,12 +88,12 @@ static void input_handler_send (DHCPIpUdpDecoder *o, uint8_t *data, int data_len
             goto fail;
         }
     }
-    
+
     // pass payload to output
     PacketPassInterface_Sender_Send(o->output, pl + sizeof(udph), udph_length - sizeof(udph));
-    
+
     return;
-    
+
 fail:
     PacketPassInterface_Done(&o->input);
 }
@@ -101,30 +101,30 @@ fail:
 static void output_handler_done (DHCPIpUdpDecoder *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     PacketPassInterface_Done(&o->input);
 }
 
 void DHCPIpUdpDecoder_Init (DHCPIpUdpDecoder *o, PacketPassInterface *output, BPendingGroup *pg)
 {
     ASSERT(PacketPassInterface_GetMTU(output) <= INT_MAX - IPUDP_HEADER_SIZE)
-    
+
     // init arguments
     o->output = output;
-    
+
     // init output
     PacketPassInterface_Sender_Init(o->output, (PacketPassInterface_handler_done)output_handler_done, o);
-    
+
     // init input
     PacketPassInterface_Init(&o->input, IPUDP_HEADER_SIZE + PacketPassInterface_GetMTU(o->output), (PacketPassInterface_handler_send)input_handler_send, o, pg);
-    
+
     DebugObject_Init(&o->d_obj);
 }
 
 void DHCPIpUdpDecoder_Free (DHCPIpUdpDecoder *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     // free input
     PacketPassInterface_Free(&o->input);
 }
@@ -132,6 +132,6 @@ void DHCPIpUdpDecoder_Free (DHCPIpUdpDecoder *o)
 PacketPassInterface * DHCPIpUdpDecoder_GetInput (DHCPIpUdpDecoder *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return &o->input;
 }

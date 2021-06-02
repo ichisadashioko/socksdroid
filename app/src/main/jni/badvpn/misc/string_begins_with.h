@@ -1,9 +1,9 @@
 /**
  * @file string_begins_with.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Function for checking if a string begins with a given string.
  */
 
@@ -42,9 +42,9 @@
 static size_t data_begins_with (const char *str, size_t str_len, const char *needle)
 {
     ASSERT(strlen(needle) > 0)
-    
+
     size_t len = 0;
-    
+
     while (str_len > 0 && *needle) {
         if (*str != *needle) {
             return 0;
@@ -54,27 +54,27 @@ static size_t data_begins_with (const char *str, size_t str_len, const char *nee
         needle++;
         len++;
     }
-    
+
     if (*needle) {
         return 0;
     }
-    
+
     return len;
 }
 
 static size_t string_begins_with (const char *str, const char *needle)
 {
     ASSERT(strlen(needle) > 0)
-    
+
     return data_begins_with(str, strlen(str), needle);
 }
 
 static size_t data_begins_with_bin (const char *str, size_t str_len, const char *needle, size_t needle_len)
 {
     ASSERT(needle_len > 0)
-    
+
     size_t len = 0;
-    
+
     while (str_len > 0 && needle_len > 0) {
         if (*str != *needle) {
             return 0;
@@ -85,11 +85,11 @@ static size_t data_begins_with_bin (const char *str, size_t str_len, const char 
         needle_len--;
         len++;
     }
-    
+
     if (needle_len > 0) {
         return 0;
     }
-    
+
     return len;
 }
 

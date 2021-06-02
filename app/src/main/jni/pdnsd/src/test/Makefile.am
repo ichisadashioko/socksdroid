@@ -1,10 +1,9 @@
-
 .PHONY: all clean distclean
 
 noinst_PROGRAMS = if_up is_local_addr tping random
 
 ## Dirty trick:  I demand that these objects be built; then, with the knowledge
-## that the object files will end up here, I redefine the link chain. 
+## that the object files will end up here, I redefine the link chain.
 
 TESTADDSRC=
 #TESTADDSRC= netdev.c error.c thread.c helpers.c icmp.c

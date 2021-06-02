@@ -1,9 +1,9 @@
 /**
  * @file hashfun.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -37,23 +37,23 @@ static size_t badvpn_djb2_hash (const uint8_t *str)
 {
     size_t hash = 5381;
     int c;
-    
+
     while (c = *str++) {
         hash = ((hash << 5) + hash) + c;
     }
-    
+
     return hash;
 }
 
 static size_t badvpn_djb2_hash_bin (const uint8_t *str, size_t str_len)
 {
     size_t hash = 5381;
-    
+
     while (str_len-- > 0) {
         int c = *str++;
         hash = ((hash << 5) + hash) + c;
     }
-    
+
     return hash;
 }
 

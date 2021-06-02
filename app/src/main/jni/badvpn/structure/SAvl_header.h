@@ -1,9 +1,9 @@
 /**
  * @file SAvl_header.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -37,7 +37,7 @@
 // SAVL_PARAM_TYPE_COUNT - type of count (only if SAVL_PARAM_FEATURE_COUNTS)
 // SAVL_PARAM_VALUE_COUNT_MAX - maximum value of count (of type SAVL_PARAM_TYPE_COUNT) (only if SAVL_PARAM_FEATURE_COUNTS)
 // SAVL_PARAM_FUN_COMPARE_ENTRIES(arg, entry1, entry2) - compare two entries; returns -1/0/1
-// SAVL_PARAM_FUN_COMPARE_KEY_ENTRY(arg, key1, entry2) - compare key and entry; returns -1/0/1 (ignored if SAVL_PARAM_FEATURE_NOKEYS) 
+// SAVL_PARAM_FUN_COMPARE_KEY_ENTRY(arg, key1, entry2) - compare key and entry; returns -1/0/1 (ignored if SAVL_PARAM_FEATURE_NOKEYS)
 // SAVL_PARAM_MEMBER_NODE - node member in entry
 
 // types

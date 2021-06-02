@@ -1,9 +1,9 @@
 /**
  * @file BTime.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * System time abstraction used by {@link BReactor}.
  */
 
@@ -74,33 +74,33 @@ extern struct _BTime_global btime_global;
 static void BTime_Init (void)
 {
     ASSERT(!btime_global.initialized)
-    
+
     #if defined(BADVPN_USE_WINAPI)
-    
+
     ASSERT_FORCE(QueryPerformanceCounter(&btime_global.start_time))
-    
+
     #elif defined(BADVPN_EMSCRIPTEN)
-    
+
     btime_global.start_time = emscripten_get_now();
-    
+
     #else
-    
+
     struct timespec ts;
     if (clock_gettime(CLOCK_MONOTONIC, &ts) < 0) {
         BLog(BLOG_WARNING, "CLOCK_MONOTONIC is not available. Timers will be confused by clock changes.");
-        
+
         struct timeval tv;
         ASSERT_FORCE(gettimeofday(&tv, NULL) == 0)
-        
+
         btime_global.start_time = (int64_t)tv.tv_sec * 1000 + (int64_t)tv.tv_usec/1000;
         btime_global.use_gettimeofday = 1;
     } else {
         btime_global.start_time = (int64_t)ts.tv_sec * 1000 + (int64_t)ts.tv_nsec/1000000;
         btime_global.use_gettimeofday = 0;
     }
-    
+
     #endif
-    
+
     #ifndef NDEBUG
     btime_global.initialized = 1;
     #endif
@@ -109,21 +109,21 @@ static void BTime_Init (void)
 static btime_t btime_gettime (void)
 {
     ASSERT(btime_global.initialized)
-    
+
     #if defined(BADVPN_USE_WINAPI)
-    
+
     LARGE_INTEGER count;
     LARGE_INTEGER freq;
     ASSERT_FORCE(QueryPerformanceCounter(&count))
     ASSERT_FORCE(QueryPerformanceFrequency(&freq))
     return (((count.QuadPart - btime_global.start_time.QuadPart) * 1000) / freq.QuadPart);
-    
+
     #elif defined(BADVPN_EMSCRIPTEN)
-    
+
     return (btime_t)emscripten_get_now() - btime_global.start_time;
-    
+
     #else
-    
+
     if (btime_global.use_gettimeofday) {
         struct timeval tv;
         ASSERT_FORCE(gettimeofday(&tv, NULL) == 0)
@@ -133,7 +133,7 @@ static btime_t btime_gettime (void)
         ASSERT_FORCE(clock_gettime(CLOCK_MONOTONIC, &ts) == 0)
         return (((int64_t)ts.tv_sec * 1000 + (int64_t)ts.tv_nsec/1000000) - btime_global.start_time);
     }
-    
+
     #endif
 }
 
@@ -151,7 +151,7 @@ static btime_t btime_add (btime_t t1, btime_t t2)
     } else {
         sum = t1 + t2;
     }
-    
+
     return sum;
 }
 

@@ -1,9 +1,9 @@
 /**
  * @file Utf8Encoder.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -34,7 +34,7 @@
 
 /**
  * Encodes a Unicode character into a sequence of bytes according to UTF-8.
- * 
+ *
  * @param ch Unicode character to encode
  * @param out will receive the encoded bytes. Must have space for 4 bytes.
  * @return number of bytes written, 0-4, with 0 meaning the character cannot
@@ -48,25 +48,25 @@ int Utf8Encoder_EncodeCharacter (uint32_t ch, uint8_t *out)
         out[0] = ch;
         return 1;
     }
-    
+
     if (ch <= UINT32_C(0x07FF)) {
         out[0] = (0xC0 | (ch >> 6));
         out[1] = (0x80 | ((ch >> 0) & 0x3F));
         return 2;
     }
-    
+
     if (ch <= UINT32_C(0xFFFF)) {
         // surrogates
         if (ch >= UINT32_C(0xD800) && ch <= UINT32_C(0xDFFF)) {
             return 0;
         }
-        
+
         out[0] = (0xE0 | (ch >> 12));
         out[1] = (0x80 | ((ch >> 6) & 0x3F));
         out[2] = (0x80 | ((ch >> 0) & 0x3F));
         return 3;
     }
-    
+
     if (ch < UINT32_C(0x10FFFF)) {
         out[0] = (0xF0 | (ch >> 18));
         out[1] = (0x80 | ((ch >> 12) & 0x3F));
@@ -74,7 +74,7 @@ int Utf8Encoder_EncodeCharacter (uint32_t ch, uint8_t *out)
         out[3] = (0x80 | ((ch >> 0) & 0x3F));
         return 4;
     }
-    
+
     return 0;
 }
 

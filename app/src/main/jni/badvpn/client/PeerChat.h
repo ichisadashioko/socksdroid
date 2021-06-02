@@ -1,9 +1,9 @@
 /**
  * @file PeerChat.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -75,7 +75,7 @@ typedef struct {
     BLog_logfunc logfunc;
     PeerChat_handler_error handler_error;
     PeerChat_handler_message handler_message;
-    
+
     // transport
     PacketProtoEncoder pp_encoder;
     SCOutmsgEncoder sc_encoder;
@@ -83,16 +83,16 @@ typedef struct {
     BPending recv_job;
     uint8_t *recv_data;
     int recv_data_len;
-    
+
     // SSL transport
     StreamPacketSender ssl_sp_sender;
     SimpleStreamBuffer ssl_recv_buf;
-    
+
     // SSL connection
     PRFileDesc ssl_bottom_prfd;
     PRFileDesc *ssl_prfd;
     BSSLConnection ssl_con;
-    
+
     // SSL higher layer
     PacketStreamSender ssl_ps_sender;
     SinglePacketBuffer ssl_buffer;
@@ -100,11 +100,11 @@ typedef struct {
     PacketCopier ssl_copier;
     PacketProtoDecoder ssl_recv_decoder;
     PacketPassInterface ssl_recv_if;
-    
+
     // higher layer send buffer
     PacketBuffer send_buf;
     BufferWriter send_writer;
-    
+
     DebugError d_err;
     DebugObject d_obj;
 } PeerChat;

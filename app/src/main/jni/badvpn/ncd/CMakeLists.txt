@@ -24,9 +24,9 @@ if (NOT EMSCRIPTEN)
     endif ()
 
     badvpn_add_library(ncdinterfacemonitor "base;system" "" extra/NCDInterfaceMonitor.c)
-    
+
     badvpn_add_library(ncdrequest "base;system;ncdvalgenerator;ncdvalparser" "" extra/NCDRequestClient.c)
-    
+
     list(APPEND NCD_ADDITIONAL_SOURCES
         extra/NCDIfConfig.c
         extra/build_cmdline.c
@@ -61,7 +61,7 @@ if (NOT EMSCRIPTEN)
         modules/sys_start_process.c
         modules/load_module.c
     )
-    
+
     list(APPEND NCD_ADDITIONAL_LIBS
         dhcpclient arpprobe ncdinterfacemonitor ncdrequest udevmonitor badvpn_random dl
     )
@@ -170,7 +170,7 @@ if (BADVPN_USE_LINUX_INPUT)
 
     message(STATUS "Generating linux_input_names.h from ${LINUX_INPUT_H_PATH}")
 
-    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/parse_linux_input.sh 
+    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/parse_linux_input.sh
                             ${LINUX_INPUT_H_PATH}
                             ${CMAKE_CURRENT_BINARY_DIR}/linux_input_names.h
                     RESULT_VARIABLE LINUX_INPUT_PARSE_RESULT)
@@ -182,7 +182,7 @@ endif ()
 if (NOT EMSCRIPTEN)
     add_executable(badvpn-ncd ncd.c)
     target_link_libraries(badvpn-ncd ncdinterpreter ncdbuildprogram)
-    
+
     install(
         TARGETS badvpn-ncd
         RUNTIME DESTINATION bin
@@ -192,13 +192,13 @@ endif ()
 if (EMSCRIPTEN)
     add_executable(emncd emncd.c)
     target_link_libraries(emncd ncdinterpreter)
-    
+
     add_custom_command(
         OUTPUT emncd.bc
         DEPENDS emncd
         COMMAND cp emncd emncd.bc
     )
-    
+
     add_custom_command(
         OUTPUT emncd.js
         DEPENDS emncd.bc
@@ -206,6 +206,6 @@ if (EMSCRIPTEN)
         ${CMAKE_C_COMPILER} emncd.bc -o emncd.js -O2
         -s EXPORTED_FUNCTIONS=\"['_breactor_timer_cb','_main','_emncd_start','_emncd_stop']\"
     )
-    
+
     add_custom_target(emncd_js ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/emncd.js)
 endif ()

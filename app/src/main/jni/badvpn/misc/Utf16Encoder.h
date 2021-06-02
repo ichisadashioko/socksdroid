@@ -1,9 +1,9 @@
 /**
  * @file Utf16Encoder.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -34,7 +34,7 @@
 
 /**
  * Encodes a Unicode character into a sequence of 16-bit values according to UTF-16.
- * 
+ *
  * @param ch Unicode character to encode
  * @param out will receive the encoded 16-bit values. Must have space for 2 values.
  * @return number of 16-bit values written, 0-2, with 0 meaning the character cannot
@@ -49,18 +49,18 @@ int Utf16Encoder_EncodeCharacter (uint32_t ch, uint16_t *out)
         if (ch >= UINT32_C(0xD800) && ch <= UINT32_C(0xDFFF)) {
             return 0;
         }
-        
+
         out[0] = ch;
         return 1;
     }
-    
+
     if (ch <= UINT32_C(0x10FFFF)) {
         uint32_t x = ch - UINT32_C(0x10000);
         out[0] = UINT32_C(0xD800) + (x >> 10);
         out[1] = UINT32_C(0xDC00) + (x & UINT32_C(0x3FF));
         return 2;
     }
-    
+
     return 0;
 }
 

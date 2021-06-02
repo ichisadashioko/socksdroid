@@ -1,9 +1,9 @@
 /**
  * @file find_char.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -42,7 +42,7 @@
 static int b_find_char_bin (const char *str, size_t len, char c, size_t *out_pos)
 {
     ASSERT(str)
-    
+
     for (size_t i = 0; i < len; i++) {
         if (str[i] == c) {
             if (out_pos) {
@@ -51,7 +51,7 @@ static int b_find_char_bin (const char *str, size_t len, char c, size_t *out_pos
             return 1;
         }
     }
-    
+
     return 0;
 }
 

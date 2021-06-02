@@ -114,7 +114,7 @@ elsif(!$changed) {
 
 rename($pdnsd_conf,"$pdnsd_conf.save") or die "Can't rename $pdnsd_conf: $!\n";
 
-unless((open(CONFFILE,">$pdnsd_conf") or (warn("Can't open $pdnsd_conf for writing: $!\n"),0)) and 
+unless((open(CONFFILE,">$pdnsd_conf") or (warn("Can't open $pdnsd_conf for writing: $!\n"),0)) and
        (print CONFFILE (@lines) or (warn("Can't write to $pdnsd_conf: $!\n"),0)) and
        (close(CONFFILE) or (warn("Can't close $pdnsd_conf after writing: $!\n"),0))) {
     rename("$pdnsd_conf.save",$pdnsd_conf) or die "Can't rename $pdnsd_conf.save: $!\n";

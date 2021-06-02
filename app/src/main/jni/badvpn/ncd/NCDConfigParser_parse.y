@@ -1,9 +1,9 @@
 /**
  * @file NCDConfigParser.y
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -145,7 +145,7 @@ input ::= processes(A). {
 processes(R) ::= . {
     NCDProgram prog;
     NCDProgram_Init(&prog);
-    
+
     R.have = 1;
     R.v = prog;
 }
@@ -155,16 +155,16 @@ processes(R) ::= INCLUDE STRING(A) processes(N). {
     if (!N.have) {
         goto failA0;
     }
-    
+
     NCDProgramElem elem;
     if (!NCDProgramElem_InitInclude(&elem, A.str, A.len)) {
         goto failA0;
     }
-    
+
     if (!NCDProgram_PrependElem(&N.v, elem)) {
         goto failA1;
     }
-    
+
     R.have = 1;
     R.v = N.v;
     N.have = 0;
@@ -185,16 +185,16 @@ processes(R) ::= INCLUDE_GUARD STRING(A) processes(N). {
     if (!N.have) {
         goto failZ0;
     }
-    
+
     NCDProgramElem elem;
     if (!NCDProgramElem_InitIncludeGuard(&elem, A.str, A.len)) {
         goto failZ0;
     }
-    
+
     if (!NCDProgram_PrependElem(&N.v, elem)) {
         goto failZ1;
     }
-    
+
     R.have = 1;
     R.v = N.v;
     N.have = 0;
@@ -221,7 +221,7 @@ processes(R) ::= process_or_template(T) NAME(A) CURLY_OPEN statements(B) CURLY_C
         goto failB0;
     }
     B.have = 0;
-    
+
     NCDProgramElem elem;
     NCDProgramElem_InitProcess(&elem, proc);
 
@@ -333,16 +333,16 @@ statement(R) ::= FOREACH ROUND_OPEN value(A) AS NAME(B) ROUND_CLOSE CURLY_OPEN s
     if (!A.have || !B.str || !S.have) {
         goto failEA0;
     }
-    
+
     if (!NCDStatement_InitForeach(&R.v, N, A.v, B.str, NULL, S.v)) {
         goto failEA0;
     }
     A.have = 0;
     S.have = 0;
-    
+
     R.have = 1;
     goto doneEA0;
-    
+
 failEA0:
     R.have = 0;
     parser_out->out_of_memory = 1;
@@ -357,16 +357,16 @@ statement(R) ::= FOREACH ROUND_OPEN value(A) AS NAME(B) COLON NAME(C) ROUND_CLOS
     if (!A.have || !B.str || !C.str || !S.have) {
         goto failEB0;
     }
-    
+
     if (!NCDStatement_InitForeach(&R.v, N, A.v, B.str, C.str, S.v)) {
         goto failEB0;
     }
     A.have = 0;
     S.have = 0;
-    
+
     R.have = 1;
     goto doneEB0;
-    
+
 failEB0:
     R.have = 0;
     parser_out->out_of_memory = 1;

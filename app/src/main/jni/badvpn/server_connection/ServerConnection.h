@@ -1,9 +1,9 @@
 /**
  * @file ServerConnection.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Object used to communicate with a VPN chat server.
  */
 
@@ -120,28 +120,28 @@ typedef struct {
     // global resources
     BReactor *reactor;
     BThreadWorkDispatcher *twd;
-    
+
     // keepalive interval
     int keepalive_interval;
-    
+
     // send buffer size
     int buffer_size;
-    
+
     // whether we use SSL
     int have_ssl;
-    
+
     // ssl flags
     int ssl_flags;
-    
+
     // client certificate if using SSL
     CERTCertificate *client_cert;
 
     // client private key if using SSL
     SECKEYPrivateKey *client_key;
-    
+
     // server name if using SSL
     char *server_name;
-    
+
     // handlers
     void *user;
     ServerConnection_handler_error handler_error;
@@ -149,56 +149,56 @@ typedef struct {
     ServerConnection_handler_newclient handler_newclient;
     ServerConnection_handler_endclient handler_endclient;
     ServerConnection_handler_message handler_message;
-    
+
     // socket
     BConnector connector;
     BConnection con;
-    
+
     // job to report new client after sending acceptpeer
     BPending newclient_job;
     uint8_t *newclient_data;
     int newclient_data_len;
-    
+
     // state
     int state;
     int buffers_released;
-    
+
     // whether an error is being reported
     int error;
-    
+
     // defined when state > SERVERCONNECTION_STATE_CONNECTING
-    
+
     // SSL file descriptor, defined only if using SSL
     PRFileDesc bottom_prfd;
     PRFileDesc *ssl_prfd;
     BSSLConnection sslcon;
-    
+
     // input
     PacketProtoDecoder input_decoder;
     PacketPassInterface input_interface;
-    
+
     // keepalive output branch
     SCKeepaliveSource output_ka_zero;
     PacketProtoEncoder output_ka_encoder;
-    
+
     // output common
     PacketPassPriorityQueue output_queue;
     KeepaliveIO output_keepaliveio;
     PacketStreamSender output_sender;
-    
+
     // output local flow
     int output_local_packet_len;
     uint8_t *output_local_packet;
     BufferWriter *output_local_if;
     PacketProtoFlow output_local_oflow;
     PacketPassPriorityQueueFlow output_local_qflow;
-    
+
     // output user flow
     PacketPassPriorityQueueFlow output_user_qflow;
-    
+
     // job to start client I/O
     BPending start_job;
-    
+
     DebugError d_err;
     DebugObject d_obj;
 } ServerConnection;

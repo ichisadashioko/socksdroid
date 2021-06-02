@@ -99,7 +99,7 @@ process lan {
 
     # Start DHCP.
     net.ipv4.dhcp(dev) dhcp;
-    
+
     # DHCP has obtained an address.
     # Because net.ipv4.dhcp does no checks of the IP address, as a safety measure, do not proceed
     # if the address is local.

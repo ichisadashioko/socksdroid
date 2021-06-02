@@ -1,9 +1,9 @@
 /**
  * @file BMutex.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -60,7 +60,7 @@ static int BMutex_Init (BMutex *o)
         return 0;
     }
 #endif
-    
+
     DebugObject_Init(&o->d_obj);
     return 1;
 }
@@ -68,7 +68,7 @@ static int BMutex_Init (BMutex *o)
 static void BMutex_Free (BMutex *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
 #if BADVPN_THREAD_SAFE
     int res = pthread_mutex_destroy(&o->pthread_mutex);
     B_USE(res)
@@ -79,7 +79,7 @@ static void BMutex_Free (BMutex *o)
 static void BMutex_Lock (BMutex *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
 #if BADVPN_THREAD_SAFE
     int res = pthread_mutex_lock(&o->pthread_mutex);
     B_USE(res)
@@ -90,7 +90,7 @@ static void BMutex_Lock (BMutex *o)
 static void BMutex_Unlock (BMutex *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
 #if BADVPN_THREAD_SAFE
     int res = pthread_mutex_unlock(&o->pthread_mutex);
     B_USE(res)

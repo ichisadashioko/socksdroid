@@ -1,9 +1,9 @@
 /**
  * @file cmdline.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Command line construction functions.
  */
 
@@ -66,9 +66,9 @@ int CmdLine_Init (CmdLine *c)
     if (!ExpArray_init(&c->arr, sizeof(char *), 16)) {
         return 0;
     }
-    
+
     c->n = 0;
-    
+
     return 1;
 }
 
@@ -77,7 +77,7 @@ void CmdLine_Free (CmdLine *c)
     for (size_t i = 0; i < c->n; i++) {
         free(((char **)c->arr.v)[i]);
     }
-    
+
     free(c->arr.v);
 }
 
@@ -85,17 +85,17 @@ int CmdLine_Append (CmdLine *c, const char *str)
 {
     ASSERT(str)
     ASSERT(!_CmdLine_finished(c))
-    
+
     if (!ExpArray_resize(&c->arr, c->n + 1)) {
         return 0;
     }
-    
+
     if (!(((char **)c->arr.v)[c->n] = strdup(str))) {
         return 0;
     }
-    
+
     c->n++;
-    
+
     return 1;
 }
 
@@ -104,17 +104,17 @@ int CmdLine_AppendNoNull (CmdLine *c, const char *str, size_t str_len)
     ASSERT(str)
     ASSERT(!memchr(str, '\0', str_len))
     ASSERT(!_CmdLine_finished(c))
-    
+
     if (!ExpArray_resize(&c->arr, c->n + 1)) {
         return 0;
     }
-    
+
     if (!(((char **)c->arr.v)[c->n] = b_strdup_bin(str, str_len))) {
         return 0;
     }
-    
+
     c->n++;
-    
+
     return 1;
 }
 
@@ -122,27 +122,27 @@ int CmdLine_AppendCstring (CmdLine *c, b_cstring cstr, size_t offset, size_t len
 {
     b_cstring_assert_range(cstr, offset, length);
     ASSERT(!b_cstring_memchr(cstr, offset, length, '\0', NULL))
-    
+
     if (!ExpArray_resize(&c->arr, c->n + 1)) {
         return 0;
     }
-    
+
     if (!(((char **)c->arr.v)[c->n] = b_cstring_strdup(cstr, offset, length))) {
         return 0;
     }
-    
+
     c->n++;
-    
+
     return 1;
 }
 
 int CmdLine_AppendMulti (CmdLine *c, int num, ...)
 {
     int res = 1;
-    
+
     va_list vl;
     va_start(vl, num);
-    
+
     for (int i = 0; i < num; i++) {
         const char *str = va_arg(vl, const char *);
         if (!CmdLine_Append(c, str)) {
@@ -150,31 +150,31 @@ int CmdLine_AppendMulti (CmdLine *c, int num, ...)
             break;
         }
     }
-    
+
     va_end(vl);
-    
+
     return res;
 }
 
 int CmdLine_Finish (CmdLine *c)
 {
     ASSERT(!_CmdLine_finished(c))
-    
+
     if (!ExpArray_resize(&c->arr, c->n + 1)) {
         return 0;
     }
-    
+
     ((char **)c->arr.v)[c->n] = NULL;
-    
+
     c->n++;
-    
+
     return 1;
 }
 
 char ** CmdLine_Get (CmdLine *c)
 {
     ASSERT(_CmdLine_finished(c))
-    
+
     return (char **)c->arr.v;
 }
 

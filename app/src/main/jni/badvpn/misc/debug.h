@@ -1,9 +1,9 @@
 /**
  * @file debug.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,15 +25,15 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Debugging macros.
  */
 
 /**
  * @def DEBUG
- * 
+ *
  * Macro for printing debugging text. Use the same way as printf,
  * but without a newline.
  * Prepends "function_name: " and appends a newline.
@@ -41,7 +41,7 @@
 
 /**
  * @def ASSERT_FORCE
- * 
+ *
  * Macro for forced assertions.
  * Evaluates the argument and terminates the program abnormally
  * if the result is false.
@@ -49,7 +49,7 @@
 
 /**
  * @def ASSERT
- * 
+ *
  * Macro for assertions.
  * The argument may or may not be evaluated.
  * If the argument is evaluated, it must not evaluate to false.
@@ -57,7 +57,7 @@
 
 /**
  * @def ASSERT_EXECUTE
- * 
+ *
  * Macro for always-evaluated assertions.
  * The argument is evaluated.
  * The argument must not evaluate to false.
@@ -65,7 +65,7 @@
 
 /**
  * @def DEBUG_ZERO_MEMORY
- * 
+ *
  * If debugging is enabled, zeroes the given memory region.
  * First argument is pointer to the memory region, second is
  * number of bytes.
@@ -73,14 +73,14 @@
 
 /**
  * @def WARN_UNUSED
- * 
+ *
  * Tells the compiler that the result of a function should not be unused.
  * Insert at the end of the declaration of a function before the semicolon.
  */
 
 /**
  * @def B_USE
- * 
+ *
  * This can be used to suppress warnings about unused variables. It can
  * be applied to a variable or any expression. It does not evaluate the
  * expression.

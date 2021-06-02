@@ -1,9 +1,9 @@
 /**
  * @file server.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -122,63 +122,63 @@ struct client_data {
     // socket
     BConnection con;
     BAddr addr;
-    
+
     // SSL connection, if using SSL
     PRFileDesc bottom_prfd;
     PRFileDesc *ssl_prfd;
     BSSLConnection sslcon;
-    
+
     // initialization state
     int initstatus;
-    
+
     // client data if using SSL
     uint8_t cert[SCID_NEWCLIENT_MAX_CERT_LEN];
     int cert_len;
     uint8_t cert_old[SCID_NEWCLIENT_MAX_CERT_LEN];
     int cert_old_len;
     char *common_name;
-    
+
     // client version
     int version;
-    
+
     // no data timer
     BTimer disconnect_timer;
-    
+
     // client ID
     peerid_t id;
-    
+
     // node in clients linked list
     LinkedList1Node list_node;
     // node in clients tree (by ID)
     BAVLNode tree_node;
-    
+
     // knowledge lists
     LinkedList1 know_out_list;
     LinkedList1 know_in_list;
-    
+
     // flows from us
     LinkedList1 peer_out_flows_list;
     BAVL peer_out_flows_tree;
-    
+
     // whether it's being removed
     int dying;
     BPending dying_job;
-    
+
     // input
     PacketProtoDecoder input_decoder;
     PacketPassInterface input_interface;
-    
+
     // output common
     PacketStreamSender output_sender;
     PacketPassPriorityQueue output_priorityqueue;
-    
+
     // output control flow
     PacketPassPriorityQueueFlow output_control_qflow;
     PacketProtoFlow output_control_oflow;
     BufferWriter *output_control_input;
     int output_control_packet_len;
     uint8_t *output_control_packet;
-    
+
     // output peers flow
     PacketPassPriorityQueueFlow output_peers_qflow;
     PacketPassFairQueue output_peers_fairqueue;

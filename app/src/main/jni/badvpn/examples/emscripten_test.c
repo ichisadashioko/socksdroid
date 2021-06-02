@@ -1,9 +1,9 @@
 /**
  * @file emscripten_test.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -44,7 +44,7 @@ BPending job;
 static void timer_handler (void *unused)
 {
     printf("timer_handler %"PRIu64"\n", btime_gettime());
-    
+
     BPending_Set(&job);
     BReactor_SetTimer(&reactor, &timer);
 }
@@ -57,15 +57,15 @@ static void job_handler (void *unused)
 int main ()
 {
     BTime_Init();
-    
+
     BReactor_EmscriptenInit(&reactor);
-    
+
     BTimer_Init(&timer, 500, timer_handler, NULL);
     BReactor_SetTimer(&reactor, &timer);
-    
+
     BPending_Init(&job, BReactor_PendingGroup(&reactor), job_handler, NULL);
     BPending_Set(&job);
-    
+
     BReactor_EmscriptenSync(&reactor);
     return 0;
 }

@@ -1,9 +1,9 @@
 /**
  * @file KeepaliveIO.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -34,7 +34,7 @@
 static void keepalive_handler (KeepaliveIO *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     PacketRecvBlocker_AllowBlockedPacket(&o->ka_blocker);
 }
 
@@ -42,34 +42,34 @@ int KeepaliveIO_Init (KeepaliveIO *o, BReactor *reactor, PacketPassInterface *ou
 {
     ASSERT(PacketRecvInterface_GetMTU(keepalive_input) <= PacketPassInterface_GetMTU(output))
     ASSERT(keepalive_interval_ms > 0)
-    
+
     // set arguments
     o->reactor = reactor;
-    
+
     // init keep-alive sender
     PacketPassInactivityMonitor_Init(&o->kasender, output, o->reactor, keepalive_interval_ms, (PacketPassInactivityMonitor_handler)keepalive_handler, o);
-    
+
     // init queue
     PacketPassPriorityQueue_Init(&o->queue, PacketPassInactivityMonitor_GetInput(&o->kasender), BReactor_PendingGroup(o->reactor), 0);
-    
+
     // init keepalive flow
     PacketPassPriorityQueueFlow_Init(&o->ka_qflow, &o->queue, -1);
-    
+
     // init keepalive blocker
     PacketRecvBlocker_Init(&o->ka_blocker, keepalive_input, BReactor_PendingGroup(reactor));
-    
+
     // init keepalive buffer
     if (!SinglePacketBuffer_Init(&o->ka_buffer, PacketRecvBlocker_GetOutput(&o->ka_blocker), PacketPassPriorityQueueFlow_GetInput(&o->ka_qflow), BReactor_PendingGroup(o->reactor))) {
         goto fail1;
     }
-    
+
     // init user flow
     PacketPassPriorityQueueFlow_Init(&o->user_qflow, &o->queue, 0);
-    
+
     DebugObject_Init(&o->d_obj);
-    
+
     return 1;
-    
+
 fail1:
     PacketRecvBlocker_Free(&o->ka_blocker);
     PacketPassPriorityQueueFlow_Free(&o->ka_qflow);
@@ -84,22 +84,22 @@ void KeepaliveIO_Free (KeepaliveIO *o)
 
     // allow freeing queue flows
     PacketPassPriorityQueue_PrepareFree(&o->queue);
-    
+
     // free user flow
     PacketPassPriorityQueueFlow_Free(&o->user_qflow);
-    
+
     // free keepalive buffer
     SinglePacketBuffer_Free(&o->ka_buffer);
-    
+
     // free keepalive blocker
     PacketRecvBlocker_Free(&o->ka_blocker);
-    
+
     // free keepalive flow
     PacketPassPriorityQueueFlow_Free(&o->ka_qflow);
-    
+
     // free queue
     PacketPassPriorityQueue_Free(&o->queue);
-    
+
     // free keep-alive sender
     PacketPassInactivityMonitor_Free(&o->kasender);
 }
@@ -107,6 +107,6 @@ void KeepaliveIO_Free (KeepaliveIO *o)
 PacketPassInterface * KeepaliveIO_GetInput (KeepaliveIO *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return PacketPassPriorityQueueFlow_GetInput(&o->user_qflow);
 }

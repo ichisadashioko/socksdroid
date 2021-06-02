@@ -1,9 +1,9 @@
 /**
  * @file NCDConfigParser_parse.y
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -65,18 +65,18 @@ input ::= value(A). {
     if (!A.have) {
         goto failZ0;
     }
-    
+
     if (!NCDVal_IsInvalid(parser_out->value)) {
         // should never happen
         parser_out->error_flags |= ERROR_FLAG_SYNTAX;
         goto failZ0;
     }
-    
+
     if (!NCDValCons_Complete(&parser_out->cons, A.v, &parser_out->value, &parser_out->cons_error)) {
         handle_cons_error(parser_out);
         goto failZ0;
     }
-    
+
 failZ0:;
 }
 

@@ -1,9 +1,9 @@
 /**
  * @file concat_strings.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Function for concatenating strings.
  */
 
@@ -43,7 +43,7 @@
 static char * concat_strings (int num, ...)
 {
     ASSERT(num >= 0)
-    
+
     // calculate sum of lengths
     size_t sum = 0;
     va_list ap;
@@ -58,13 +58,13 @@ static char * concat_strings (int num, ...)
         sum += str_len;
     }
     va_end(ap);
-    
+
     // allocate memory
     char *res_str = malloc(sum + 1);
     if (!res_str) {
         return NULL;
     }
-    
+
     // copy strings
     sum = 0;
     va_start(ap, num);
@@ -75,10 +75,10 @@ static char * concat_strings (int num, ...)
         sum += str_len;
     }
     va_end(ap);
-    
+
     // terminate
     res_str[sum] = '\0';
-    
+
     return res_str;
 }
 

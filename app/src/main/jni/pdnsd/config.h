@@ -40,7 +40,7 @@
  * In normal operation, you will currently only need IPv4. */
 #define ENABLE_IPV4 1
 #define DEFAULT_IPV4 1
-#undef ENABLE_IPV6 
+#undef ENABLE_IPV6
 
 /* In all pdnsd versions before 1.0.6, DNS queries were always done over
  * TCP. Now, you have the choice. You can control that behaviour using

@@ -1,9 +1,9 @@
 /**
  * @file BufferWriter.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -34,7 +34,7 @@
 static void output_handler_recv (BufferWriter *o, uint8_t *data)
 {
     ASSERT(!o->out_have)
-    
+
     // set output packet
     o->out_have = 1;
     o->out = data;
@@ -43,13 +43,13 @@ static void output_handler_recv (BufferWriter *o, uint8_t *data)
 void BufferWriter_Init (BufferWriter *o, int mtu, BPendingGroup *pg)
 {
     ASSERT(mtu >= 0)
-    
+
     // init output
     PacketRecvInterface_Init(&o->recv_interface, mtu, (PacketRecvInterface_handler_recv)output_handler_recv, o, pg);
-    
+
     // set no output packet
     o->out_have = 0;
-    
+
     DebugObject_Init(&o->d_obj);
     #ifndef NDEBUG
     o->d_mtu = mtu;
@@ -60,7 +60,7 @@ void BufferWriter_Init (BufferWriter *o, int mtu, BPendingGroup *pg)
 void BufferWriter_Free (BufferWriter *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     // free output
     PacketRecvInterface_Free(&o->recv_interface);
 }
@@ -68,7 +68,7 @@ void BufferWriter_Free (BufferWriter *o)
 PacketRecvInterface * BufferWriter_GetOutput (BufferWriter *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return &o->recv_interface;
 }
 
@@ -76,19 +76,19 @@ int BufferWriter_StartPacket (BufferWriter *o, uint8_t **buf)
 {
     ASSERT(!o->d_writing)
     DebugObject_Access(&o->d_obj);
-    
+
     if (!o->out_have) {
         return 0;
     }
-    
+
     if (buf) {
         *buf = o->out;
     }
-    
+
     #ifndef NDEBUG
     o->d_writing = 1;
     #endif
-    
+
     return 1;
 }
 
@@ -99,13 +99,13 @@ void BufferWriter_EndPacket (BufferWriter *o, int len)
     ASSERT(o->out_have)
     ASSERT(o->d_writing)
     DebugObject_Access(&o->d_obj);
-    
+
     // set no output packet
     o->out_have = 0;
-    
+
     // finish packet
     PacketRecvInterface_Done(&o->recv_interface, len);
-    
+
     #ifndef NDEBUG
     o->d_writing = 0;
     #endif

@@ -16,7 +16,7 @@ var cfunc_emncd_stop = Module.cwrap('emncd_stop', 'null', []);
 function on_start ()
 {
     var code = document.getElementById('codetext').value;
-    
+
     var loglevel = 0;
     for (i = 0; i <= 5; i++) {
         if (document.getElementById('loglevel' + i).checked) {
@@ -141,11 +141,11 @@ process hello {
     rprintln("Waiting 3 seconds before dying.");
 
     call("func", {"FirstArg", "SecondArg"});
-    
+
     var({"one", "two", "three"}) list;
     to_string(list) str;
     println(str);
-    
+
     Foreach (list As elem) {
         println("start ", elem);
         rprintln("stop ", elem);
@@ -216,7 +216,7 @@ template turing {
     # Head state.
     var(initial_state) state;
 
-    # Tape. Positions go like this: ... L2 L1 L0 R0 R1 R2 ... 
+    # Tape. Positions go like this: ... L2 L1 L0 R0 R1 R2 ...
     value(initial_tape_left) tape_left;
     value(initial_tape_right) tape_right;
 
@@ -303,7 +303,7 @@ process hello {
 </textarea>
 <br />
 
-Loglevel: 
+Loglevel:
 <input type="radio" name="loglevel" id="loglevel0"> None
 <input type="radio" name="loglevel" id="loglevel1"> Error
 <input type="radio" name="loglevel" id="loglevel2" checked> Warning

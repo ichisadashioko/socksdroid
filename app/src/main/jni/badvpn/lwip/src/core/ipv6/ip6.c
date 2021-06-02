@@ -477,7 +477,7 @@ netif_found:
     IP6_STATS_INC(ip6.drop);
     goto ip6_input_cleanup;
   }
-  
+
   /* if we're pretending we are everyone for TCP, assume the packet is for source interface if it
      isn't for a local address */
   if (netif == NULL && (inp->flags & NETIF_FLAG_PRETEND_TCP) && IP6H_NEXTH(ip6hdr) == IP6_NEXTH_TCP) {

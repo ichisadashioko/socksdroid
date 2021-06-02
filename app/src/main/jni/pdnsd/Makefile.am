@@ -1,4 +1,3 @@
-
 SUBDIRS = src doc contrib
 
 EXTRA_DIST = version ChangeLog.old COPYING.BSD README.par README.par.old PKGBUILD
@@ -37,4 +36,3 @@ dist-hook: $(PACKAGE).spec.in
 	-e 's:[@]cachedir[@]:/var/cache/$(PACKAGE):g' \
 	-e 's:[@]def_id[@]:$(PACKAGE):g' \
 	$(PACKAGE).spec.in > $(distdir)/$(PACKAGE).spec
-

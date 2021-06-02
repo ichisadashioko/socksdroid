@@ -1,9 +1,9 @@
 /**
  * @file NCDModule.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -91,23 +91,23 @@ void NCDModuleInst_Init (NCDModuleInst *n, const struct NCDInterpModule *m, void
     ASSERT(params->iparams->func_interp_exit)
     ASSERT(params->iparams->func_interp_getargs)
     ASSERT(params->iparams->func_interp_getretrytime)
-    
+
     // init arguments
     n->m = m;
     n->params = params;
-    
+
     // set initial state
     n->state = STATE_DOWN_CLEAN;
-    
+
     // give NCDModuleInst to methods, not mem
     n->pass_mem_to_methods = 0;
-    
+
     DebugObject_Init(&n->d_obj);
-    
+
     struct NCDModuleInst_new_params new_params;
     new_params.method_user = method_context;
     new_params.args = args;
-    
+
     n->m->module.func_new2(n->mem, n, &new_params);
 }
 
@@ -121,14 +121,14 @@ void NCDModuleInst_Die (NCDModuleInst *n)
 {
     DebugObject_Access(&n->d_obj);
     ASSERT(n->state == STATE_UP || n->state == STATE_DOWN_CLEAN || n->state == STATE_DOWN_UNCLEAN)
-    
+
     n->state = STATE_DYING;
-    
+
     if (!n->m->module.func_die) {
         NCDModuleInst_Backend_Dead(n);
         return;
     }
-    
+
     n->m->module.func_die(n->mem);
     return;
 }
@@ -137,13 +137,13 @@ int NCDModuleInst_TryFree (NCDModuleInst *n)
 {
     DebugObject_Access(&n->d_obj);
     ASSERT(n->state == STATE_UP || n->state == STATE_DOWN_CLEAN || n->state == STATE_DOWN_UNCLEAN)
-    
+
     if (n->m->module.func_die) {
         return 0;
     }
-    
+
     DebugObject_Free(&n->d_obj);
-    
+
     return 1;
 }
 
@@ -151,10 +151,10 @@ void NCDModuleInst_Clean (NCDModuleInst *n)
 {
     DebugObject_Access(&n->d_obj);
     ASSERT(n->state == STATE_DOWN_CLEAN || n->state == STATE_DOWN_UNCLEAN)
-    
+
     if (n->state == STATE_DOWN_UNCLEAN) {
         n->state = STATE_DOWN_CLEAN;
-            
+
         if (n->m->module.func_clean) {
             n->m->module.func_clean(n->mem);
             return;
@@ -166,9 +166,9 @@ NCDObject NCDModuleInst_Object (NCDModuleInst *n)
 {
     DebugObject_Access(&n->d_obj);
     ASSERT(n->m->base_type_id >= 0)
-    
+
     void *method_user = (n->pass_mem_to_methods ? n->mem : n);
-    
+
     return NCDObject_BuildFull(n->m->base_type_id, n, 0, method_user, object_func_getvar, object_func_getobj);
 }
 
@@ -178,7 +178,7 @@ void NCDModuleInst_Backend_PassMemToMethods (NCDModuleInst *n)
     ASSERT(n->state == STATE_DOWN_UNCLEAN || n->state == STATE_DOWN_CLEAN ||
            n->state == STATE_UP ||
            n->state == STATE_DYING)
-    
+
     n->pass_mem_to_methods = 1;
 }
 
@@ -199,11 +199,11 @@ static int object_func_getvar (const NCDObject *obj, NCD_string_id_t name, NCDVa
 {
     NCDModuleInst *n = NCDObject_DataPtr(obj);
     DebugObject_Access(&n->d_obj);
-    
+
     if ((!n->m->module.func_getvar && !n->m->module.func_getvar2) || !can_resolve(n)) {
         return 0;
     }
-    
+
     int res;
     if (n->m->module.func_getvar2) {
         res = n->m->module.func_getvar2(n->mem, name, mem, out_value);
@@ -216,7 +216,7 @@ static int object_func_getvar (const NCDObject *obj, NCD_string_id_t name, NCDVa
     }
     ASSERT(res == 0 || res == 1)
     ASSERT(res == 0 || (NCDVal_Assert(*out_value), 1))
-    
+
     return res;
 }
 
@@ -224,14 +224,14 @@ static int object_func_getobj (const NCDObject *obj, NCD_string_id_t name, NCDOb
 {
     NCDModuleInst *n = NCDObject_DataPtr(obj);
     DebugObject_Access(&n->d_obj);
-    
+
     if (!n->m->module.func_getobj || !can_resolve(n)) {
         return 0;
     }
-    
+
     int res = n->m->module.func_getobj(n->mem, name, out_object);
     ASSERT(res == 0 || res == 1)
-    
+
     return res;
 }
 
@@ -241,7 +241,7 @@ void * NCDModuleInst_Backend_GetUser (NCDModuleInst *n)
     ASSERT(n->state == STATE_DOWN_UNCLEAN || n->state == STATE_DOWN_CLEAN ||
            n->state == STATE_UP ||
            n->state == STATE_DYING)
-    
+
     return n->mem;
 }
 
@@ -249,7 +249,7 @@ void NCDModuleInst_Backend_Up (NCDModuleInst *n)
 {
     DebugObject_Access(&n->d_obj);
     ASSERT(n->state == STATE_DOWN_CLEAN || n->state == STATE_DOWN_UNCLEAN)
-    
+
     n->state = STATE_UP;
     frontend_event(n, NCDMODULE_EVENT_UP);
 }
@@ -258,7 +258,7 @@ void NCDModuleInst_Backend_Down (NCDModuleInst *n)
 {
     DebugObject_Access(&n->d_obj);
     ASSERT(n->state == STATE_UP)
-    
+
     n->state = STATE_DOWN_UNCLEAN;
     frontend_event(n, NCDMODULE_EVENT_DOWN);
 }
@@ -267,7 +267,7 @@ void NCDModuleInst_Backend_DownUp (NCDModuleInst *n)
 {
     DebugObject_Access(&n->d_obj);
     ASSERT(n->state == STATE_UP)
-    
+
     frontend_event(n, NCDMODULE_EVENT_DOWNUP);
 }
 
@@ -276,9 +276,9 @@ void NCDModuleInst_Backend_Dead (NCDModuleInst *n)
     DebugObject_Access(&n->d_obj);
     ASSERT(n->state == STATE_DOWN_CLEAN || n->state == STATE_DOWN_UNCLEAN ||
            n->state == STATE_UP || n->state == STATE_DYING)
-    
+
     n->state = STATE_DEAD;
-    
+
     frontend_event(n, NCDMODULE_EVENT_DEAD);
     return;
 }
@@ -288,9 +288,9 @@ void NCDModuleInst_Backend_DeadError (NCDModuleInst *n)
     DebugObject_Access(&n->d_obj);
     ASSERT(n->state == STATE_DOWN_CLEAN || n->state == STATE_DOWN_UNCLEAN ||
            n->state == STATE_UP || n->state == STATE_DYING)
-    
+
     n->state = STATE_DEAD;
-    
+
     frontend_event(n, NCDMODULE_EVENT_DEADERROR);
     return;
 }
@@ -302,17 +302,17 @@ int NCDModuleInst_Backend_GetObj (NCDModuleInst *n, NCD_string_id_t name, NCDObj
            n->state == STATE_UP ||
            n->state == STATE_DYING)
     ASSERT(out_object)
-    
+
     int res = n->params->func_getobj(n, name, out_object);
     ASSERT(res == 0 || res == 1)
-    
+
     return res;
 }
 
 void NCDModuleInst_Backend_Log (NCDModuleInst *n, int channel, int level, const char *fmt, ...)
 {
     DebugObject_Access(&n->d_obj);
-    
+
     va_list vl;
     va_start(vl, fmt);
     BLog_LogViaFuncVarArg(n->params->logfunc, n, channel, level, fmt, vl);
@@ -322,14 +322,14 @@ void NCDModuleInst_Backend_Log (NCDModuleInst *n, int channel, int level, const 
 void NCDModuleInst_Backend_LogVarArg (NCDModuleInst *n, int channel, int level, const char *fmt, va_list vl)
 {
     DebugObject_Access(&n->d_obj);
-    
+
     BLog_LogViaFuncVarArg(n->params->logfunc, n, channel, level, fmt, vl);
 }
 
 BLogContext NCDModuleInst_Backend_LogContext (NCDModuleInst *n)
 {
     DebugObject_Access(&n->d_obj);
-    
+
     return BLog_MakeContext(n->params->logfunc, n);
 }
 
@@ -337,7 +337,7 @@ void NCDModuleInst_Backend_InterpExit (NCDModuleInst *n, int exit_code)
 {
     DebugObject_Access(&n->d_obj);
     inst_assert_backend(n);
-    
+
     n->params->iparams->func_interp_exit(n->params->iparams->user, exit_code);
 }
 
@@ -347,11 +347,11 @@ int NCDModuleInst_Backend_InterpGetArgs (NCDModuleInst *n, NCDValMem *mem, NCDVa
     inst_assert_backend(n);
     ASSERT(mem)
     ASSERT(out_value)
-    
+
     int res = n->params->iparams->func_interp_getargs(n->params->iparams->user, mem, out_value);
     ASSERT(res == 0 || res == 1)
     ASSERT(res == 0 || (NCDVal_Assert(*out_value), 1))
-    
+
     return res;
 }
 
@@ -359,7 +359,7 @@ btime_t NCDModuleInst_Backend_InterpGetRetryTime (NCDModuleInst *n)
 {
     DebugObject_Access(&n->d_obj);
     inst_assert_backend(n);
-    
+
     return n->params->iparams->func_interp_getretrytime(n->params->iparams->user);
 }
 
@@ -368,7 +368,7 @@ int NCDModuleInst_Backend_InterpLoadGroup (NCDModuleInst *n, const struct NCDMod
     DebugObject_Access(&n->d_obj);
     inst_assert_backend(n);
     ASSERT(group)
-    
+
     return n->params->iparams->func_loadgroup(n->params->iparams->user, group);
 }
 
@@ -381,37 +381,37 @@ int NCDModuleProcess_InitId (NCDModuleProcess *o, NCDModuleInst *n, NCD_string_i
     ASSERT(template_name >= 0)
     ASSERT(NCDVal_IsInvalid(args) || NCDVal_IsList(args))
     ASSERT(handler_event)
-    
+
     // init arguments
     o->args = args;
     o->handler_event = handler_event;
-    
+
     // set no special functions
     o->func_getspecialobj = NULL;
-    
+
     // set state
     set_process_state(o, PROCESS_STATE_INIT);
-    
+
 #ifndef NDEBUG
     // clear interp functions so we can assert they were set
     o->interp_func_event = NULL;
     o->interp_func_getobj = NULL;
 #endif
-    
+
     // init interpreter part
     if (!(n->params->iparams->func_initprocess(n->params->iparams->user, o, template_name))) {
         goto fail1;
     }
-    
+
     ASSERT(o->interp_func_event)
     ASSERT(o->interp_func_getobj)
-    
+
     // set state
     set_process_state(o, PROCESS_STATE_DOWN);
-    
+
     DebugObject_Init(&o->d_obj);
     return 1;
-    
+
 fail1:
     return 0;
 }
@@ -425,9 +425,9 @@ int NCDModuleProcess_InitValue (NCDModuleProcess *o, NCDModuleInst *n, NCDValRef
     ASSERT(NCDVal_IsString(template_name))
     ASSERT(NCDVal_IsInvalid(args) || NCDVal_IsList(args))
     ASSERT(handler_event)
-    
+
     NCD_string_id_t template_name_id;
-    
+
     if (NCDVal_IsIdString(template_name)) {
         template_name_id = NCDVal_IdStringId(template_name);
     } else {
@@ -436,7 +436,7 @@ int NCDModuleProcess_InitValue (NCDModuleProcess *o, NCDModuleInst *n, NCDValRef
             BLog(BLOG_ERROR, "NCDVal_StringContinuize failed");
             return 0;
         }
-        
+
         template_name_id = NCDStringIndex_GetBin(n->params->iparams->string_index, cts.data, NCDVal_StringLength(template_name));
         NCDValContString_Free(&cts);
         if (template_name_id < 0) {
@@ -444,7 +444,7 @@ int NCDModuleProcess_InitValue (NCDModuleProcess *o, NCDModuleInst *n, NCDValRef
             return 0;
         }
     }
-    
+
     return NCDModuleProcess_InitId(o, n, template_name_id, args, handler_event);
 }
 
@@ -463,7 +463,7 @@ void NCDModuleProcess_AssertFree (NCDModuleProcess *o)
 void NCDModuleProcess_SetSpecialFuncs (NCDModuleProcess *o, NCDModuleProcess_func_getspecialobj func_getspecialobj)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     o->func_getspecialobj = func_getspecialobj;
 }
 
@@ -471,9 +471,9 @@ void NCDModuleProcess_Continue (NCDModuleProcess *o)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->state == PROCESS_STATE_DOWN_WAITING)
-    
+
     set_process_state(o, PROCESS_STATE_DOWN);
-    
+
     o->interp_func_event(o->interp_user, NCDMODULEPROCESS_INTERP_EVENT_CONTINUE);
 }
 
@@ -482,9 +482,9 @@ void NCDModuleProcess_Terminate (NCDModuleProcess *o)
     DebugObject_Access(&o->d_obj);
     ASSERT(o->state == PROCESS_STATE_DOWN || o->state == PROCESS_STATE_UP ||
            o->state == PROCESS_STATE_DOWN_WAITING)
-    
+
     set_process_state(o, PROCESS_STATE_TERMINATING);
-    
+
     o->interp_func_event(o->interp_user, NCDMODULEPROCESS_INTERP_EVENT_TERMINATE);
 }
 
@@ -494,10 +494,10 @@ int NCDModuleProcess_GetObj (NCDModuleProcess *o, NCD_string_id_t name, NCDObjec
     ASSERT(o->state != PROCESS_STATE_INIT)
     ASSERT(o->state != PROCESS_STATE_TERMINATED)
     ASSERT(out_object)
-    
+
     int res = o->interp_func_getobj(o->interp_user, name, out_object);
     ASSERT(res == 0 || res == 1)
-    
+
     return res;
 }
 
@@ -515,7 +515,7 @@ void NCDModuleProcess_Interp_SetHandlers (NCDModuleProcess *o, void *interp_user
     ASSERT(o->state == PROCESS_STATE_INIT)
     ASSERT(interp_func_event)
     ASSERT(interp_func_getobj)
-    
+
     o->interp_user = interp_user;
     o->interp_func_event = interp_func_event;
     o->interp_func_getobj = interp_func_getobj;
@@ -526,9 +526,9 @@ void NCDModuleProcess_Interp_Up (NCDModuleProcess *o)
     DebugObject_Access(&o->d_obj);
     process_assert_interp(o);
     ASSERT(o->state == PROCESS_STATE_DOWN)
-    
+
     set_process_state(o, PROCESS_STATE_UP);
-    
+
     o->handler_event(o, NCDMODULEPROCESS_EVENT_UP);
     return;
 }
@@ -538,9 +538,9 @@ void NCDModuleProcess_Interp_Down (NCDModuleProcess *o)
     DebugObject_Access(&o->d_obj);
     process_assert_interp(o);
     ASSERT(o->state == PROCESS_STATE_UP)
-    
+
     set_process_state(o, PROCESS_STATE_DOWN_WAITING);
-    
+
     o->handler_event(o, NCDMODULEPROCESS_EVENT_DOWN);
     return;
 }
@@ -550,9 +550,9 @@ void NCDModuleProcess_Interp_Terminated (NCDModuleProcess *o)
     DebugObject_Access(&o->d_obj);
     process_assert_interp(o);
     ASSERT(o->state == PROCESS_STATE_TERMINATING)
-    
+
     set_process_state(o, PROCESS_STATE_TERMINATED);
-    
+
     o->handler_event(o, NCDMODULEPROCESS_EVENT_TERMINATED);
     return;
 }
@@ -562,13 +562,13 @@ int NCDModuleProcess_Interp_GetSpecialObj (NCDModuleProcess *o, NCD_string_id_t 
     DebugObject_Access(&o->d_obj);
     process_assert_interp(o);
     ASSERT(out_object)
-    
+
     if (!NCDVal_IsInvalid(o->args)) {
         if (name == NCD_STRING_ARGS) {
             *out_object = NCDObject_Build(-1, o, process_args_object_func_getvar, NCDObject_no_getobj);
             return 1;
         }
-        
+
         if (name >= NCD_STRING_ARG0 && name <= NCD_STRING_ARG19) {
             int num = name - NCD_STRING_ARG0;
             if (num < NCDVal_ListCount(o->args)) {
@@ -577,14 +577,14 @@ int NCDModuleProcess_Interp_GetSpecialObj (NCDModuleProcess *o, NCD_string_id_t 
             }
         }
     }
-    
+
     if (!o->func_getspecialobj) {
         return 0;
     }
-    
+
     int res = o->func_getspecialobj(o, name, out_object);
     ASSERT(res == 0 || res == 1)
-    
+
     return res;
 }
 
@@ -594,11 +594,11 @@ static int process_args_object_func_getvar (const NCDObject *obj, NCD_string_id_
     DebugObject_Access(&o->d_obj);
     process_assert_interp(o);
     ASSERT(!NCDVal_IsInvalid(o->args))
-    
+
     if (name != NCD_STRING_EMPTY) {
         return 0;
     }
-    
+
     *out_value = NCDVal_NewCopy(mem, o->args);
     if (NCDVal_IsInvalid(*out_value)) {
         BLog_LogToChannel(BLOG_CHANNEL_NCDModuleProcess, BLOG_ERROR, "NCDVal_NewCopy failed");
@@ -612,11 +612,11 @@ static int process_arg_object_func_getvar (const NCDObject *obj, NCD_string_id_t
     DebugObject_Access(&o->d_obj);
     process_assert_interp(o);
     ASSERT(!NCDVal_IsInvalid(o->args))
-    
+
     if (name != NCD_STRING_EMPTY) {
         return 0;
     }
-    
+
     *out_value = NCDVal_NewCopy(mem, NCDVal_ListGet(o->args, NCDObject_DataInt(obj)));
     if (NCDVal_IsInvalid(*out_value)) {
         BLog_LogToChannel(BLOG_CHANNEL_NCDModuleProcess, BLOG_ERROR, "NCDVal_NewCopy failed");

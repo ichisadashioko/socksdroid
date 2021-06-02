@@ -1,9 +1,9 @@
 /**
  * @file value_utils.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -54,7 +54,7 @@ static char * ncd_strdup (NCDValRef stringnonulls);
 static int ncd_is_none (NCDValRef string)
 {
     ASSERT(NCDVal_IsString(string))
-    
+
     if (NCDVal_IsIdString(string)) {
         return NCDVal_IdStringId(string) == NCD_STRING_NONE;
     } else {
@@ -66,7 +66,7 @@ static NCDValRef ncd_make_boolean (NCDValMem *mem, int value, NCDStringIndex *st
 {
     ASSERT(mem)
     ASSERT(string_index)
-    
+
     NCD_string_id_t str_id = (value ? NCD_STRING_TRUE : NCD_STRING_FALSE);
     return NCDVal_NewIdString(mem, str_id, string_index);
 }
@@ -74,7 +74,7 @@ static NCDValRef ncd_make_boolean (NCDValMem *mem, int value, NCDStringIndex *st
 static int ncd_read_boolean (NCDValRef string)
 {
     ASSERT(NCDVal_IsString(string))
-    
+
     if (NCDVal_IsIdString(string)) {
         return NCDVal_IdStringId(string) == NCD_STRING_TRUE;
     } else {
@@ -86,15 +86,15 @@ static int ncd_read_uintmax (NCDValRef string, uintmax_t *out)
 {
     ASSERT(NCDVal_IsString(string))
     ASSERT(out)
-    
+
     size_t length = NCDVal_StringLength(string);
-    
+
     if (NCDVal_IsContinuousString(string)) {
         return parse_unsigned_integer_bin(NCDVal_StringData(string), length, out);
     }
-    
+
     b_cstring cstr = NCDVal_StringCstring(string);
-    
+
     return parse_unsigned_integer_cstr(cstr, 0, cstr.length, out);
 }
 
@@ -102,16 +102,16 @@ static int ncd_read_time (NCDValRef string, btime_t *out)
 {
     ASSERT(NCDVal_IsString(string))
     ASSERT(out)
-    
+
     uintmax_t n;
     if (!ncd_read_uintmax(string, &n)) {
         return 0;
     }
-    
+
     if (n > INT64_MAX) {
         return 0;
     }
-    
+
     *out = n;
     return 1;
 }
@@ -120,54 +120,54 @@ static NCD_string_id_t ncd_get_string_id (NCDValRef string, NCDStringIndex *stri
 {
     ASSERT(NCDVal_IsString(string))
     ASSERT(string_index)
-    
+
     if (NCDVal_IsIdString(string)) {
         return NCDVal_IdStringId(string);
     } else if (NCDVal_IsContinuousString(string)) {
         return NCDStringIndex_GetBin(string_index, NCDVal_StringData(string), NCDVal_StringLength(string));
     }
-    
+
     b_cstring cstr = NCDVal_StringCstring(string);
-    
+
     char *temp = b_cstring_strdup(cstr, 0, cstr.length);
     if (!temp) {
         return -1;
     }
-    
+
     NCD_string_id_t res = NCDStringIndex_GetBin(string_index, temp, cstr.length);
     BFree(temp);
-    
+
     return res;
 }
 
 static NCDValRef ncd_make_uintmax (NCDValMem *mem, uintmax_t value)
 {
     ASSERT(mem)
-    
+
     int size = compute_decimal_repr_size(value);
-    
+
     NCDValRef val = NCDVal_NewStringUninitialized(mem, size);
-    
+
     if (!NCDVal_IsInvalid(val)) {
         char *data = (char *)NCDVal_StringData(val);
         generate_decimal_repr(value, data, size);
     }
-    
+
     return val;
 }
 
 static char * ncd_strdup (NCDValRef stringnonulls)
 {
     ASSERT(NCDVal_IsStringNoNulls(stringnonulls))
-    
+
     size_t length = NCDVal_StringLength(stringnonulls);
-    
+
     if (NCDVal_IsContinuousString(stringnonulls)) {
         return b_strdup_bin(NCDVal_StringData(stringnonulls), length);
     }
-    
+
     b_cstring cstr = NCDVal_StringCstring(stringnonulls);
-    
+
     return b_cstring_strdup(cstr, 0, cstr.length);
 }
 

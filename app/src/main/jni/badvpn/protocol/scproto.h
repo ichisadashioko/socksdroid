@@ -1,9 +1,9 @@
 /**
  * @file scproto.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,21 +25,21 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Definitions for SCProto, the protocol that the clients communicate in
  * with the server.
- * 
+ *
  * All multi-byte integers in structs are little-endian, unless stated otherwise.
- * 
+ *
  * A SCProto packet consists of:
  *   - a header (struct {@link sc_header}) which contains the type of the
  *     packet
  *   - the payload
- * 
+ *
  * It goes roughly like that:
- * 
+ *
  * When the client connects to the server, it sends a "clienthello" packet
  * to the server. The packet contains the protocol version the client is using.
  * When the server receives the "clienthello" packet, it checks the version.
@@ -47,7 +47,7 @@
  * the client a "serverhello" packet to the client. That packet contains
  * the ID of the client and possibly its IPv4 address as the server sees it
  * (zero if not applicable).
- * 
+ *
  * The server than proceeds to synchronize the peers' knowledge of each other.
  * It does that by sending a "newclient" messages to a client to inform it of
  * another peer, and "endclient" messages to inform it that a peer is gone.
@@ -57,7 +57,7 @@
  * communicate. A peer sends a message to another peer by sending the "outmsg"
  * packet to the server, and the server delivers a message to a peer by sending
  * it the "inmsg" packet.
- * 
+ *
  * The message service is reliable; messages from one client to another are
  * expected to arrive unmodified and in the same order. There is, however,
  * no flow control. This means that messages can not be used for bulk transfers
@@ -66,12 +66,12 @@
  * will reset knowledge of the two clients after some delay. Similarly, if one
  * of the clients runs out of buffer locally, it will send the "resetpeer"
  * packet to make the server reset knowledge.
- * 
+ *
  * The messages transport either:
- * 
+ *
  * - If the relevant "newclient" packets do not contain the
  *   SCID_NEWCLIENT_FLAG_SSL flag, then plaintext MsgProto messages.
- * 
+ *
  * - If the relevant "newclient" packets do contain the SCID_NEWCLIENT_FLAG_SSL
  *   flag, then SSL, broken down into packets, PacketProto inside SSL, and finally
  *   MsgProto inside PacketProto. The master peer (one with higher ID) acts as an
@@ -145,12 +145,12 @@ struct sc_server_hello {
      * Flags. Not used yet.
      */
     uint16_t flags;
-    
+
     /**
      * Peer ID of the client.
      */
     peerid_t id;
-    
+
     /**
      * IPv4 address of the client as seen by the server
      * (network byte order). Zero if not applicable.
@@ -171,7 +171,7 @@ struct sc_server_newclient {
      * ID of the new peer.
      */
     peerid_t id;
-    
+
     /**
      * Flags. Possible flags:
      *   - SCID_NEWCLIENT_FLAG_RELAY_SERVER

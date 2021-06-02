@@ -1,9 +1,9 @@
 /**
  * @file ncd.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -103,19 +103,19 @@ int main (int argc, char **argv)
     if (argc <= 0) {
         return 1;
     }
-    
+
     int main_exit_code = 1;
-    
+
     // open standard streams
     open_standard_streams();
-    
+
     // parse command-line arguments
     if (!parse_arguments(argc, argv)) {
         fprintf(stderr, "Failed to parse arguments\n");
         print_help(argv[0]);
         goto fail0;
     }
-    
+
     // handle --help and --version
     if (options.help) {
         print_version();
@@ -126,7 +126,7 @@ int main (int argc, char **argv)
         print_version();
         return 0;
     }
-    
+
     // initialize logger
     switch (options.logger) {
         case LOGGER_STDOUT:
@@ -146,7 +146,7 @@ int main (int argc, char **argv)
         default:
             ASSERT(0);
     }
-    
+
     // configure logger channels
     for (int i = 0; i < BLOG_NUM_CHANNELS; i++) {
         if (options.loglevels[i] >= 0) {
@@ -158,52 +158,52 @@ int main (int argc, char **argv)
             BLog_SetChannelLoglevel(i, DEFAULT_LOGLEVEL);
         }
     }
-    
+
     BLog(BLOG_NOTICE, "initializing "GLOBAL_PRODUCT_NAME" "PROGRAM_NAME" "GLOBAL_VERSION);
-    
+
     // initialize network
     if (!BNetwork_GlobalInit()) {
         BLog(BLOG_ERROR, "BNetwork_GlobalInit failed");
         goto fail1;
     }
-    
+
     // init time
     BTime_Init();
-    
+
     // init reactor
     if (!BReactor_Init(&reactor)) {
         BLog(BLOG_ERROR, "BReactor_Init failed");
         goto fail1;
     }
-    
+
     // init process manager
     if (!BProcessManager_Init(&manager, &reactor)) {
         BLog(BLOG_ERROR, "BProcessManager_Init failed");
         goto fail2;
     }
-    
+
     // init udev manager
     NCDUdevManager_Init(&umanager, options.no_udev, &reactor, &manager);
-    
+
     // init random number generator
     if (!BRandom2_Init(&random2, BRANDOM2_INIT_LAZY)) {
         BLog(BLOG_ERROR, "BRandom2_Init failed");
         goto fail3;
     }
-    
+
     // setup signal handler
     if (!BSignal_Init(&reactor, signal_handler, NULL)) {
         BLog(BLOG_ERROR, "BSignal_Init failed");
         goto fail4;
     }
-    
+
     // build program
     NCDProgram program;
     if (!NCDBuildProgram_Build(options.config_file, &program)) {
         BLog(BLOG_ERROR, "failed to build program");
         goto fail5;
     }
-    
+
     // setup interpreter parameters
     struct NCDInterpreter_params params;
     params.handler_finished = interpreter_handler_finished;
@@ -215,23 +215,23 @@ int main (int argc, char **argv)
     params.manager = &manager;
     params.umanager = &umanager;
     params.random2 = &random2;
-    
+
     // initialize interpreter
     if (!NCDInterpreter_Init(&interpreter, program, params)) {
         goto fail5;
     }
-    
+
     // don't enter event loop if syntax check is requested
     if (options.syntax_only) {
         main_exit_code = 0;
         goto fail6;
     }
-    
+
     BLog(BLOG_NOTICE, "entering event loop");
-    
+
     // enter event loop
     main_exit_code = BReactor_Exec(&reactor);
-    
+
 fail6:
     // free interpreter
     NCDInterpreter_Free(&interpreter);
@@ -244,7 +244,7 @@ fail4:
 fail3:
     // free udev manager
     NCDUdevManager_Free(&umanager);
-    
+
     // free process manager
     BProcessManager_Free(&manager);
 fail2:
@@ -257,7 +257,7 @@ fail1:
 fail0:
     // finish objects
     DebugObjectGlobal_Finish();
-    
+
     return main_exit_code;
 }
 
@@ -295,7 +295,7 @@ int parse_arguments (int argc, char *argv[])
     if (argc <= 0) {
         return 0;
     }
-    
+
     options.help = 0;
     options.version = 0;
     options.logger = LOGGER_STDERR;
@@ -313,7 +313,7 @@ int parse_arguments (int argc, char *argv[])
     options.no_udev = 0;
     options.extra_args = NULL;
     options.num_extra_args = 0;
-    
+
     for (int i = 1; i < argc; i++) {
         char *arg = argv[i];
         if (!strcmp(arg, "--help")) {
@@ -437,23 +437,23 @@ int parse_arguments (int argc, char *argv[])
             return 0;
         }
     }
-    
+
     if (options.help || options.version) {
         return 1;
     }
-    
+
     if (!options.config_file) {
         fprintf(stderr, "No program is specified.\n");
         return 0;
     }
-    
+
     return 1;
 }
 
 void signal_handler (void *unused)
 {
     BLog(BLOG_NOTICE, "termination requested");
-    
+
     NCDInterpreter_RequestShutdown(&interpreter, 1);
 }
 

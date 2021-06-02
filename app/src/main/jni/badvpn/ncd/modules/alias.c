@@ -1,9 +1,9 @@
 /**
  * @file alias.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,12 +25,12 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Synopsis:
  *   alias(string target)
- * 
+ *
  * Variables and objects:
  *   - empty name - resolves target
  *   - nonempty name N - resolves target.N
@@ -71,7 +71,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef target_arg;
     if (!NCDVal_ListRead(params->args, 1, &target_arg)) {
@@ -82,17 +82,17 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // parse name string
     if (!AliasNames_InitNames(o, i->params->iparams->string_index, NCDVal_StringData(target_arg), NCDVal_StringLength(target_arg))) {
         ModuleLog(i, BLOG_ERROR, "make_names failed");
         goto fail0;
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(o->i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -100,9 +100,9 @@ fail0:
 static void func_die (void *vo)
 {
     struct instance *o = vo;
-    
+
     AliasNames_FreeNames(o);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
@@ -110,24 +110,24 @@ static int func_getobj (void *vo, NCD_string_id_t name, NCDObject *out_object)
 {
     struct instance *o = vo;
     ASSERT(o->num_names > 0)
-    
+
     NCD_string_id_t *names = AliasNames_GetNames(o);
-    
+
     NCDObject object;
     if (!NCDModuleInst_Backend_GetObj(o->i, names[0], &object)) {
         return 0;
     }
-    
+
     NCDObject obj2;
     if (!NCDObject_ResolveObjExprCompact(&object, names + 1, o->num_names - 1, &obj2)) {
         return 0;
     }
-    
+
     if (name == NCD_STRING_EMPTY) {
         *out_object = obj2;
         return 1;
     }
-    
+
     return NCDObject_GetObj(&obj2, name, out_object);
 }
 

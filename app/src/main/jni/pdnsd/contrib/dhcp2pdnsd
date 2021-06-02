@@ -24,7 +24,7 @@ case "$1" in
 	action "Starting DHCP to DNS update script: " /bin/true
 	;;
   stop)
-        p=`ps h -C $name | awk '{print $1}'`	
+        p=`ps h -C $name | awk '{print $1}'`
 	[ $p -gt 0 ] 2> /dev/null && kill $p && action "Stopping DHCP to DNS update script: " /bin/true
 	[ $p -gt 0 ] 2> /dev/null || action "Stopping DHCP to DNS update script: " /bin/false
 	;;

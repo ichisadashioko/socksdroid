@@ -1,9 +1,9 @@
 /**
  * @file netmask.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,25 +25,25 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Synopsis:
  *   ipv4_prefix_to_mask(string prefix)
- * 
+ *
  * Variables:
  *   string (empty) - prefix, converted to dotted decimal format without leading
  *                    zeros
- * 
+ *
  * Synopsis:
  *   ipv4_mask_to_prefix(string mask)
- * 
+ *
  * Variables:
  *   string (empty) - mask, converted to prefix length
- * 
+ *
  * Synopsis:
  *   ipv4_net_from_addr_and_prefix(string addr, string prefix)
- * 
+ *
  * Variables:
  *   string (empty) - network part of the address, according to given prefix
  *                    length, in dotted decimal format without leading zeros
@@ -77,10 +77,10 @@ static void addr_func_init_templ (void *vo, NCDModuleInst *i, uint32_t addr)
 {
     struct addr_instance *o = vo;
     o->i = i;
-    
+
     // remember address
     o->addr = addr;
-    
+
     // signal up
     NCDModuleInst_Backend_Up(i);
 }
@@ -97,20 +97,20 @@ static void prefix_to_mask_func_init (void *vo, NCDModuleInst *i, const struct N
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // parse prefix
     int prefix;
     if (!ipaddr_parse_ipv4_prefix_bin((char *)NCDVal_StringData(prefix_arg), NCDVal_StringLength(prefix_arg), &prefix)) {
         ModuleLog(i, BLOG_ERROR, "bad prefix");
         goto fail0;
     }
-    
+
     // make mask
     uint32_t mask = ipaddr_ipv4_mask_from_prefix(prefix);
-    
+
     addr_func_init_templ(vo, i, mask);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -128,27 +128,27 @@ static void ipv4_net_from_addr_and_prefix_func_init (void *vo, NCDModuleInst *i,
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // parse addr
     uint32_t addr;
     if (!ipaddr_parse_ipv4_addr_bin((char *)NCDVal_StringData(addr_arg), NCDVal_StringLength(addr_arg), &addr)) {
         ModuleLog(i, BLOG_ERROR, "bad addr");
         goto fail0;
     }
-    
+
     // parse prefix
     int prefix;
     if (!ipaddr_parse_ipv4_prefix_bin((char *)NCDVal_StringData(prefix_arg), NCDVal_StringLength(prefix_arg), &prefix)) {
         ModuleLog(i, BLOG_ERROR, "bad prefix");
         goto fail0;
     }
-    
+
     // make network
     uint32_t network = (addr & ipaddr_ipv4_mask_from_prefix(prefix));
-    
+
     addr_func_init_templ(vo, i, network);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -156,22 +156,22 @@ fail0:
 static void addr_func_die (void *vo)
 {
     struct addr_instance *o = vo;
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
 static int addr_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out)
 {
     struct addr_instance *o = vo;
-    
+
     if (name == NCD_STRING_EMPTY) {
         char buf[IPADDR_PRINT_MAX];
         ipaddr_print_addr(o->addr, buf);
-        
+
         *out = NCDVal_NewString(mem, buf);
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -179,7 +179,7 @@ static void mask_to_prefix_func_init (void *vo, NCDModuleInst *i, const struct N
 {
     struct prefix_instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef mask_arg;
     if (!NCDVal_ListRead(params->args, 1, &mask_arg)) {
@@ -190,24 +190,24 @@ static void mask_to_prefix_func_init (void *vo, NCDModuleInst *i, const struct N
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // parse mask
     uint32_t mask;
     if (!ipaddr_parse_ipv4_addr_bin((char *)NCDVal_StringData(mask_arg), NCDVal_StringLength(mask_arg), &mask)) {
         ModuleLog(i, BLOG_ERROR, "bad mask");
         goto fail0;
     }
-    
+
     // build prefix
     if (!ipaddr_ipv4_prefix_from_mask(mask, &o->prefix)) {
         ModuleLog(i, BLOG_ERROR, "bad mask");
         goto fail0;
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -215,22 +215,22 @@ fail0:
 static void prefix_func_die (void *vo)
 {
     struct prefix_instance *o = vo;
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
 static int prefix_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out)
 {
     struct prefix_instance *o = vo;
-    
+
     if (name == NCD_STRING_EMPTY) {
         char buf[6];
         sprintf(buf, "%d", o->prefix);
-        
+
         *out = NCDVal_NewString(mem, buf);
         return 1;
     }
-    
+
     return 0;
 }
 

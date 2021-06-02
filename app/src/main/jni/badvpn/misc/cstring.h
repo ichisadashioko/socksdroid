@@ -1,9 +1,9 @@
 /**
  * @file cstring.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -148,11 +148,11 @@ static char * b_cstring_strdup (b_cstring cstr, size_t offset, size_t length);
  * to \a offset.
  * \a chunk_data_var will hold a pointer (const char *) to the beginning of the region, and
  * \a chunk_length_var will hold its length (size_t).
- * 
+ *
  * Note: \a cstr, \a offset and \a length may be evaluated multiple times, or not at all.
  * Note: do not use 'continue' or 'break' from inside the body, their behavior depends
  *       on the internal implementation of this macro.
- * 
+ *
  * See the implementation of {@link b_cstring_copy_to_buf} for a usage example.
  */
 #define B_CSTRING_LOOP_RANGE(cstr, offset, length, rel_pos_var, chunk_data_var, chunk_length_var, body) \
@@ -183,7 +183,7 @@ static char * b_cstring_strdup (b_cstring cstr, size_t offset, size_t length);
  * \a char_rel_pos_var will hold the position (size_t) of the current character
  * relative to \a offset.
  * \a char_var will hold the current character (char).
- * 
+ *
  * Note: \a cstr, \a offset and \a length may be evaluated multiple times, or not at all.
  * Note: do not use 'continue' or 'break' from inside the body, their behavior depends
  *       on the internal implementation of this macro.
@@ -210,7 +210,7 @@ static const char * b_cstring__buf_func (const b_cstring *cstr, size_t offset, s
     ASSERT(out_length)
     ASSERT(cstr->func == b_cstring__buf_func)
     ASSERT(cstr->user1.ptr)
-    
+
     *out_length = cstr->length - offset;
     return (const char *)cstr->user1.ptr + offset;
 }
@@ -218,7 +218,7 @@ static const char * b_cstring__buf_func (const b_cstring *cstr, size_t offset, s
 static b_cstring b_cstring_make_buf (const char *data, size_t length)
 {
     ASSERT(length == 0 || data)
-    
+
     b_cstring cstr;
     cstr.length = length;
     cstr.func = b_cstring__buf_func;
@@ -240,15 +240,15 @@ static const char * b_cstring_get (b_cstring cstr, size_t offset, size_t maxlen,
     ASSERT(maxlen > 0)
     ASSERT(out_chunk_len)
     ASSERT(cstr.func)
-    
+
     const char *data = cstr.func(&cstr, offset, out_chunk_len);
     ASSERT(data)
     ASSERT(*out_chunk_len > 0)
-    
+
     if (*out_chunk_len > maxlen) {
         *out_chunk_len = maxlen;
     }
-    
+
     return data;
 }
 
@@ -256,12 +256,12 @@ static char b_cstring_at (b_cstring cstr, size_t pos)
 {
     ASSERT(pos < cstr.length)
     ASSERT(cstr.func)
-    
+
     size_t chunk_len;
     const char *data = cstr.func(&cstr, pos, &chunk_len);
     ASSERT(data)
     ASSERT(chunk_len > 0)
-    
+
     return *data;
 }
 
@@ -275,7 +275,7 @@ static void b_cstring_copy_to_buf (b_cstring cstr, size_t offset, size_t length,
 {
     b_cstring_assert_range(cstr, offset, length);
     ASSERT(length == 0 || dest)
-    
+
     B_CSTRING_LOOP_RANGE(cstr, offset, length, pos, chunk_data, chunk_length, {
         memcpy(dest + pos, chunk_data, chunk_length);
     })
@@ -285,7 +285,7 @@ static int b_cstring_memcmp (b_cstring cstr1, b_cstring cstr2, size_t offset1, s
 {
     b_cstring_assert_range(cstr1, offset1, length);
     b_cstring_assert_range(cstr2, offset2, length);
-    
+
     B_CSTRING_LOOP_RANGE(cstr1, offset1, length, pos1, chunk_data1, chunk_len1, {
         B_CSTRING_LOOP_RANGE(cstr2, offset2 + pos1, chunk_len1, pos2, chunk_data2, chunk_len2, {
             int cmp = memcmp(chunk_data1 + pos2, chunk_data2, chunk_len2);
@@ -294,27 +294,27 @@ static int b_cstring_memcmp (b_cstring cstr1, b_cstring cstr2, size_t offset1, s
             }
         })
     })
-    
+
     return 0;
 }
 
 static int b_cstring_equals_buffer (b_cstring cstr, size_t offset, size_t length, const char *data)
 {
     b_cstring_assert_range(cstr, offset, length);
-    
+
     B_CSTRING_LOOP_RANGE(cstr, offset, length, pos, chunk_data, chunk_len, {
         if (memcmp(chunk_data, data + pos, chunk_len)) {
             return 0;
         }
     })
-    
+
     return 1;
 }
 
 static int b_cstring_memchr (b_cstring cstr, size_t offset, size_t length, char ch, size_t *out_pos)
 {
     b_cstring_assert_range(cstr, offset, length);
-    
+
     B_CSTRING_LOOP_CHARS_RANGE(cstr, offset, length, cur_ch_pos, cur_ch, {
         if (cur_ch == ch) {
             if (out_pos) {
@@ -323,24 +323,24 @@ static int b_cstring_memchr (b_cstring cstr, size_t offset, size_t length, char 
             return 1;
         }
     })
-    
+
     return 0;
 }
 
 static char * b_cstring_strdup (b_cstring cstr, size_t offset, size_t length)
 {
     b_cstring_assert_range(cstr, offset, length);
-    
+
     if (length == SIZE_MAX) {
         return NULL;
     }
-    
+
     char *buf = (char *)BAlloc(length + 1);
     if (buf) {
         b_cstring_copy_to_buf(cstr, offset, length, buf);
         buf[length] = '\0';
     }
-    
+
     return buf;
 }
 

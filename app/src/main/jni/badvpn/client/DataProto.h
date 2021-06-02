@@ -1,9 +1,9 @@
 /**
  * @file DataProto.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Mudule for frame sending used in the VPN client program.
  */
 
@@ -122,7 +122,7 @@ struct DataProtoFlow_buffer {
 
 /**
  * Initializes the sink.
- * 
+ *
  * @param o the object
  * @param reactor reactor we live in
  * @param output output interface. Must support cancel functionality. Its MTU must be
@@ -139,7 +139,7 @@ int DataProtoSink_Init (DataProtoSink *o, BReactor *reactor, PacketPassInterface
 /**
  * Frees the sink.
  * There must be no local sources attached.
- * 
+ *
  * @param o the object
  */
 void DataProtoSink_Free (DataProtoSink *o);
@@ -147,7 +147,7 @@ void DataProtoSink_Free (DataProtoSink *o);
 /**
  * Notifies the sink that a packet was received from the peer.
  * Must not be in freeing state.
- * 
+ *
  * @param o the object
  * @param peer_receiving whether the DATAPROTO_FLAGS_RECEIVING_KEEPALIVES flag was set in the packet.
  *                       Must be 0 or 1.
@@ -156,7 +156,7 @@ void DataProtoSink_Received (DataProtoSink *o, int peer_receiving);
 
 /**
  * Initiazes the source.
- * 
+ *
  * @param o the object
  * @param input frame input. Its input MTU must be <= INT_MAX - DATAPROTO_MAX_OVERHEAD.
  * @param handler handler called when a frame arrives to allow the user to route it to
@@ -170,7 +170,7 @@ int DataProtoSource_Init (DataProtoSource *o, PacketRecvInterface *input, DataPr
 /**
  * Frees the source.
  * There must be no {@link DataProtoFlow}'s using this source.
- * 
+ *
  * @param o the object
  */
 void DataProtoSource_Free (DataProtoSource *o);
@@ -178,7 +178,7 @@ void DataProtoSource_Free (DataProtoSource *o);
 /**
  * Initializes the flow.
  * The flow is initialized in not attached state.
- * 
+ *
  * @param o the object
  * @param source source to receive frames from
  * @param source_id source peer ID to encode in the headers (i.e. our ID)
@@ -199,7 +199,7 @@ int DataProtoFlow_Init (DataProtoFlow *o, DataProtoSource *source, peerid_t sour
 /**
  * Frees the flow.
  * The flow must be in not attached state.
- * 
+ *
  * @param o the object
  */
 void DataProtoFlow_Free (DataProtoFlow *o);
@@ -208,7 +208,7 @@ void DataProtoFlow_Free (DataProtoFlow *o);
  * Routes a frame from the flow's source to this flow.
  * Must be called from within the job context of the {@link DataProtoSource_handler} handler.
  * Must not be called after this has been called with more=0 for the current frame.
- * 
+ *
  * @param o the object
  * @param more whether the current frame may have to be routed to more
  *             flows. If 0, must not be called again until the handler is
@@ -219,7 +219,7 @@ void DataProtoFlow_Route (DataProtoFlow *o, int more);
 /**
  * Attaches the flow to a sink.
  * The flow must be in not attached state.
- * 
+ *
  * @param o the object
  * @param sink sink to attach to. This flow's frame_mtu must be <=
  *             (output MTU of sink) - DATAPROTO_MAX_OVERHEAD.
@@ -229,7 +229,7 @@ void DataProtoFlow_Attach (DataProtoFlow *o, DataProtoSink *sink);
 /**
  * Detaches the flow from a destination.
  * The flow must be in attached state.
- * 
+ *
  * @param o the object
  */
 void DataProtoFlow_Detach (DataProtoFlow *o);

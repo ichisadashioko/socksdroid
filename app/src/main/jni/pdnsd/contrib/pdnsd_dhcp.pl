@@ -15,14 +15,14 @@
 #  This code is Copyright (c) 1998-2001 by Mike Stella and Marko Stolle
 #
 #  NO WARRANTY is given for this program.  If it doesn't
-#  work on your system, sorry.  If it eats your hard drive, 
+#  work on your system, sorry.  If it eats your hard drive,
 #  again, sorry.  It works fine on mine.  Good luck!
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-# 
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -35,7 +35,7 @@
 ###########################################################################
 #
 # This script reads a dhcpd.leases file and dynamically updates pdnsd with
-# hostname and ip information.  
+# hostname and ip information.
 #
 # It assumes that your DHCP server recieves hostnames from the
 # clients, and that your clients offer their hostnames to the server.
@@ -44,7 +44,7 @@
 # fine.
 #
 # This version of the script updates the pdnsd database. The status
-# control socket of pdnsd has to be enabled (psnsd -d -s). 
+# control socket of pdnsd has to be enabled (psnsd -d -s).
 #
 ###########################################################################
 #
@@ -59,13 +59,13 @@
 
 
 # You may save some memory if you use absolute values with sysopen
-# in sub update_dns and don't use tmpnam().. 
-# Just switch the '#' in front of the 'until sysopen' in the sub 
-# update_dns, check the necessary modes on your system using save_ram.pl 
+# in sub update_dns and don't use tmpnam()..
+# Just switch the '#' in front of the 'until sysopen' in the sub
+# update_dns, check the necessary modes on your system using save_ram.pl
 # and add a '#' in front of the following three lines.
 # Not using the tmpnam() function may open a security breach on systems
-# with not absolute trustworthy local users (Risk: a user may write a 
-# script which creates files with the same names as this script and block 
+# with not absolute trustworthy local users (Risk: a user may write a
+# script which creates files with the same names as this script and block
 # it that way. Unlikely because the filenames are now even without tmpnam()
 # randomized and an attacker has to create a very large number of files.)
 
@@ -131,10 +131,10 @@ while (1) {
 
   # check the file's last updated time, if it's been changed, update
   # the DNS and save the time. Update DNS even if there a no changes on
-  # the leases file if ttl since last DNS update has expired.  
+  # the leases file if ttl since last DNS update has expired.
   # This will ALWAYS run once - on startup, since $modtime starts at zero.
 
- 
+
   my @stats = stat ($lease_file);
 
 
@@ -147,7 +147,7 @@ while (1) {
 	$modtime = time;
 	&read_lease_file;
 	&update_dns;
-  } 
+  }
 
   # wait till next check time
   sleep $update_freq;
@@ -193,11 +193,11 @@ sub read_lease_file {
 	my ($ip, $hostname, $mac, $enddate,$endtime);
 
 	if (/^\s*lease/i) {
-		
+
 	  # find ip address
 	  $_ =~ /^\s*lease\s+(\S+)/;
 	  $ip = $1;
-	  
+
 	  # do the rest of the block - we're interested in hostname,
 	  # mac address, and the lease time
 	  while ($_ !~ /^}/) {
@@ -208,7 +208,7 @@ sub read_lease_file {
 		  #chop $_;
 		  $_ =~ /\"(.*)\"/;
 		  $hostname = $1;
-		  
+
 		  # change spaces to dash, remove dots - microsoft
 		  # really needs to not do this crap
 		  $hostname =~ s/\s+/-/g;
@@ -225,7 +225,7 @@ sub read_lease_file {
 	  $hostname =~ tr/[A-Z]/[a-z]/;
 
 	  ($debug < 1 ) || print STDERR "$hostname $ip $enddate $curdate\n";
-	  
+
 	  # Store hostname/ip in hash - this way we can do easy dupe checking
 	  if (($hostname ne "") and ($enddate > $curdate)) {
 		$db{$hostname} = $ip;
@@ -243,4 +243,3 @@ sub print_db {
 	print "$key - $value\n";
   }
 }
-

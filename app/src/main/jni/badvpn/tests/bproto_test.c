@@ -16,11 +16,11 @@ int main ()
     uint8_t e = 72;
     const char *f = "hello world";
     const char *g = "helo";
-    
+
     // encode message
-    
+
     int len = msg1_SIZEa + msg1_SIZEc + msg1_SIZEd + msg1_SIZEd + msg1_SIZEe + msg1_SIZEf(strlen(f)) + msg1_SIZEg;
-    
+
     uint8_t *msg = (uint8_t *)BAlloc(len);
     ASSERT_FORCE(msg)
     msg1Writer writer;
@@ -36,14 +36,14 @@ int main ()
     memcpy(g_dst, g, strlen(g));
     int len2 = msg1Writer_Finish(&writer);
     ASSERT_EXECUTE(len2 == len)
-    
+
     // parse message
-    
+
     msg1Parser parser;
     ASSERT_EXECUTE(msg1Parser_Init(&parser, msg, len))
-    
+
     // check parse results
-    
+
     uint16_t p_a;
     uint64_t p_c;
     uint16_t p_d1;
@@ -59,7 +59,7 @@ int main ()
     ASSERT_EXECUTE(msg1Parser_Gete(&parser, &p_e))
     ASSERT_EXECUTE(msg1Parser_Getf(&parser, &p_f, &p_f_len))
     ASSERT_EXECUTE(msg1Parser_Getg(&parser, &p_g))
-    
+
     ASSERT(p_a == a)
     ASSERT(p_c == c)
     ASSERT(p_d1 == d1)
@@ -67,10 +67,10 @@ int main ()
     ASSERT(p_e == e)
     ASSERT(p_f_len == strlen(f) && !memcmp(p_f, f, p_f_len))
     ASSERT(!memcmp(p_g, g, strlen(g)))
-    
+
     ASSERT(msg1Parser_GotEverything(&parser))
-    
+
     BFree(msg);
-    
+
     return 0;
 }

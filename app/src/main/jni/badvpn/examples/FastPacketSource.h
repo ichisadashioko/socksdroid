@@ -1,9 +1,9 @@
 /**
  * @file FastPacketSource.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -48,7 +48,7 @@ typedef struct {
 static void _FastPacketSource_output_handler_done (FastPacketSource *s)
 {
     DebugObject_Access(&s->d_obj);
-    
+
     PacketPassInterface_Sender_Send(s->output, s->data, s->data_len);
 }
 
@@ -56,18 +56,18 @@ static void FastPacketSource_Init (FastPacketSource *s, PacketPassInterface *out
 {
     ASSERT(data_len >= 0)
     ASSERT(data_len <= PacketPassInterface_GetMTU(output));
-    
+
     // init arguments
     s->output = output;
     s->data = data;
     s->data_len = data_len;
-    
+
     // init output
     PacketPassInterface_Sender_Init(s->output, (PacketPassInterface_handler_done)_FastPacketSource_output_handler_done, s);
-    
+
     // schedule send
     PacketPassInterface_Sender_Send(s->output, s->data, s->data_len);
-    
+
     DebugObject_Init(&s->d_obj);
 }
 

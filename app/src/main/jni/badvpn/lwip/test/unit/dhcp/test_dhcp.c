@@ -886,7 +886,7 @@ START_TEST(test_dhcp_nak_no_endmarker)
   xid = htonl(net_test.dhcp->xid);
   memcpy(&dhcp_offer[46], &xid, 4); /* insert correct transaction id */
   send_pkt(&net_test, dhcp_offer, sizeof(dhcp_offer));
-  
+
   fail_unless(net_test.dhcp->state == DHCP_REQUESTING);
 
   fail_unless(txpacket == 2); /* No more sent */

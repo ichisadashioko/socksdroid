@@ -1,9 +1,9 @@
 /**
  * @file debugcounter.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Counter for detecting leaks.
  */
 
@@ -56,7 +56,7 @@ typedef struct {
 /**
  * Initializes the object.
  * The object is initialized with counter value zero.
- * 
+ *
  * @param obj the object
  */
 static void DebugCounter_Init (DebugCounter *obj)
@@ -70,7 +70,7 @@ static void DebugCounter_Init (DebugCounter *obj)
  * Frees the object.
  * This does not have to be called when the counter is no longer needed.
  * The counter value must be zero.
- * 
+ *
  * @param obj the object
  */
 static void DebugCounter_Free (DebugCounter *obj)
@@ -83,14 +83,14 @@ static void DebugCounter_Free (DebugCounter *obj)
 /**
  * Increments the counter.
  * Increments the counter value by one.
- * 
+ *
  * @param obj the object
  */
 static void DebugCounter_Increment (DebugCounter *obj)
 {
 #ifndef NDEBUG
     ASSERT(obj->c >= 0)
-    
+
     if (obj->c != INT32_MAX) {
         obj->c++;
     }
@@ -101,14 +101,14 @@ static void DebugCounter_Increment (DebugCounter *obj)
  * Decrements the counter.
  * The counter value must be >0.
  * Decrements the counter value by one.
- * 
+ *
  * @param obj the object
  */
 static void DebugCounter_Decrement (DebugCounter *obj)
 {
 #ifndef NDEBUG
     ASSERT(obj->c > 0)
-    
+
     if (obj->c != INT32_MAX) {
         obj->c--;
     }

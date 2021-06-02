@@ -1,4 +1,3 @@
-
 install-exec-local:
 	if [ "$(distribution)" = "SuSE" ] ; then \
 	  CURDIR=`pwd`; \
@@ -17,6 +16,3 @@ install-exec-local:
 	    echo -e "\n\n#\n# Set to yes to start pdnsd at boot time\n#\nSTART_PDNSD=yes" >> /etc/rc.config ; \
 	  fi \
 	fi
-
-
-

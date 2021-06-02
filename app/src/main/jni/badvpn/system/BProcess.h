@@ -1,9 +1,9 @@
 /**
  * @file BProcess.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -58,7 +58,7 @@ typedef struct {
  * The process object must be freed from the job context of this handler.
  * {@link BProcess_Terminate} or {@link BProcess_Kill} must not be called
  * after this handler is called.
- * 
+ *
  * @param user as in {@link BProcess_InitWithFds} or {@link BProcess_Init}
  * @param normally whether the child process terminated normally (0 or 1)
  * @param normally_exit_status if the child process terminated normally, its exit
@@ -83,7 +83,7 @@ typedef struct {
  * Initializes the process manager.
  * There may be at most one process manager at any given time. This restriction is not
  * enforced, however.
- * 
+ *
  * @param o the object
  * @param reactor reactor we live in
  * @return 1 on success, 0 on failure
@@ -93,7 +93,7 @@ int BProcessManager_Init (BProcessManager *o, BReactor *reactor) WARN_UNUSED;
 /**
  * Frees the process manager.
  * There must be no {@link BProcess} objects using this process manager.
- * 
+ *
  * @param o the object
  */
 void BProcessManager_Free (BProcessManager *o);
@@ -111,7 +111,7 @@ struct BProcess_params {
  * function call.
  * If no file descriptor is mapped to a standard stream (file descriptors 0, 1, 2),
  * then /dev/null will be opened in the child for that standard stream.
- * 
+ *
  * @param o the object
  * @param m process manager
  * @param handler handler called when the process terminates
@@ -136,7 +136,7 @@ int BProcess_Init2 (BProcess *o, BProcessManager *m, BProcess_handler handler, v
  * function call.
  * If no file descriptor is mapped to a standard stream (file descriptors 0, 1, 2),
  * then /dev/null will be opened in the child for that standard stream.
- * 
+ *
  * @param o the object
  * @param m process manager
  * @param handler handler called when the process terminates
@@ -157,7 +157,7 @@ int BProcess_InitWithFds (BProcess *o, BProcessManager *m, BProcess_handler hand
  * Initializes the process.
  * Like {@link BProcess_InitWithFds}, but without file descriptor mapping.
  * 'file', 'argv' and 'username' arguments are only used during this function call.
- * 
+ *
  * @param o the object
  * @param m process manager
  * @param handler handler called when the process terminates
@@ -174,7 +174,7 @@ int BProcess_Init (BProcess *o, BProcessManager *m, BProcess_handler handler, vo
  * This does not do anything with the actual child process; it only prevents the user to wait
  * for its termination. If the process terminates while a process manager is running, it will still
  * be waited for (and will not become a zombie).
- * 
+ *
  * @param o the object
  */
 void BProcess_Free (BProcess *o);
@@ -182,7 +182,7 @@ void BProcess_Free (BProcess *o);
 /**
  * Sends the process the SIGTERM signal.
  * Success of this action does NOT mean that the child has terminated.
- * 
+ *
  * @param o the object
  * @return 1 on success, 0 on failure
  */
@@ -191,7 +191,7 @@ int BProcess_Terminate (BProcess *o);
 /**
  * Sends the process the SIGKILL signal.
  * Success of this action does NOT mean that the child has terminated.
- * 
+ *
  * @param o the object
  * @return 1 on success, 0 on failure
  */

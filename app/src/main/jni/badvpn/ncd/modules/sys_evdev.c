@@ -1,9 +1,9 @@
 /**
  * @file sys_evdev.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,11 +25,11 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Linux event device module.
- * 
+ *
  * Synopsis: sys.evdev(string device)
  * Description: reports input events from a Linux event device. Transitions up when an event is
  *   detected, and goes down waiting for the next event when sys.evdev::nextevent() is called.
@@ -41,7 +41,7 @@
  *     (struct input_event).code
  *   string code - symbolic event code (e.g. KEY_ESC. KEY_1, KEY_2, BTN_LEFT), corrresponding
  *     to (struct input_event).code, or "unknown"
- * 
+ *
  * Synopsis: sys.evdev::nextevent()
  * Description: makes the evdev module transition down in order to report the next event.
  */
@@ -112,7 +112,7 @@ static void device_handler (struct instance *o, int events)
         instance_free(o, 1);
         return;
     }
-    
+
     int res = read(o->evdev_fd, &o->event, sizeof(o->event));
     if (res < 0) {
         ModuleLog(o->i, BLOG_ERROR, "read failed");
@@ -124,13 +124,13 @@ static void device_handler (struct instance *o, int events)
         instance_free(o, 1);
         return;
     }
-    
+
     // stop reading
     BReactor_SetFileDescriptorEvents(o->i->params->iparams->reactor, &o->bfd, 0);
-    
+
     // set processing
     o->processing = 1;
-    
+
     // signal up
     NCDModuleInst_Backend_Up(o->i);
 }
@@ -138,13 +138,13 @@ static void device_handler (struct instance *o, int events)
 static void device_nextevent (struct instance *o)
 {
     ASSERT(o->processing)
-    
+
     // start reading
     BReactor_SetFileDescriptorEvents(o->i->params->iparams->reactor, &o->bfd, BREACTOR_READ);
-    
+
     // set not processing
     o->processing = 0;
-    
+
     // signal down
     NCDModuleInst_Backend_Down(o->i);
 }
@@ -153,7 +153,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // check arguments
     NCDValRef device_arg;
     if (!NCDVal_ListRead(params->args, 1, &device_arg)) {
@@ -164,14 +164,14 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // null terminate device
     NCDValNullTermString device_nts;
     if (!NCDVal_StringNullTerminate(device_arg, &device_nts)) {
         ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
         goto fail0;
     }
-    
+
     // open device
     o->evdev_fd = open(device_nts.data, O_RDONLY);
     NCDValNullTermString_Free(&device_nts);
@@ -179,13 +179,13 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "open failed");
         goto fail0;
     }
-    
+
     // set non-blocking
     if (!badvpn_set_nonblocking(o->evdev_fd)) {
         ModuleLog(o->i, BLOG_ERROR, "badvpn_set_nonblocking failed");
         goto fail1;
     }
-    
+
     // init BFileDescriptor
     BFileDescriptor_Init(&o->bfd, o->evdev_fd, (BFileDescriptor_handler)device_handler, o);
     if (!BReactor_AddFileDescriptor(o->i->params->iparams->reactor, &o->bfd)) {
@@ -193,11 +193,11 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         goto fail1;
     }
     BReactor_SetFileDescriptorEvents(o->i->params->iparams->reactor, &o->bfd, BREACTOR_READ);
-    
+
     // set not processing
     o->processing = 0;
     return;
-    
+
 fail1:
     if (close(o->evdev_fd) < 0) {
         ModuleLog(o->i, BLOG_ERROR, "close failed");
@@ -210,13 +210,13 @@ void instance_free (struct instance *o, int is_error)
 {
     // free BFileDescriptor
     BReactor_RemoveFileDescriptor(o->i->params->iparams->reactor, &o->bfd);
-    
+
     // close device.
     // Ignore close error which happens if the device is removed.
     if (close(o->evdev_fd) < 0) {
         ModuleLog(o->i, BLOG_ERROR, "close failed");
     }
-    
+
     if (is_error) {
         NCDModuleInst_Backend_DeadError(o->i);
     } else {
@@ -234,32 +234,32 @@ static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValR
 {
     struct instance *o = vo;
     ASSERT(o->processing)
-    
+
     if (name == NCD_STRING_TYPE) {
         *out = NCDVal_NewString(mem, evdev_type_to_str(o->event.type));
         return 1;
     }
-    
+
     if (name == ModuleString(o->i, STRING_VALUE)) {
         char str[50];
         snprintf(str, sizeof(str), "%"PRIi32, o->event.value);
         *out = NCDVal_NewString(mem, str);
         return 1;
     }
-    
+
     if (name == ModuleString(o->i, STRING_CODE_NUMERIC)) {
         *out = ncd_make_uintmax(mem, o->event.code);
         return 1;
     }
-    
+
     if (name == ModuleString(o->i, STRING_CODE)) {
         const char *str = "unknown";
-        
+
         #define MAKE_CASE(_evname_, _name_) \
             case _evname_: \
                 str = evdev_##_name_##_to_str(o->event.code); \
                 break;
-        
+
         switch (o->event.type) {
             #ifdef EV_KEY
             MAKE_CASE(EV_KEY, key)
@@ -289,11 +289,11 @@ static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValR
             MAKE_CASE(EV_FF_STATUS, ffstatus)
             #endif
         }
-        
+
         *out = NCDVal_NewString(mem, str);
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -304,25 +304,25 @@ static void nextevent_func_new (void *unused, NCDModuleInst *i, const struct NCD
         ModuleLog(i, BLOG_ERROR, "wrong arity");
         goto fail0;
     }
-    
+
     // get method object
     struct instance *mo = NCDModuleInst_Backend_GetUser((NCDModuleInst *)params->method_user);
-    
+
     // make sure we are currently reporting an event
     if (!mo->processing) {
         ModuleLog(i, BLOG_ERROR, "not reporting an event");
         goto fail0;
     }
-    
+
     // signal up.
     // Do it before finishing the event so our process does not advance any further if
     // we would be killed the event provider going down.
     NCDModuleInst_Backend_Up(i);
-    
+
     // wait for next event
     device_nextevent(mo);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }

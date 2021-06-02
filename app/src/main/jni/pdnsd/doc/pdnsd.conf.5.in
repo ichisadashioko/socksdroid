@@ -1,17 +1,17 @@
 .\" Generated automatically from the html documentation by html2confman.pl
-.\" 
+.\"
 .\" Manpage for pdnsd.conf (pdnsd configuration file)
-.\" 
+.\"
 .\" Copyright (C) 2000, 2001 Thomas Moestl
 .\" Copyright (C) 2003, 2004, 2005, 2006, 2007 Paul A. Rombouts
-.\" 
+.\"
 .\" This manual is a part of the pdnsd package, and may be distributed in
 .\" original or modified  form  under  terms  of  the  GNU  General  Public
 .\" License,  as  published by the Free Software Foundation; either version
 .\" 3, or (at your option) any later version.
 .\" You can find a copy of the GNU GPL in the file COPYING in the source
 .\" or documentation directory.
-.\" 
+.\"
 .TH PDNSD.CONF 5 "Apr 2012" "pdnsd @fullversion@"
 .SH NAME
 pdnsd.conf \- The configuration file for pdnsd
@@ -210,7 +210,7 @@ The default is auth.
 .B run_as=\fIstring\fP;
 This option allows you to let pdnsd change its user and group id after operations that needed
 privileges have been done. This helps minimize security risks and is therefore recommended. The
-supplied string gives a user name whose user id and primary group id are taken. 
+supplied string gives a user name whose user id and primary group id are taken.
 .br
 A little more details: after reading the config file, becoming a daemon (if specified) and starting
 the server status thread, the main thread changes its gid and uid, as do all newly created threads
@@ -665,7 +665,7 @@ however, a test is forced when a query times out and the timestamp is reset then
 If you specify onquery instead of a timeout, the interface will be
 tested before every query. This is to prevent automatically dialing
 interfaces (diald/pppd or ippp) to dial on dns queries. It is intended to be
-used in connection with an interface-testing uptest ;\-) 
+used in connection with an interface-testing uptest ;\-)
 .br
 Note that using uptest=exec, you might run into performance problems
 on slow machines when you use that option.
@@ -1067,7 +1067,7 @@ There is something special about the name in the second section:
 when a resolver wants to get a host name from an internet address,
 it composes an address that is built of the IP address in reverse byte order
 (1.0.0.127 instead of 127.0.0.1) where each byte of the adress written
-as number constitutes a sub-domain under the domain in-addr.arpa. 
+as number constitutes a sub-domain under the domain in-addr.arpa.
 .br
 So, if you want to compose an adress for reverse resolving, take your ip in dotted notation (e.g. 1.2.3.4),
 reverse the byte order (4.3.2.1) and append in-addr.arpa. (4.3.2.1.in-addr.arpa.)
@@ -1132,7 +1132,7 @@ Apart from greater consistency, the advantage is that you can now specify as man
 .B soa=\fIstring\fP,\fIstring\fP,\fInumber\fP,\fItimespec\fP,\fItimespec\fP,\fItimespec\fP,\fItimespec\fP;
 This defines a soa (start of authority) record. The first string is the
 domain name of the server and should be equal to the name you specified as
-owner. 
+owner.
 .br
 The second string specifies the email address of the maintainer of the name
 server. It is also specified as a domain name, so you will have to replace the

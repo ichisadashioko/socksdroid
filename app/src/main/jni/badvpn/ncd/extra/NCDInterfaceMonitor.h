@@ -1,9 +1,9 @@
 /**
  * @file NCDInterfaceMonitor.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -74,7 +74,7 @@ struct NCDInterfaceMonitor_event {
  * Note that the event reporter does not keep any interface state, and as such may
  * report redundant events. You should therefore handle events in an idempotent
  * fashion.
- * 
+ *
  * @param event.event event type. One of:
  *        - NCDIFMONITOR_EVENT_LINK_UP, NCDIFMONITOR_EVENT_LINK_DOWN,
  *        - NCDIFMONITOR_EVENT_IPV4_ADDR_ADDED, NCDIFMONITOR_EVENT_IPV4_ADDR_REMOVED,
@@ -125,7 +125,7 @@ typedef struct {
  * Initializes the event reporter.
  * The reporter is not paused initially.
  * {@link BNetwork_GlobalInit} must have been done.
- * 
+ *
  * @param ifindex index of network interface to report events for
  * @param watch_events mask specifying what kind of events to report. Valid flags are
  *        NCDIFMONITOR_WATCH_LINK, NCDIFMONITOR_WATCH_IPV4_ADDR, NCDIFMONITOR_WATCH_IPV6_ADDR.

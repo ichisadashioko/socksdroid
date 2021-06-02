@@ -1,9 +1,9 @@
 /**
  * @file BLog.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -58,7 +58,7 @@ static void stdout_log (int channel, int level, const char *msg)
 #ifndef ANDROID
     fprintf(stdout, "%s(%s): %s\n", level_names[level], blog_global.channels[channel].name, msg);
 #else
-    __android_log_print(ANDROID_LOG_DEBUG, "tun2socks", 
+    __android_log_print(ANDROID_LOG_DEBUG, "tun2socks",
             "%s(%s): %s\n", level_names[level], blog_global.channels[channel].name, msg);
 #endif
 }
@@ -68,7 +68,7 @@ static void stderr_log (int channel, int level, const char *msg)
 #ifndef ANDROID
     fprintf(stderr, "%s(%s): %s\n", level_names[level], blog_global.channels[channel].name, msg);
 #else
-    __android_log_print(ANDROID_LOG_ERROR, "tun2socks", 
+    __android_log_print(ANDROID_LOG_ERROR, "tun2socks",
             "%s(%s): %s\n", level_names[level], blog_global.channels[channel].name, msg);
 #endif
 }

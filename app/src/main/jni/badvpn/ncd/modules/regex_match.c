@@ -1,9 +1,9 @@
 /**
  * @file regex_match.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,19 +25,19 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Regular expression matching module.
- * 
+ *
  * Synopsis:
  *   regex_match(string input, string regex)
- * 
+ *
  * Variables:
  *   succeeded - "true" or "false", indicating whether input matched regex
  *   matchN - for N=0,1,2,..., the matching data for the N-th subexpression
  *     (match0 = whole match)
- * 
+ *
  * Description:
  *   Matches 'input' with the POSIX extended regular expression 'regex'.
  *   'regex' must be a string without null bytes, but 'input' can contain null bytes.
@@ -46,13 +46,13 @@
  *   The input and regex strings are interpreted according to the POSIX regex functions
  *   (regcomp(), regexec()); in particular, the current locale setting affects the
  *   interpretation.
- * 
+ *
  * Synopsis:
  *   regex_replace(string input, list(string) regex, list(string) replace)
- * 
+ *
  * Variables:
  *   string (empty) - transformed input
- * 
+ *
  * Description:
  *   Replaces matching parts of a string. Replacement is performed by repetedly matching
  *   the remaining part of the string with all regular expressions. On each step, out of
@@ -102,7 +102,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef input_arg;
     NCDValRef regex_arg;
@@ -116,20 +116,20 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     }
     o->input = NCDVal_StringData(input_arg);
     o->input_len = NCDVal_StringLength(input_arg);
-    
+
     // make sure we don't overflow regoff_t
     if (o->input_len > INT_MAX) {
         ModuleLog(o->i, BLOG_ERROR, "input string too long");
         goto fail0;
     }
-    
+
     // null terminate regex
     NCDValNullTermString regex_nts;
     if (!NCDVal_StringNullTerminate(regex_arg, &regex_nts)) {
         ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
         goto fail0;
     }
-    
+
     // compile regex
     regex_t preg;
     int ret = regcomp(&preg, regex_nts.data, REG_EXTENDED);
@@ -138,19 +138,19 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "regcomp failed (error=%d)", ret);
         goto fail0;
     }
-    
+
     // execute match
     o->matches[0].rm_so = 0;
     o->matches[0].rm_eo = o->input_len;
     o->succeeded = (regexec(&preg, o->input, MAX_MATCHES, o->matches, REG_STARTEND) == 0);
-    
+
     // free regex
     regfree(&preg);
-    
+
     // signal up
     NCDModuleInst_Backend_Up(o->i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -158,29 +158,29 @@ fail0:
 static int func_getvar (void *vo, const char *name, NCDValMem *mem, NCDValRef *out)
 {
     struct instance *o = vo;
-    
+
     if (!strcmp(name, "succeeded")) {
         *out = ncd_make_boolean(mem, o->succeeded, o->i->params->iparams->string_index);
         return 1;
     }
-    
+
     size_t pos;
     uintmax_t n;
     if ((pos = string_begins_with(name, "match")) && parse_unsigned_integer(name + pos, &n)) {
         if (o->succeeded && n < MAX_MATCHES && o->matches[n].rm_so >= 0) {
             regmatch_t *m = &o->matches[n];
-            
+
             ASSERT(m->rm_so <= o->input_len)
             ASSERT(m->rm_eo >= m->rm_so)
             ASSERT(m->rm_eo <= o->input_len)
-            
+
             size_t len = m->rm_eo - m->rm_so;
-            
+
             *out = NCDVal_NewStringBin(mem, (uint8_t *)o->input + m->rm_so, len);
             return 1;
         }
     }
-    
+
     return 0;
 }
 
@@ -188,7 +188,7 @@ static void replace_func_new (void *vo, NCDModuleInst *i, const struct NCDModule
 {
     struct replace_instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef input_arg;
     NCDValRef regex_arg;
@@ -201,14 +201,14 @@ static void replace_func_new (void *vo, NCDModuleInst *i, const struct NCDModule
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail1;
     }
-    
+
     // check number of regex/replace
     if (NCDVal_ListCount(regex_arg) != NCDVal_ListCount(replace_arg)) {
         ModuleLog(i, BLOG_ERROR, "number of regex's is not the same as number of replacements");
         goto fail1;
     }
     size_t num_regex = NCDVal_ListCount(regex_arg);
-    
+
     // allocate array for compiled regex's
     regex_t *regs = BAllocArray(num_regex, sizeof(regs[0]));
     if (!regs) {
@@ -216,46 +216,46 @@ static void replace_func_new (void *vo, NCDModuleInst *i, const struct NCDModule
         goto fail1;
     }
     size_t num_done_regex = 0;
-    
+
     // compile regex's, check arguments
     while (num_done_regex < num_regex) {
         NCDValRef regex = NCDVal_ListGet(regex_arg, num_done_regex);
         NCDValRef replace = NCDVal_ListGet(replace_arg, num_done_regex);
-        
+
         if (!NCDVal_IsStringNoNulls(regex) || !NCDVal_IsString(replace)) {
             ModuleLog(i, BLOG_ERROR, "wrong regex/replace type for pair %zu", num_done_regex);
             goto fail2;
         }
-        
+
         // null terminate regex
         NCDValNullTermString regex_nts;
         if (!NCDVal_StringNullTerminate(regex, &regex_nts)) {
             ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
             goto fail2;
         }
-        
+
         int res = regcomp(&regs[num_done_regex], regex_nts.data, REG_EXTENDED);
         NCDValNullTermString_Free(&regex_nts);
         if (res != 0) {
             ModuleLog(i, BLOG_ERROR, "regcomp failed for pair %zu (error=%d)", num_done_regex, res);
             goto fail2;
         }
-        
+
         num_done_regex++;
     }
-    
+
     // init output string
     ExpString out;
     if (!ExpString_Init(&out)) {
         ModuleLog(i, BLOG_ERROR, "ExpString_Init failed");
         goto fail2;
     }
-    
+
     // input state
     const char *in = NCDVal_StringData(input_arg);
     size_t in_pos = 0;
     size_t in_len = NCDVal_StringLength(input_arg);
-    
+
     // process input
     while (in_pos < in_len) {
         // find first match
@@ -272,7 +272,7 @@ static void replace_func_new (void *vo, NCDModuleInst *i, const struct NCDModule
                 match = this_match;
             }
         }
-        
+
         // if no match, append remaining data and finish
         if (!have_match) {
             if (!ExpString_AppendBinary(&out, (const uint8_t *)in + in_pos, in_len - in_pos)) {
@@ -281,39 +281,39 @@ static void replace_func_new (void *vo, NCDModuleInst *i, const struct NCDModule
             }
             break;
         }
-        
+
         // append data before match
         if (!ExpString_AppendBinary(&out, (const uint8_t *)in + in_pos, match.rm_so)) {
             ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinary failed");
             goto fail3;
         }
-        
+
         // append replacement data
         NCDValRef replace = NCDVal_ListGet(replace_arg, match_regex);
         if (!ExpString_AppendBinary(&out, (const uint8_t *)NCDVal_StringData(replace), NCDVal_StringLength(replace))) {
             ModuleLog(i, BLOG_ERROR, "ExpString_AppendBinary failed");
             goto fail3;
         }
-        
+
         in_pos += match.rm_eo;
     }
-    
+
     // set output
     o->output = ExpString_Get(&out);
     o->output_len = ExpString_Length(&out);
-    
+
     // free compiled regex's
     while (num_done_regex-- > 0) {
         regfree(&regs[num_done_regex]);
     }
-    
+
     // free array
     BFree(regs);
-    
+
     // signal up
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail3:
     ExpString_Free(&out);
 fail2:
@@ -328,22 +328,22 @@ fail1:
 static void replace_func_die (void *vo)
 {
     struct replace_instance *o = vo;
-    
+
     // free output
     BFree(o->output);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
 static int replace_func_getvar (void *vo, const char *name, NCDValMem *mem, NCDValRef *out)
 {
     struct replace_instance *o = vo;
-    
+
     if (!strcmp(name, "")) {
         *out = NCDVal_NewStringBin(mem, (uint8_t *)o->output, o->output_len);
         return 1;
     }
-    
+
     return 0;
 }
 

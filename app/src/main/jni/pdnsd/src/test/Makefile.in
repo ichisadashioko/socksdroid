@@ -164,7 +164,7 @@ threadlib = @threadlib@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-TESTADDSRC = 
+TESTADDSRC =
 #TESTADDSRC= netdev.c error.c thread.c helpers.c icmp.c
 TESTDEPS = netdev.o error.o thread.o helpers.o icmp.o
 TESTOBJS = netdev.o error.o thread.o helpers.o icmp.o
@@ -217,16 +217,16 @@ $(am__aclocal_m4_deps):
 
 clean-noinstPROGRAMS:
 	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
-if_up$(EXEEXT): $(if_up_OBJECTS) $(if_up_DEPENDENCIES) 
+if_up$(EXEEXT): $(if_up_OBJECTS) $(if_up_DEPENDENCIES)
 	@rm -f if_up$(EXEEXT)
 	$(LINK) $(if_up_OBJECTS) $(if_up_LDADD) $(LIBS)
-is_local_addr$(EXEEXT): $(is_local_addr_OBJECTS) $(is_local_addr_DEPENDENCIES) 
+is_local_addr$(EXEEXT): $(is_local_addr_OBJECTS) $(is_local_addr_DEPENDENCIES)
 	@rm -f is_local_addr$(EXEEXT)
 	$(LINK) $(is_local_addr_OBJECTS) $(is_local_addr_LDADD) $(LIBS)
-random$(EXEEXT): $(random_OBJECTS) $(random_DEPENDENCIES) 
+random$(EXEEXT): $(random_OBJECTS) $(random_DEPENDENCIES)
 	@rm -f random$(EXEEXT)
 	$(LINK) $(random_OBJECTS) $(random_LDADD) $(LIBS)
-tping$(EXEEXT): $(tping_OBJECTS) $(tping_DEPENDENCIES) 
+tping$(EXEEXT): $(tping_OBJECTS) $(tping_DEPENDENCIES)
 	@rm -f tping$(EXEEXT)
 	$(LINK) $(tping_OBJECTS) $(tping_LDADD) $(LIBS)
 

@@ -1,9 +1,9 @@
 /**
  * @file SAvl_impl.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -43,21 +43,21 @@ static int SAvl_Insert (SAvl *o, SAvlArg arg, SAvlEntry *entry, SAvlEntry **out_
 #if SAVL_PARAM_FEATURE_COUNTS
     ASSERT(SAvl_Count(o, arg) < SAVL_PARAM_VALUE_COUNT_MAX)
 #endif
-    
+
     SAvl__TreeRef out_ref;
     int res = SAvl__Tree_Insert(&o->tree, arg, SAvl__TreeDeref(arg, entry), &out_ref);
-    
+
     if (out_existing) {
         *out_existing = out_ref.link;
     }
-    
+
     return res;
 }
 
 static void SAvl_Remove (SAvl *o, SAvlArg arg, SAvlEntry *entry)
 {
     ASSERT(entry)
-    
+
     SAvl__Tree_Remove(&o->tree, arg, SAvl__TreeDeref(arg, entry));
 }
 
@@ -116,7 +116,7 @@ static SAvlEntry * SAvl_GetLast (const SAvl *o, SAvlArg arg)
 static SAvlEntry * SAvl_GetNext (const SAvl *o, SAvlArg arg, SAvlEntry *entry)
 {
     ASSERT(entry)
-    
+
     SAvl__TreeRef ref = SAvl__Tree_GetNext(&o->tree, arg, SAvl__TreeDeref(arg, entry));
     return ref.link;
 }
@@ -124,7 +124,7 @@ static SAvlEntry * SAvl_GetNext (const SAvl *o, SAvlArg arg, SAvlEntry *entry)
 static SAvlEntry * SAvl_GetPrev (const SAvl *o, SAvlArg arg, SAvlEntry *entry)
 {
     ASSERT(entry)
-    
+
     SAvl__TreeRef ref = SAvl__Tree_GetPrev(&o->tree, arg, SAvl__TreeDeref(arg, entry));
     return ref.link;
 }
@@ -149,7 +149,7 @@ static SAvlCount SAvl_Count (const SAvl *o, SAvlArg arg)
 static SAvlCount SAvl_IndexOf (const SAvl *o, SAvlArg arg, SAvlEntry *entry)
 {
     ASSERT(entry)
-    
+
     return SAvl__Tree_IndexOf(&o->tree, arg, SAvl__TreeDeref(arg, entry));
 }
 

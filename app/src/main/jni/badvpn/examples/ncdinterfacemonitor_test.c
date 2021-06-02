@@ -1,9 +1,9 @@
 /**
  * @file ncdinterfacemonitor_test.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -50,46 +50,46 @@ static void monitor_handler_error (void *unused);
 int main (int argc, char **argv)
 {
     int ret = 1;
-    
+
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <interface>\n", (argc > 0 ? argv[0] : ""));
         goto fail0;
     }
-    
+
     int ifindex;
     if (!badvpn_get_iface_info(argv[1], NULL, NULL, &ifindex)) {
         DEBUG("get_iface_info failed");
         goto fail0;
     }
-    
+
     BTime_Init();
-    
+
     BLog_InitStdout();
-    
+
     if (!BNetwork_GlobalInit()) {
         DEBUG("BNetwork_GlobalInit failed");
         goto fail1;
     }
-    
+
     if (!BReactor_Init(&reactor)) {
         DEBUG("BReactor_Init failed");
         goto fail1;
     }
-    
+
     if (!BSignal_Init(&reactor, signal_handler, NULL)) {
         DEBUG("BSignal_Init failed");
         goto fail2;
     }
-    
+
     int watch_flags = NCDIFMONITOR_WATCH_LINK|NCDIFMONITOR_WATCH_IPV4_ADDR|NCDIFMONITOR_WATCH_IPV6_ADDR;
-    
+
     if (!NCDInterfaceMonitor_Init(&monitor, ifindex, watch_flags, &reactor, NULL, monitor_handler, monitor_handler_error)) {
         DEBUG("NCDInterfaceMonitor_Init failed");
         goto fail3;
     }
-    
+
     ret = BReactor_Exec(&reactor);
-    
+
     NCDInterfaceMonitor_Free(&monitor);
 fail3:
     BSignal_Finish();
@@ -99,14 +99,14 @@ fail1:
     BLog_Free();
 fail0:
     DebugObjectGlobal_Finish();
-    
+
     return ret;
 }
 
 void signal_handler (void *user)
 {
     DEBUG("termination requested");
-    
+
     BReactor_Quit(&reactor, 1);
 }
 
@@ -118,26 +118,26 @@ void monitor_handler (void *unused, struct NCDInterfaceMonitor_event event)
             const char *type = (event.event == NCDIFMONITOR_EVENT_LINK_UP) ? "up" : "down";
             printf("link %s\n", type);
         } break;
-        
+
         case NCDIFMONITOR_EVENT_IPV4_ADDR_ADDED:
         case NCDIFMONITOR_EVENT_IPV4_ADDR_REMOVED: {
             const char *type = (event.event == NCDIFMONITOR_EVENT_IPV4_ADDR_ADDED) ? "added" : "removed";
             uint8_t *addr = (uint8_t *)&event.u.ipv4_addr.addr;
             printf("ipv4 addr %s %d.%d.%d.%d/%d\n", type, (int)addr[0], (int)addr[1], (int)addr[2], (int)addr[3], event.u.ipv4_addr.addr.prefix);
         } break;
-        
+
         case NCDIFMONITOR_EVENT_IPV6_ADDR_ADDED:
         case NCDIFMONITOR_EVENT_IPV6_ADDR_REMOVED: {
             const char *type = (event.event == NCDIFMONITOR_EVENT_IPV6_ADDR_ADDED) ? "added" : "removed";
-            
+
             char str[IPADDR6_PRINT_MAX];
             ipaddr6_print_addr(event.u.ipv6_addr.addr.addr, str);
-            
+
             int dynamic = !!(event.u.ipv6_addr.addr_flags & NCDIFMONITOR_ADDR_FLAG_DYNAMIC);
-            
+
             printf("ipv6 addr %s %s/%d scope=%"PRIu8" dynamic=%d\n", type, str, event.u.ipv6_addr.addr.prefix, event.u.ipv6_addr.scope, dynamic);
         } break;
-        
+
         default: ASSERT(0);
     }
 }
@@ -145,6 +145,6 @@ void monitor_handler (void *unused, struct NCDInterfaceMonitor_event event)
 void monitor_handler_error (void *unused)
 {
     DEBUG("monitor error");
-    
+
     BReactor_Quit(&reactor, 1);
 }

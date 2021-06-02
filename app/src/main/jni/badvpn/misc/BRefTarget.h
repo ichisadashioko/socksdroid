@@ -1,9 +1,9 @@
 /**
  * @file BRefTarget.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -77,10 +77,10 @@ static int BRefTarget_Ref (BRefTarget *o) WARN_UNUSED;
 static void BRefTarget_Init (BRefTarget *o, BRefTarget_func_release func_release)
 {
     ASSERT(func_release)
-    
+
     o->func_release = func_release;
     o->refcnt = 1;
-    
+
     DebugObject_Init(&o->d_obj);
 }
 
@@ -88,9 +88,9 @@ static void BRefTarget_Deref (BRefTarget *o)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->refcnt > 0)
-    
+
     o->refcnt--;
-    
+
     if (o->refcnt == 0) {
         DebugObject_Free(&o->d_obj);
         o->func_release(o);
@@ -101,13 +101,13 @@ static int BRefTarget_Ref (BRefTarget *o)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->refcnt > 0)
-    
+
     if (o->refcnt == INT_MAX) {
         return 0;
     }
-    
+
     o->refcnt++;
-    
+
     return 1;
 }
 

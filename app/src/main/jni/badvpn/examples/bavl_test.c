@@ -1,9 +1,9 @@
 /**
  * @file bavl_test.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -57,25 +57,25 @@ int main (int argc, char **argv)
 {
     int num_nodes;
     int num_random_delete;
-    
+
     if (argc != 3 || (num_nodes = atoi(argv[1])) <= 0 || (num_random_delete = atoi(argv[2])) < 0) {
         fprintf(stderr, "Usage: %s <num> <numrandomdelete>\n", (argc > 0 ? argv[0] : NULL));
         return 1;
     }
-    
+
     struct mynode *nodes = (struct mynode *)BAllocArray(num_nodes, sizeof(*nodes));
     ASSERT_FORCE(nodes)
-    
+
     int *values_ins = (int *)BAllocArray(num_nodes, sizeof(int));
     ASSERT_FORCE(values_ins)
-    
+
     int *values = (int *)BAllocArray(num_random_delete, sizeof(int));
     ASSERT_FORCE(values)
-    
+
     BAVL avl;
     BAVL_Init(&avl, OFFSET_DIFF(struct mynode, num, avl_node), (BAVL_comparator)int_comparator, NULL);
     verify(&avl);
-    
+
     printf("Inserting random values...\n");
     int inserted = 0;
     BRandom_randomize((uint8_t *)values_ins, num_nodes * sizeof(int));
@@ -91,7 +91,7 @@ int main (int argc, char **argv)
     }
     printf("Inserted %d entries\n", inserted);
     verify(&avl);
-    
+
     printf("Removing random entries...\n");
     int removed1 = 0;
     BRandom_randomize((uint8_t *)values, num_random_delete * sizeof(int));
@@ -106,7 +106,7 @@ int main (int argc, char **argv)
     }
     printf("Removed %d entries\n", removed1);
     verify(&avl);
-    
+
     printf("Removing remaining...\n");
     int removed2 = 0;
     while (!BAVL_IsEmpty(&avl)) {
@@ -120,10 +120,10 @@ int main (int argc, char **argv)
     ASSERT_FORCE(BAVL_IsEmpty(&avl))
     ASSERT_FORCE(removed1 + removed2 == inserted)
     verify(&avl);
-    
+
     BFree(nodes);
     BFree(values_ins);
     BFree(values);
-    
+
     return 0;
 }

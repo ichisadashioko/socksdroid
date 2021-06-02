@@ -39,17 +39,17 @@ static int remove_tuntap (const char *ifname, int is_tun);
 int main (int argc, char *argv[])
 {
     int res = 1;
-    
+
     // open standard streams
     open_standard_streams();
-    
+
     // parse command-line arguments
     if (!parse_arguments(argc, argv)) {
         fprintf(stderr, "Error: Failed to parse arguments\n");
         print_help(argv[0]);
         goto fail0;
     }
-    
+
     // handle --help and --version
     if (options.help) {
         print_version();
@@ -60,7 +60,7 @@ int main (int argc, char *argv[])
         print_version();
         return 0;
     }
-    
+
     if (options.op == OP_MKTUN || options.op == OP_MKTAP) {
         if (!options.user && !options.group) {
             fprintf(stderr, "WARNING: with neither --user nor --group, anyone will be able to use the device!\n");
@@ -69,7 +69,7 @@ int main (int argc, char *argv[])
     } else {
         res = !remove_tuntap(options.device_name, options.op == OP_RMTUN);
     }
-    
+
 fail0:
     return res;
 }
@@ -97,14 +97,14 @@ int parse_arguments (int argc, char *argv[])
     if (argc <= 0) {
         return 0;
     }
-    
+
     options.help = 0;
     options.version = 0;
     options.op = -1;
     options.device_name = NULL;
     options.user = NULL;
     options.group = NULL;
-    
+
     for (int i = 1; i < argc; i++) {
         char *arg = argv[i];
         if (!strcmp(arg, "--help")) {
@@ -186,66 +186,66 @@ int parse_arguments (int argc, char *argv[])
             return 0;
         }
     }
-    
+
     if (options.help || options.version) {
         return 1;
     }
-    
+
     if (options.op < 0) {
         fprintf(stderr, "--mktun, --mktap --rmtun or --rmtap is required\n");
         return 0;
     }
-    
+
     if ((options.user || options.group) && options.op != OP_MKTUN && options.op != OP_MKTAP) {
         fprintf(stderr, "--user and --group only make sense for --mktun and --mktap\n");
         return 0;
     }
-    
+
     return 1;
 }
 
 static int make_tuntap (const char *ifname, int is_tun, const char *user, const char *group)
 {
     int res = 0;
-    
+
     if (strlen(ifname) >= IFNAMSIZ) {
         fprintf(stderr, "Error: ifname too long\n");
         goto fail0;
     }
-    
+
     int fd = open(TUN_DEVNODE, O_RDWR);
     if (fd < 0) {
         perror("open");
         fprintf(stderr, "Error: open tun failed\n");
         goto fail0;
     }
-    
+
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(ifr));
     ifr.ifr_flags = (is_tun ? IFF_TUN : IFF_TAP);
     snprintf(ifr.ifr_name, IFNAMSIZ, "%s", ifname);
-    
+
     if (ioctl(fd, TUNSETIFF, (void *)&ifr) < 0) {
         perror("ioctl(TUNSETIFF)");
         fprintf(stderr, "Error: TUNSETIFF failed\n");
         goto fail1;
     }
-    
+
     uid_t uid = -1;
     gid_t gid = -1;
-    
+
     if (user) {
         long bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
         if (bufsize < 0) {
             bufsize = 16384;
         }
-        
+
         char *buf = malloc(bufsize);
         if (!buf) {
             fprintf(stderr, "Error: malloc failed\n");
             goto fail1;
         }
-        
+
         struct passwd pwd;
         struct passwd *res;
         getpwnam_r(user, &pwd, buf, bufsize, &res);
@@ -254,23 +254,23 @@ static int make_tuntap (const char *ifname, int is_tun, const char *user, const 
             free(buf);
             goto fail1;
         }
-        
+
         uid = pwd.pw_uid;
         free(buf);
     }
-    
+
     if (group) {
         long bufsize = sysconf(_SC_GETGR_R_SIZE_MAX);
         if (bufsize < 0) {
             bufsize = 16384;
         }
-        
+
         char *buf = malloc(bufsize);
         if (!buf) {
             fprintf(stderr, "Error: malloc failed\n");
             goto fail1;
         }
-        
+
         struct group grp;
         struct group *res;
         getgrnam_r(group, &grp, buf, bufsize, &res);
@@ -279,31 +279,31 @@ static int make_tuntap (const char *ifname, int is_tun, const char *user, const 
             free(buf);
             goto fail1;
         }
-        
+
         gid = grp.gr_gid;
         free(buf);
     }
-    
+
     if (ioctl(fd, TUNSETOWNER, uid) < 0) {
         perror("ioctl(TUNSETOWNER)");
         fprintf(stderr, "Error: TUNSETOWNER failed\n");
         goto fail1;
     }
-    
+
     if (ioctl(fd, TUNSETGROUP, gid) < 0) {
         perror("ioctl(TUNSETGROUP)");
         fprintf(stderr, "Error: TUNSETGROUP failed\n");
         goto fail1;
     }
-    
+
     if (ioctl(fd, TUNSETPERSIST, (void *)1) < 0) {
         perror("ioctl(TUNSETPERSIST)");
         fprintf(stderr, "Error: TUNSETPERSIST failed\n");
         goto fail1;
     }
-    
+
     res = 1;
-    
+
 fail1:
     close(fd);
 fail0:
@@ -313,38 +313,38 @@ fail0:
 static int remove_tuntap (const char *ifname, int is_tun)
 {
     int res = 0;
-    
+
     if (strlen(ifname) >= IFNAMSIZ) {
         fprintf(stderr, "Error: ifname too long\n");
         goto fail0;
     }
-    
+
     int fd = open(TUN_DEVNODE, O_RDWR);
     if (fd < 0) {
         perror("open");
         fprintf(stderr, "Error: open tun failed\n");
         goto fail0;
     }
-    
+
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(ifr));
     ifr.ifr_flags = (is_tun ? IFF_TUN : IFF_TAP);
     snprintf(ifr.ifr_name, IFNAMSIZ, "%s", ifname);
-    
+
     if (ioctl(fd, TUNSETIFF, (void *)&ifr) < 0) {
         perror("ioctl(TUNSETIFF)");
         fprintf(stderr, "Error: TUNSETIFF failed\n");
         goto fail1;
     }
-    
+
     if (ioctl(fd, TUNSETPERSIST, (void *)0) < 0) {
         perror("ioctl(TUNSETPERSIST)");
         fprintf(stderr, "Error: TUNSETPERSIST failed\n");
         goto fail1;
     }
-    
+
     res = 1;
-    
+
 fail1:
     close(fd);
 fail0:

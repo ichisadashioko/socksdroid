@@ -1,9 +1,9 @@
 /**
  * @file grow_array.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -60,7 +60,7 @@ static int GrowArray_Init (GrowArrayObject *o, size_t capacity)
     if (capacity > GROWARRAY_MAX_CAPACITY) {
         return 0;
     }
-    
+
     if (capacity == 0) {
         o->GROWARRAY_ARRAY_MEMBER = NULL;
     } else {
@@ -68,9 +68,9 @@ static int GrowArray_Init (GrowArrayObject *o, size_t capacity)
             return 0;
         }
     }
-    
+
     o->GROWARRAY_CAPACITY_MEMBER = capacity;
-    
+
     return 1;
 }
 
@@ -97,31 +97,31 @@ static int GrowArray_DoubleUpLimit (GrowArrayObject *o, size_t limit)
     if (o->GROWARRAY_CAPACITY_MEMBER > SIZE_MAX / 2 || o->GROWARRAY_CAPACITY_MEMBER > GROWARRAY_MAX_CAPACITY / 2) {
         return 0;
     }
-    
+
     size_t newcap = 2 * o->GROWARRAY_CAPACITY_MEMBER;
     if (newcap == 0) {
         newcap = 1;
     }
-    
+
     if (newcap > limit) {
         newcap = limit;
         if (newcap == o->GROWARRAY_CAPACITY_MEMBER) {
             return 0;
         }
     }
-    
+
     void *newarr = BAllocArray(newcap, sizeof(o->GROWARRAY_ARRAY_MEMBER[0]));
     if (!newarr) {
         return 0;
     }
-    
+
     memcpy(newarr, o->GROWARRAY_ARRAY_MEMBER, o->GROWARRAY_CAPACITY_MEMBER * sizeof(o->GROWARRAY_ARRAY_MEMBER[0]));
-    
+
     BFree(o->GROWARRAY_ARRAY_MEMBER);
-    
+
     o->GROWARRAY_ARRAY_MEMBER = newarr;
     o->GROWARRAY_CAPACITY_MEMBER = newcap;
-    
+
     return 1;
 }
 

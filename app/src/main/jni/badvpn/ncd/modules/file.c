@@ -1,9 +1,9 @@
 /**
  * @file file.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,27 +25,27 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * File I/O module.
- * 
+ *
  * Synopsis:
  *   file_read(string filename)
- * 
+ *
  * Variables:
  *   string (empty) - file contents
- * 
+ *
  * Description:
  *   Reads the contents of a file. Reports an error if something goes wrong.
  *   WARNING: this uses fopen/fread/fclose, blocking the entire interpreter while
  *            the file is being read. For this reason, you should only use this
  *            to read small local files which will be read quickly, and especially
  *            not files on network mounts.
- * 
+ *
  * Synopsis:
  *   file_write(string filename, string contents)
- * 
+ *
  * Description:
  *   Writes a file, possibly overwriting an existing one. Reports an error if something
  *   goes wrong.
@@ -58,17 +58,17 @@
  *            the file is being written. For this reason, you should only use this
  *            to write small local files which will be written quickly, and especially
  *            not files on network mounts.
- * 
+ *
  * Synopsis:
  *   file_stat(string filename)
  *   file_lstat(string filename)
- * 
+ *
  * Description:
  *   Retrieves information about a file.
  *   file_stat() follows symlinks; file_lstat() does not and allows retrieving information
  *   about a symlink.
  *   WARNING: this blocks the interpreter
- * 
+ *
  * Variables:
  *   succeeded - whether the stat operation succeeded (true/false). If false, all other
  *               variables obtain the value "failed".
@@ -110,7 +110,7 @@ static void read_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIns
 {
     struct read_instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef filename_arg;
     if (!NCDVal_ListRead(params->args, 1, &filename_arg)) {
@@ -121,14 +121,14 @@ static void read_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIns
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // get null terminated name
     NCDValNullTermString filename_nts;
     if (!NCDVal_StringNullTerminate(filename_arg, &filename_nts)) {
         ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
         goto fail0;
     }
-    
+
     // read file
     int res = read_file(filename_nts.data, &o->file_data, &o->file_len);
     NCDValNullTermString_Free(&filename_nts);
@@ -136,11 +136,11 @@ static void read_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIns
         ModuleLog(i, BLOG_ERROR, "failed to read file");
         goto fail0;
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -148,22 +148,22 @@ fail0:
 static void read_func_die (void *vo)
 {
     struct read_instance *o = vo;
-    
+
     // free data
     free(o->file_data);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
 static int read_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out)
 {
     struct read_instance *o = vo;
-    
+
     if (name == NCD_STRING_EMPTY) {
         *out = NCDVal_NewStringBin(mem, o->file_data, o->file_len);
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -180,14 +180,14 @@ static void write_func_new (void *unused, NCDModuleInst *i, const struct NCDModu
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // get null terminated name
     NCDValNullTermString filename_nts;
     if (!NCDVal_StringNullTerminate(filename_arg, &filename_nts)) {
         ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
         goto fail0;
     }
-    
+
     // write file
     b_cstring contents_cstr = NCDVal_StringCstring(contents_arg);
     int res = write_file_cstring(filename_nts.data, contents_cstr, 0, contents_cstr.length);
@@ -196,11 +196,11 @@ static void write_func_new (void *unused, NCDModuleInst *i, const struct NCDModu
         ModuleLog(i, BLOG_ERROR, "failed to write file");
         goto fail0;
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -209,7 +209,7 @@ static void stat_func_new_common (void *vo, NCDModuleInst *i, const struct NCDMo
 {
     struct stat_instance *o = vo;
     o->i = i;
-    
+
     NCDValRef filename_arg;
     if (!NCDVal_ListRead(params->args, 1, &filename_arg)) {
         ModuleLog(i, BLOG_ERROR, "wrong arity");
@@ -219,20 +219,20 @@ static void stat_func_new_common (void *vo, NCDModuleInst *i, const struct NCDMo
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     o->succeeded = 0;
-    
+
     if (!NCDVal_IsStringNoNulls(filename_arg)) {
         goto out;
     }
-    
+
     // null terminate filename
     NCDValNullTermString filename_nts;
     if (!NCDVal_StringNullTerminate(filename_arg, &filename_nts)) {
         ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
         goto fail0;
     }
-    
+
     int res;
     if (is_lstat) {
         res = lstat(filename_nts.data, &o->result);
@@ -240,17 +240,17 @@ static void stat_func_new_common (void *vo, NCDModuleInst *i, const struct NCDMo
         res = stat(filename_nts.data, &o->result);
     }
     NCDValNullTermString_Free(&filename_nts);
-    
+
     if (res < 0) {
         goto out;
     }
-    
+
     o->succeeded = 1;
-    
+
 out:
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -268,15 +268,15 @@ static void lstat_func_new (void *vo, NCDModuleInst *i, const struct NCDModuleIn
 static int stat_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out)
 {
     struct stat_instance *o = vo;
-    
+
     if (name == NCD_STRING_SUCCEEDED) {
         *out = ncd_make_boolean(mem, o->succeeded, o->i->params->iparams->string_index);
         return 1;
     }
-    
+
     if (name == NCD_STRING_TYPE) {
         const char *str;
-        
+
         if (!o->succeeded) {
             str = "failed";
         } else if (S_ISREG(o->result.st_mode)) {
@@ -296,11 +296,11 @@ static int stat_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NC
         } else {
             str = "other";
         }
-        
+
         *out = NCDVal_NewString(mem, str);
         return 1;
     }
-    
+
     if (name == NCD_STRING_SIZE) {
         char str[50];
         if (!o->succeeded) {
@@ -308,11 +308,11 @@ static int stat_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NC
         } else {
             generate_decimal_repr_string((uintmax_t)o->result.st_size, str);
         }
-        
+
         *out = NCDVal_NewString(mem, str);
         return 1;
     }
-    
+
     return 0;
 }
 

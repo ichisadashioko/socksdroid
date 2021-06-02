@@ -1,9 +1,9 @@
 /**
  * @file PacketPassInterface.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -33,10 +33,10 @@ void _PacketPassInterface_job_operation (PacketPassInterface *i)
 {
     ASSERT(i->state == PPI_STATE_OPERATION_PENDING)
     DebugObject_Access(&i->d_obj);
-    
+
     // set state
     i->state = PPI_STATE_BUSY;
-    
+
     // call handler
     i->handler_operation(i->user_provider, i->job_operation_data, i->job_operation_len);
     return;
@@ -48,7 +48,7 @@ void _PacketPassInterface_job_requestcancel (PacketPassInterface *i)
     ASSERT(i->cancel_requested)
     ASSERT(i->handler_requestcancel)
     DebugObject_Access(&i->d_obj);
-    
+
     // call handler
     i->handler_requestcancel(i->user_provider);
     return;
@@ -58,10 +58,10 @@ void _PacketPassInterface_job_done (PacketPassInterface *i)
 {
     ASSERT(i->state == PPI_STATE_DONE_PENDING)
     DebugObject_Access(&i->d_obj);
-    
+
     // set state
     i->state = PPI_STATE_NONE;
-    
+
     // call handler
     i->handler_done(i->user_user);
     return;

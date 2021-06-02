@@ -1,9 +1,9 @@
 /**
  * @file BEventLock.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * A FIFO lock for events using the job queue ({@link BPending}).
  */
 
@@ -44,7 +44,7 @@
  * after requesting the lock with {@link BEventLockJob_Wait}.
  * The object was in waiting state.
  * The object enters locked state before the handler is called.
- * 
+ *
  * @param user as in {@link BEventLockJob_Init}
  */
 typedef void (*BEventLock_handler) (void *user);
@@ -73,7 +73,7 @@ typedef struct {
 
 /**
  * Initializes the object.
- * 
+ *
  * @param o the object
  * @param pg pending group
  */
@@ -83,7 +83,7 @@ void BEventLock_Init (BEventLock *o, BPendingGroup *pg);
  * Frees the object.
  * There must be no {@link BEventLockJob} objects using this lock
  * (regardless of their state).
- * 
+ *
  * @param o the object
  */
 void BEventLock_Free (BEventLock *o);
@@ -91,7 +91,7 @@ void BEventLock_Free (BEventLock *o);
 /**
  * Initializes the object.
  * The object is initialized in idle state.
- * 
+ *
  * @param o the object
  * @param l the lock
  * @param handler handler to call when the lock is aquired
@@ -101,7 +101,7 @@ void BEventLockJob_Init (BEventLockJob *o, BEventLock *l, BEventLock_handler han
 
 /**
  * Frees the object.
- * 
+ *
  * @param o the object
  */
 void BEventLockJob_Free (BEventLockJob *o);
@@ -110,7 +110,7 @@ void BEventLockJob_Free (BEventLockJob *o);
  * Requests the lock.
  * The object must be in idle state.
  * The object enters waiting state.
- * 
+ *
  * @param o the object
  */
 void BEventLockJob_Wait (BEventLockJob *o);
@@ -119,7 +119,7 @@ void BEventLockJob_Wait (BEventLockJob *o);
  * Aborts the lock request or releases the lock.
  * The object must be in waiting or locked state.
  * The object enters idle state.
- * 
+ *
  * @param o the object
  */
 void BEventLockJob_Release (BEventLockJob *o);

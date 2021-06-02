@@ -1,9 +1,9 @@
 /**
  * @file NCDInterpreter.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -57,7 +57,7 @@
 /**
  * Handler called when the interpreter has terminated, and {@link NCDInterpreter_Free}
  * can be called.
- * 
+ *
  * @param user the user member of struct {@link NCDInterpreter_params}
  * @param exit_code the exit code specified in the last interpreter termination request
  */
@@ -67,12 +67,12 @@ struct NCDInterpreter_params {
     // callbacks
     NCDInterpreter_handler_finished handler_finished;
     void *user;
-    
+
     // options
     btime_t retry_time;
     char **extra_args;
     int num_extra_args;
-    
+
     // possibly shared resources
     BReactor *reactor;
 #ifndef BADVPN_NO_PROCESS
@@ -89,7 +89,7 @@ struct NCDInterpreter_params {
 typedef struct {
     // parameters
     struct NCDInterpreter_params params;
-    
+
     // are we terminating
     int terminating;
     int main_exit_code;
@@ -112,16 +112,16 @@ typedef struct {
     // common module parameters
     struct NCDModuleInst_params module_params;
     struct NCDModuleInst_iparams module_iparams;
-    
+
     // processes
     LinkedList1 processes;
-    
+
     DebugObject d_obj;
 } NCDInterpreter;
 
 /**
  * Initializes and starts the interpreter.
- * 
+ *
  * @param o the interpreter
  * @param program the program to execute in AST format. The program must
  *                not contain any 'include' or 'include_guard' directives.
@@ -146,7 +146,7 @@ void NCDInterpreter_Free (NCDInterpreter *o);
  * NOTE: the program can request its own termination, possibly overriding the exit
  * code specified here. Expect the program to terminate even if this function was
  * not called.
- * 
+ *
  * @param o the interpreter
  * @param exit_code the exit code to be passed to {@link NCDInterpreter_handler_finished}.
  *                  This overrides any exit code set previously.

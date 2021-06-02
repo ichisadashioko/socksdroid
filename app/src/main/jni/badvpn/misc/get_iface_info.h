@@ -1,9 +1,9 @@
 /**
  * @file get_iface_info.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -43,7 +43,7 @@
 
 /**
  * Returns information about a network interface with the given name.
- * 
+ *
  * @param ifname name of interface to get information for
  * @param out_mac the MAC address will be returned here, unless NULL
  * @param out_mtu the MTU will be returned here, unless NULL
@@ -56,14 +56,14 @@ static int badvpn_get_iface_info (const char *ifname, uint8_t *out_mac, int *out
 static int badvpn_get_iface_info (const char *ifname, uint8_t *out_mac, int *out_mtu, int *out_ifindex)
 {
     ASSERT(ifname)
-    
+
     struct ifreq ifr;
-    
+
     int s = socket(AF_INET, SOCK_DGRAM, 0);
     if (s < 0) {
         goto fail0;
     }
-    
+
     // get MAC
     if (out_mac) {
         memset(&ifr, 0, sizeof(ifr));
@@ -76,7 +76,7 @@ static int badvpn_get_iface_info (const char *ifname, uint8_t *out_mac, int *out
         }
         memcpy(out_mac, ifr.ifr_hwaddr.sa_data, 6);
     }
-    
+
     // get MTU
     if (out_mtu) {
         memset(&ifr, 0, sizeof(ifr));
@@ -86,7 +86,7 @@ static int badvpn_get_iface_info (const char *ifname, uint8_t *out_mac, int *out
         }
         *out_mtu = ifr.ifr_mtu;
     }
-    
+
     // get interface index
     if (out_ifindex) {
         memset(&ifr, 0, sizeof(ifr));
@@ -96,11 +96,11 @@ static int badvpn_get_iface_info (const char *ifname, uint8_t *out_mac, int *out
         }
         *out_ifindex = ifr.ifr_ifindex;
     }
-    
+
     close(s);
-    
+
     return 1;
-    
+
 fail1:
     close(s);
 fail0:

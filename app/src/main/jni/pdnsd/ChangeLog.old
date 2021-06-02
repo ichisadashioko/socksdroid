@@ -7,7 +7,7 @@
 
 2000-02-17
 	Did a lint on the code, implemented soft timeouts, again bugfixes,
-	drastically reduced cache memory requirements, implemented local 
+	drastically reduced cache memory requirements, implemented local
 	records.
 	Version 0.4 released.
 
@@ -38,11 +38,11 @@
 	Version is 0.7.1.
 
 2000-02-24
-	Version 0.7.2 with all rrs up to KX (36). #define DNS_NEW_RRS in 
+	Version 0.7.2 with all rrs up to KX (36). #define DNS_NEW_RRS in
 	config.h and (re)compile if you want to use them. Delete the cache
-	file before using a version with this option changed!  
-	NSAP-PTR does NOT WORK (any incoming answer containing it may cause 
-	a format error) because it is ill-designed (see	TODO). Never mind, it 
+	file before using a version with this option changed!
+	NSAP-PTR does NOT WORK (any incoming answer containing it may cause
+	a format error) because it is ill-designed (see	TODO). Never mind, it
 	is officially deprecated anyway.
 	The secure DNS extension record types defined in RFC 2065 (KEY, SIG,
 	NXT) are cached only and therefore useless.
@@ -58,23 +58,23 @@
 	with standard conformity were also fixed (wow, two versions a day).
 
 2000-02-28
-	Implemented caching of non-authoritative records. This allows better 
+	Implemented caching of non-authoritative records. This allows better
 	usage of other caching name servers. This may return non-authoritative
-	records to any non-wildcard query. If a wildcard query arrives, we 
+	records to any non-wildcard query. If a wildcard query arrives, we
 	always look for authoritative records, so we do if the non-authoritative
 	answer does not contain at least one answering record to the query.
 	This fixes the sub-optimal behaviour since 0.6.
-	Version is therefore up to 0.8.7 (0.8.6 was also released today 
+	Version is therefore up to 0.8.7 (0.8.6 was also released today
 	containing bugfixes)
 
 2000-02-29
-	Better thread support, avoiding deadlocks in signal handling. The cost 
+	Better thread support, avoiding deadlocks in signal handling. The cost
 	is unfortunately one more thread.
 	New option server_port in config file.
 	Version is 0.8.8.
 
 2000-03-01
-	Nailed a renitent memory leak bug to the wall (shame, what a trivial 
+	Nailed a renitent memory leak bug to the wall (shame, what a trivial
 	mistake). Also improved handling of error conditions slightly.
 	Version is 0.8.9.
 
@@ -91,19 +91,19 @@
 	Version 0.9.1
 
 2000-03-02
-	Added the source section to the config file handling. This allows to 
+	Added the source section to the config file handling. This allows to
 	source your /etc/hosts file. Version 0.9.2.
 
 2000-03-02
 	Avoiding double additional records now. Version 0.9.3.
 
 2000-03-09
-	Fixed some REALLY STUPID bugs. Uuummph, thought it was finished. 
+	Fixed some REALLY STUPID bugs. Uuummph, thought it was finished.
 	However, the number of bugs remaining is always n+1...
 	Anyway, we are up to 0.9.4. Hope that there are no mean bugs left.
 
 2000-03-14
-	Added another uptest, exec. See README for details. Also grained the 
+	Added another uptest, exec. See README for details. Also grained the
 	cache size finer (it's now specified in kB). Version 0.9.5
 
 2000-04-07
@@ -119,21 +119,21 @@
 	Version is up to 0.9.8
 
 2000-04-30
-	Fixed some unclean C code and did a general C lint. Thanks to Byrial 
+	Fixed some unclean C code and did a general C lint. Thanks to Byrial
 	Jensen for pointing out some issues. Now using stricter compiler flags.
 	Also replaced the daemon() call in main.c for improved portability.
 	Pre-Released 0.9.9p1
 
 2000-05-03
-	Released 0.9.9p2 with the changes of 0.9.9p1, Documentation updates, 
+	Released 0.9.9p2 with the changes of 0.9.9p1, Documentation updates,
 	bugfixes, and the Red Hat rc scripts contributed by Torben Janssen.
 	Also, the meaning of the command line option -v has changed.
 	There is a new config file option "lean_query" that is on by
 	default. It is an optimization, so please look in the docs when
 	updating whether you want it switched on or not.
 	Removed the long-dead serial query code from the distribution tree.
-	Some resolvers seem to be broken somehow in a respect that it cares 
-	about order in which the records appear. In particular, it wants 
+	Some resolvers seem to be broken somehow in a respect that it cares
+	about order in which the records appear. In particular, it wants
 	cname to appear before other records. Ok, so it be...
 
 
@@ -150,12 +150,12 @@
 
 2000-05-06
 	Version 0.9.10.
-	This fixes a bug in uptest=if. Red Hat and configuration fixes 
+	This fixes a bug in uptest=if. Red Hat and configuration fixes
 	suggested by Soeren J. Peters were included.
 
 2000-05-08
 	Version 0.9.11
-	This fixes a locally exploitable security problem (pdnsd.cache was 
+	This fixes a locally exploitable security problem (pdnsd.cache was
 	world-writeable). This is actually a one-line fix; for a description of
 	possible dangers, please refer to the html documentation.
 	Thanks to Alan Swanson for reporting.

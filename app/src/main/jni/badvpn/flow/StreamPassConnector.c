@@ -1,9 +1,9 @@
 /**
  * @file StreamPassConnector.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,11 +38,11 @@ static void input_handler_send (StreamPassConnector *o, uint8_t *data, int data_
     ASSERT(data_len > 0)
     ASSERT(o->in_len == -1)
     DebugObject_Access(&o->d_obj);
-    
+
     // remember input packet
     o->in_len = data_len;
     o->in = data;
-    
+
     if (o->output) {
         // schedule send
         StreamPassInterface_Sender_Send(o->output, o->in, o->in_len);
@@ -56,10 +56,10 @@ static void output_handler_done (StreamPassConnector *o, int data_len)
     ASSERT(o->in_len > 0)
     ASSERT(o->output)
     DebugObject_Access(&o->d_obj);
-    
+
     // have no input packet
     o->in_len = -1;
-    
+
     // allow input to send more packets
     StreamPassInterface_Done(&o->input, data_len);
 }
@@ -68,20 +68,20 @@ void StreamPassConnector_Init (StreamPassConnector *o, BPendingGroup *pg)
 {
     // init output
     StreamPassInterface_Init(&o->input, (StreamPassInterface_handler_send)input_handler_send, o, pg);
-    
+
     // have no input packet
     o->in_len = -1;
-    
+
     // have no output
     o->output = NULL;
-    
+
     DebugObject_Init(&o->d_obj);
 }
 
 void StreamPassConnector_Free (StreamPassConnector *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     // free output
     StreamPassInterface_Free(&o->input);
 }
@@ -89,7 +89,7 @@ void StreamPassConnector_Free (StreamPassConnector *o)
 StreamPassInterface * StreamPassConnector_GetInput (StreamPassConnector *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return &o->input;
 }
 
@@ -97,13 +97,13 @@ void StreamPassConnector_ConnectOutput (StreamPassConnector *o, StreamPassInterf
 {
     ASSERT(!o->output)
     DebugObject_Access(&o->d_obj);
-    
+
     // set output
     o->output = output;
-    
+
     // init output
     StreamPassInterface_Sender_Init(o->output, (StreamPassInterface_handler_done)output_handler_done, o);
-    
+
     // if we have an input packet, schedule send
     if (o->in_len > 0) {
         StreamPassInterface_Sender_Send(o->output, o->in, o->in_len);
@@ -114,7 +114,7 @@ void StreamPassConnector_DisconnectOutput (StreamPassConnector *o)
 {
     ASSERT(o->output)
     DebugObject_Access(&o->d_obj);
-    
+
     // set no output
     o->output = NULL;
 }

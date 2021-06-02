@@ -29,7 +29,7 @@ case "$1" in
 	## the echo return value is set appropriate.
 
 	startproc @prefix@/sbin/pdnsd -d || return=$rc_failed
-	
+
 	echo -e "$return"
 	;;
     stop)
@@ -65,4 +65,3 @@ esac
 # Inform the caller not only verbosely and set an exit status.
 test "$return" = "$rc_done" || exit 1
 exit 0
-

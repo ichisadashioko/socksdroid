@@ -1,9 +1,9 @@
 /**
  * @file PacketPassConnector.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -39,11 +39,11 @@ static void input_handler_send (PacketPassConnector *o, uint8_t *data, int data_
     ASSERT(data_len <= o->input_mtu)
     ASSERT(o->in_len == -1)
     DebugObject_Access(&o->d_obj);
-    
+
     // remember input packet
     o->in_len = data_len;
     o->in = data;
-    
+
     if (o->output) {
         // schedule send
         PacketPassInterface_Sender_Send(o->output, o->in, o->in_len);
@@ -55,10 +55,10 @@ static void output_handler_done (PacketPassConnector *o)
     ASSERT(o->in_len >= 0)
     ASSERT(o->output)
     DebugObject_Access(&o->d_obj);
-    
+
     // have no input packet
     o->in_len = -1;
-    
+
     // allow input to send more packets
     PacketPassInterface_Done(&o->input);
 }
@@ -66,26 +66,26 @@ static void output_handler_done (PacketPassConnector *o)
 void PacketPassConnector_Init (PacketPassConnector *o, int mtu, BPendingGroup *pg)
 {
     ASSERT(mtu >= 0)
-    
+
     // init arguments
     o->input_mtu = mtu;
-    
+
     // init input
     PacketPassInterface_Init(&o->input, o->input_mtu, (PacketPassInterface_handler_send)input_handler_send, o, pg);
-    
+
     // have no input packet
     o->in_len = -1;
-    
+
     // have no output
     o->output = NULL;
-    
+
     DebugObject_Init(&o->d_obj);
 }
 
 void PacketPassConnector_Free (PacketPassConnector *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     // free input
     PacketPassInterface_Free(&o->input);
 }
@@ -93,7 +93,7 @@ void PacketPassConnector_Free (PacketPassConnector *o)
 PacketPassInterface * PacketPassConnector_GetInput (PacketPassConnector *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return &o->input;
 }
 
@@ -102,13 +102,13 @@ void PacketPassConnector_ConnectOutput (PacketPassConnector *o, PacketPassInterf
     ASSERT(!o->output)
     ASSERT(PacketPassInterface_GetMTU(output) >= o->input_mtu)
     DebugObject_Access(&o->d_obj);
-    
+
     // set output
     o->output = output;
-    
+
     // init output
     PacketPassInterface_Sender_Init(o->output, (PacketPassInterface_handler_done)output_handler_done, o);
-    
+
     // if we have an input packet, schedule send
     if (o->in_len >= 0) {
         PacketPassInterface_Sender_Send(o->output, o->in, o->in_len);
@@ -119,7 +119,7 @@ void PacketPassConnector_DisconnectOutput (PacketPassConnector *o)
 {
     ASSERT(o->output)
     DebugObject_Access(&o->d_obj);
-    
+
     // set no output
     o->output = NULL;
 }

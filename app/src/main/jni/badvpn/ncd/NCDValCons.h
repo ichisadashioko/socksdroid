@@ -1,9 +1,9 @@
 /**
  * @file NCDValCons.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -61,7 +61,7 @@ typedef struct {
 
 /**
  * Abstract handle which represents a value during constuction via
- * {@link NCDValCons}. 
+ * {@link NCDValCons}.
  */
 typedef struct {
     int cons_type;
@@ -80,7 +80,7 @@ typedef struct {
 
 /**
  * Initializes a value constructor.
- * 
+ *
  * @param o value constructor to initialize
  * @param mem memory object where values will be stored into
  * @return 1 on success, 0 on failure
@@ -91,14 +91,14 @@ int NCDValCons_Init (NCDValCons *o, NCDValMem *mem) WARN_UNUSED;
  * Frees the value constructor. This only means the constuctor does
  * not exist any more; any values constructed and completed using
  * {@link NCDValCons_Complete} remain in the memory object.
- * 
+ *
  * @param o value constructor to free
  */
 void NCDValCons_Free (NCDValCons *o);
 
 /**
  * Creates a new string value with the given data.
- * 
+ *
  * @param o value constructor
  * @param data pointer to string data. This must not point into the
  *             memory object the value constructor is using. The data
@@ -113,7 +113,7 @@ int NCDValCons_NewString (NCDValCons *o, const uint8_t *data, size_t len, NCDVal
 
 /**
  * Creates an empty list value.
- * 
+ *
  * @param o value constructor
  * @param out *out will be set to a handle representing the new list
  */
@@ -121,7 +121,7 @@ void NCDValCons_NewList (NCDValCons *o, NCDValConsVal *out);
 
 /**
  * Creates an empty map value.
- * 
+ *
  * @param o value constructor
  * @param out *out will be set to a handle representing the new map
  */
@@ -129,7 +129,7 @@ void NCDValCons_NewMap (NCDValCons *o, NCDValConsVal *out);
 
 /**
  * Prepends an element to a list value.
- * 
+ *
  * @param o value constructor
  * @param list pointer to the handle representing the list. On success,
  *             the handle will be modified, and the old handle must not
@@ -143,7 +143,7 @@ int NCDValCons_ListPrepend (NCDValCons *o, NCDValConsVal *list, NCDValConsVal el
 
 /**
  * Inserts an entry into a map value.
- * 
+ *
  * @param o value constructor
  * @param map pointer to the handle representing the map. On success,
  *             the handle will be modified, and the old handle must not
@@ -162,7 +162,7 @@ int NCDValCons_MapInsert (NCDValCons *o, NCDValConsVal *map, NCDValConsVal key, 
  * Completes a value represented by a {@link NCDValConsVal} handle,
  * producing a {@link NCDValRef} object which refers to this value within
  * the memory object.
- * 
+ *
  * @param o value constructor
  * @param val handle representing the value to be completed. After a value
  *            is completed, the handle must not be used any more.

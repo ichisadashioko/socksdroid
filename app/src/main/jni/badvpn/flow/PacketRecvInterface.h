@@ -1,9 +1,9 @@
 /**
  * @file PacketRecvInterface.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Interface allowing a packet receiver to receive data packets from a packet sender.
  */
 
@@ -59,18 +59,18 @@ typedef struct {
     // user data
     PacketRecvInterface_handler_done handler_done;
     void *user_user;
-    
+
     // operation job
     BPending job_operation;
     uint8_t *job_operation_data;
-    
+
     // done job
     BPending job_done;
     int job_done_len;
-    
+
     // state
     int state;
-    
+
     DebugObject d_obj;
 } PacketRecvInterface;
 
@@ -92,29 +92,29 @@ void _PacketRecvInterface_job_done (PacketRecvInterface *i);
 void PacketRecvInterface_Init (PacketRecvInterface *i, int mtu, PacketRecvInterface_handler_recv handler_operation, void *user, BPendingGroup *pg)
 {
     ASSERT(mtu >= 0)
-    
+
     // init arguments
     i->mtu = mtu;
     i->handler_operation = handler_operation;
     i->user_provider = user;
-    
+
     // set no user
     i->handler_done = NULL;
-    
+
     // init jobs
     BPending_Init(&i->job_operation, pg, (BPending_handler)_PacketRecvInterface_job_operation, i);
     BPending_Init(&i->job_done, pg, (BPending_handler)_PacketRecvInterface_job_done, i);
-    
+
     // set state
     i->state = PRI_STATE_NONE;
-    
+
     DebugObject_Init(&i->d_obj);
 }
 
 void PacketRecvInterface_Free (PacketRecvInterface *i)
 {
     DebugObject_Free(&i->d_obj);
-    
+
     // free jobs
     BPending_Free(&i->job_done);
     BPending_Free(&i->job_operation);
@@ -126,11 +126,11 @@ void PacketRecvInterface_Done (PacketRecvInterface *i, int data_len)
     ASSERT(data_len <= i->mtu)
     ASSERT(i->state == PRI_STATE_BUSY)
     DebugObject_Access(&i->d_obj);
-    
+
     // schedule done
     i->job_done_len = data_len;
     BPending_Set(&i->job_done);
-    
+
     // set state
     i->state = PRI_STATE_DONE_PENDING;
 }
@@ -138,7 +138,7 @@ void PacketRecvInterface_Done (PacketRecvInterface *i, int data_len)
 int PacketRecvInterface_GetMTU (PacketRecvInterface *i)
 {
     DebugObject_Access(&i->d_obj);
-    
+
     return i->mtu;
 }
 
@@ -147,7 +147,7 @@ void PacketRecvInterface_Receiver_Init (PacketRecvInterface *i, PacketRecvInterf
     ASSERT(handler_done)
     ASSERT(!i->handler_done)
     DebugObject_Access(&i->d_obj);
-    
+
     i->handler_done = handler_done;
     i->user_user = user;
 }
@@ -158,11 +158,11 @@ void PacketRecvInterface_Receiver_Recv (PacketRecvInterface *i, uint8_t *data)
     ASSERT(i->state == PRI_STATE_NONE)
     ASSERT(i->handler_done)
     DebugObject_Access(&i->d_obj);
-    
+
     // schedule operation
     i->job_operation_data = data;
     BPending_Set(&i->job_operation);
-    
+
     // set state
     i->state = PRI_STATE_OPERATION_PENDING;
 }

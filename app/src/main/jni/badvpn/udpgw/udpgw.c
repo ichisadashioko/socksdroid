@@ -2,7 +2,7 @@
  * Copyright (C) Ambroz Bizjak <ambrop7@gmail.com>
  * Contributions:
  * Transparent DNS: Copyright (C) Kerem Hadimli <kerem.hadimli@gmail.com>
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -13,7 +13,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -208,17 +208,17 @@ int main (int argc, char **argv)
     if (argc <= 0) {
         return 1;
     }
-    
+
     // open standard streams
     open_standard_streams();
-    
+
     // parse command-line arguments
     if (!parse_arguments(argc, argv)) {
         fprintf(stderr, "Failed to parse arguments\n");
         print_help(argv[0]);
         goto fail0;
     }
-    
+
     // handle --help and --version
     if (options.help) {
         print_version();
@@ -229,7 +229,7 @@ int main (int argc, char **argv)
         print_version();
         return 0;
     }
-    
+
     // initialize logger
     switch (options.logger) {
         case LOGGER_STDOUT:
@@ -246,7 +246,7 @@ int main (int argc, char **argv)
         default:
             ASSERT(0);
     }
-    
+
     // configure logger channels
     for (int i = 0; i < BLOG_NUM_CHANNELS; i++) {
         if (options.loglevels[i] >= 0) {
@@ -256,48 +256,48 @@ int main (int argc, char **argv)
             BLog_SetChannelLoglevel(i, options.loglevel);
         }
     }
-    
+
     BLog(BLOG_NOTICE, "initializing "GLOBAL_PRODUCT_NAME" "PROGRAM_NAME" "GLOBAL_VERSION);
-    
+
     // initialize network
     if (!BNetwork_GlobalInit()) {
         BLog(BLOG_ERROR, "BNetwork_GlobalInit failed");
         goto fail1;
     }
-    
+
     // process arguments
     if (!process_arguments()) {
         BLog(BLOG_ERROR, "Failed to process arguments");
         goto fail1;
     }
-    
+
     // compute MTUs
     udpgw_mtu = udpgw_compute_mtu(options.udp_mtu);
     if (udpgw_mtu < 0 || udpgw_mtu > PACKETPROTO_MAXPAYLOAD) {
         udpgw_mtu = PACKETPROTO_MAXPAYLOAD;
     }
     pp_mtu = udpgw_mtu + sizeof(struct packetproto_header);
-    
+
     // init time
     BTime_Init();
-    
+
     // init DNS forwarding
     BAddr_InitNone(&dns_addr);
     last_dns_update_time = INT64_MIN;
     maybe_update_dns();
-    
+
     // init reactor
     if (!BReactor_Init(&ss)) {
         BLog(BLOG_ERROR, "BReactor_Init failed");
         goto fail1;
     }
-    
+
     // setup signal handler
     if (!BSignal_Init(&ss, signal_handler, NULL)) {
         BLog(BLOG_ERROR, "BSignal_Init failed");
         goto fail2;
     }
-    
+
     // initialize listeners
     num_listeners = 0;
     while (num_listeners < num_listen_addrs) {
@@ -307,15 +307,15 @@ int main (int argc, char **argv)
         }
         num_listeners++;
     }
-    
+
     // init clients list
     LinkedList1_Init(&clients_list);
     num_clients = 0;
-    
+
     // enter event loop
     BLog(BLOG_NOTICE, "entering event loop");
     BReactor_Exec(&ss);
-    
+
     // free clients
     while (!LinkedList1_IsEmpty(&clients_list)) {
         struct client *client = UPPER_OBJECT(LinkedList1_GetFirst(&clients_list), struct client, clients_list_node);
@@ -339,7 +339,7 @@ fail1:
 fail0:
     // finish debug objects
     DebugObjectGlobal_Finish();
-    
+
     return 1;
 }
 
@@ -382,7 +382,7 @@ int parse_arguments (int argc, char *argv[])
     if (argc <= 0) {
         return 0;
     }
-    
+
     options.help = 0;
     options.version = 0;
     options.logger = LOGGER_STDOUT;
@@ -402,7 +402,7 @@ int parse_arguments (int argc, char *argv[])
     options.local_udp_num_ports = -1;
     options.local_udp_ip6_num_ports = -1;
     options.unique_local_ports = 0;
-    
+
     int i;
     for (i = 1; i < argc; i++) {
         char *arg = argv[i];
@@ -568,11 +568,11 @@ int parse_arguments (int argc, char *argv[])
             return 0;
         }
     }
-    
+
     if (options.help || options.version) {
         return 1;
     }
-    
+
     return 1;
 }
 
@@ -587,7 +587,7 @@ int process_arguments (void)
         }
         num_listen_addrs++;
     }
-    
+
     // resolve local UDP address
     if (options.local_udp_num_ports >= 0) {
         if (!BAddr_Parse(&local_udp_addr, options.local_udp_addr, NULL, 0)) {
@@ -599,7 +599,7 @@ int process_arguments (void)
             return 0;
         }
     }
-    
+
     // resolve local UDP/IPv6 address
     if (options.local_udp_ip6_num_ports >= 0) {
         if (!BAddr_Parse(&local_udp_ip6_addr, options.local_udp_ip6_addr, NULL, 0)) {
@@ -611,14 +611,14 @@ int process_arguments (void)
             return 0;
         }
     }
-    
+
     return 1;
 }
 
 void signal_handler (void *unused)
 {
     BLog(BLOG_NOTICE, "termination requested");
-    
+
     // exit event loop
     BReactor_Quit(&ss, 1);
 }
@@ -629,38 +629,38 @@ void listener_handler (BListener *listener)
         BLog(BLOG_ERROR, "maximum number of clients reached");
         goto fail0;
     }
-    
+
     // allocate structure
     struct client *client = (struct client *)malloc(sizeof(*client));
     if (!client) {
         BLog(BLOG_ERROR, "malloc failed");
         goto fail0;
     }
-    
+
     // accept client
     if (!BConnection_Init(&client->con, BConnection_source_listener(listener, &client->addr), &ss, client, (BConnection_handler)client_connection_handler)) {
         BLog(BLOG_ERROR, "BConnection_Init failed");
         goto fail1;
     }
-    
+
     // limit socket send buffer, else our scheduling is pointless
     if (options.client_socket_sndbuf > 0) {
         if (!BConnection_SetSendBuffer(&client->con, options.client_socket_sndbuf)) {
             BLog(BLOG_WARNING, "BConnection_SetSendBuffer failed");
         }
     }
-    
+
     // init connection interfaces
     BConnection_SendAsync_Init(&client->con);
     BConnection_RecvAsync_Init(&client->con);
-    
+
     // init disconnect timer
     BTimer_Init(&client->disconnect_timer, CLIENT_DISCONNECT_TIMEOUT, (BTimer_handler)client_disconnect_timer_handler, client);
     BReactor_SetTimer(&ss, &client->disconnect_timer);
-    
+
     // init recv interface
     PacketPassInterface_Init(&client->recv_if, udpgw_mtu, (PacketPassInterface_handler_send)client_recv_if_handler_send, client, BReactor_PendingGroup(&ss));
-    
+
     // init recv decoder
     if (!PacketProtoDecoder_Init(&client->recv_decoder, BConnection_RecvAsync_GetIf(&client->con), &client->recv_if, BReactor_PendingGroup(&ss), client,
         (PacketProtoDecoder_handler_error)client_decoder_handler_error
@@ -668,36 +668,36 @@ void listener_handler (BListener *listener)
         BLog(BLOG_ERROR, "PacketProtoDecoder_Init failed");
         goto fail2;
     }
-    
+
     // init send sender
     PacketStreamSender_Init(&client->send_sender, BConnection_SendAsync_GetIf(&client->con), pp_mtu, BReactor_PendingGroup(&ss));
-    
+
     // init send queue
     if (!PacketPassFairQueue_Init(&client->send_queue, PacketStreamSender_GetInput(&client->send_sender), BReactor_PendingGroup(&ss), 0, 1)) {
         BLog(BLOG_ERROR, "PacketPassFairQueue_Init failed");
         goto fail3;
     }
-    
+
     // init connections tree
     BAVL_Init(&client->connections_tree, OFFSET_DIFF(struct connection, conid, connections_tree_node), (BAVL_comparator)uint16_comparator, NULL);
-    
+
     // init connections list
     LinkedList1_Init(&client->connections_list);
-    
+
     // set zero connections
     client->num_connections = 0;
-    
+
     // init closing connections list
     LinkedList1_Init(&client->closing_connections_list);
-    
+
     // insert to clients list
     LinkedList1_Append(&clients_list, &client->clients_list_node);
     num_clients++;
-    
+
     client_log(client, BLOG_INFO, "connected");
-    
+
     return;
-    
+
 fail3:
     PacketStreamSender_Free(&client->send_sender);
     PacketProtoDecoder_Free(&client->recv_decoder);
@@ -717,45 +717,45 @@ void client_free (struct client *client)
 {
     // allow freeing send queue flows
     PacketPassFairQueue_PrepareFree(&client->send_queue);
-    
+
     // free connections
     while (!LinkedList1_IsEmpty(&client->connections_list)) {
         struct connection *con = UPPER_OBJECT(LinkedList1_GetFirst(&client->connections_list), struct connection, connections_list_node);
         connection_free(con);
     }
-    
+
     // free closing connections
     while (!LinkedList1_IsEmpty(&client->closing_connections_list)) {
         struct connection *con = UPPER_OBJECT(LinkedList1_GetFirst(&client->closing_connections_list), struct connection, closing_connections_list_node);
         connection_free(con);
     }
-    
+
     // remove from clients list
     LinkedList1_Remove(&clients_list, &client->clients_list_node);
     num_clients--;
-    
+
     // free send queue
     PacketPassFairQueue_Free(&client->send_queue);
-    
+
     // free send sender
     PacketStreamSender_Free(&client->send_sender);
-    
+
     // free recv decoder
     PacketProtoDecoder_Free(&client->recv_decoder);
-    
+
     // free recv interface
     PacketPassInterface_Free(&client->recv_if);
-    
+
     // free disconnect timer
     BReactor_RemoveTimer(&ss, &client->disconnect_timer);
-    
+
     // free connection interfaces
     BConnection_RecvAsync_Free(&client->con);
     BConnection_SendAsync_Free(&client->con);
-    
+
     // free connection
     BConnection_Free(&client->con);
-    
+
     // free structure
     free(client);
 }
@@ -764,7 +764,7 @@ void client_logfunc (struct client *client)
 {
     char addr[BADDR_MAX_PRINT_LEN];
     BAddr_Print(&client->addr, addr);
-    
+
     BLog_Append("client (%s): ", addr);
 }
 
@@ -779,7 +779,7 @@ void client_log (struct client *client, int level, const char *fmt, ...)
 void client_disconnect_timer_handler (struct client *client)
 {
     client_log(client, BLOG_INFO, "timed out, disconnecting");
-    
+
     // free client
     client_free(client);
 }
@@ -791,7 +791,7 @@ void client_connection_handler (struct client *client, int event)
     } else {
         client_log(client, BLOG_INFO, "client error");
     }
-    
+
     // free client
     client_free(client);
 }
@@ -799,7 +799,7 @@ void client_connection_handler (struct client *client, int event)
 void client_decoder_handler_error (struct client *client)
 {
     client_log(client, BLOG_ERROR, "decoder error");
-    
+
     // free client
     client_free(client);
 }
@@ -808,10 +808,10 @@ void client_recv_if_handler_send (struct client *client, uint8_t *data, int data
 {
     ASSERT(data_len >= 0)
     ASSERT(data_len <= udpgw_mtu)
-    
+
     // accept packet
     PacketPassInterface_Done(&client->recv_if);
-    
+
     // parse header
     if (data_len < sizeof(struct udpgw_header)) {
         client_log(client, BLOG_ERROR, "missing header");
@@ -823,16 +823,16 @@ void client_recv_if_handler_send (struct client *client, uint8_t *data, int data
     data_len -= sizeof(header);
     uint8_t flags = ltoh8(header.flags);
     uint16_t conid = ltoh16(header.conid);
-    
+
     // reset disconnect timer
     BReactor_SetTimer(&ss, &client->disconnect_timer);
-    
+
     // if this is keepalive, ignore any payload
     if ((flags & UDPGW_CLIENT_FLAG_KEEPALIVE)) {
         client_log(client, BLOG_DEBUG, "received keepalive");
         return;
     }
-    
+
     // parse address
     BAddr orig_addr;
     if ((flags & UDPGW_CLIENT_FLAG_IPV6)) {
@@ -856,24 +856,24 @@ void client_recv_if_handler_send (struct client *client, uint8_t *data, int data
         data_len -= sizeof(addr_ipv4);
         BAddr_InitIPv4(&orig_addr, addr_ipv4.addr_ip, addr_ipv4.addr_port);
     }
-    
+
     // check payload length
     if (data_len > options.udp_mtu) {
         client_log(client, BLOG_ERROR, "too much data");
         return;
     }
-    
+
     // find connection
     struct connection *con = find_connection(client, conid);
     ASSERT(!con || !con->closing)
-    
+
     // if connection exists, close it if needed
     if (con && ((flags & UDPGW_CLIENT_FLAG_REBIND) || !BAddr_Compare(&con->orig_addr, &orig_addr))) {
         connection_log(con, BLOG_DEBUG, "close old");
         connection_close(con);
         con = NULL;
     }
-    
+
     // if connection doesn't exists, create it
     if (!con) {
         // check number of connections
@@ -882,7 +882,7 @@ void client_recv_if_handler_send (struct client *client, uint8_t *data, int data
             con = UPPER_OBJECT(LinkedList1_GetFirst(&client->connections_list), struct connection, connections_list_node);
             connection_close(con);
         }
-        
+
         // if this is DNS, replace actual address, but keep still remember the orig_addr
         BAddr addr = orig_addr;
         if ((flags & UDPGW_CLIENT_FLAG_DNS)) {
@@ -894,7 +894,7 @@ void client_recv_if_handler_send (struct client *client, uint8_t *data, int data
                 addr = dns_addr;
             }
         }
-        
+
         // create new connection
         connection_init(client, conid, addr, orig_addr, data, data_len);
     } else {
@@ -915,7 +915,7 @@ int get_local_num_ports (int addr_type)
 BAddr get_local_addr (int addr_type)
 {
     ASSERT(get_local_num_ports(addr_type) >= 0)
-    
+
     switch (addr_type) {
         case BADDR_TYPE_IPV4: return local_udp_addr;
         case BADDR_TYPE_IPV6: return local_udp_ip6_addr;
@@ -927,34 +927,34 @@ uint8_t * build_port_usage_array_and_find_least_used_connection (BAddr remote_ad
 {
     ASSERT(remote_addr.type == BADDR_TYPE_IPV4 || remote_addr.type == BADDR_TYPE_IPV6)
     ASSERT(get_local_num_ports(remote_addr.type) >= 0)
-    
+
     int local_num_ports = get_local_num_ports(remote_addr.type);
-    
+
     // allocate port usage array
     uint8_t *port_usage = (uint8_t *)BAllocSize(bsize_fromint(local_num_ports));
     if (!port_usage) {
         return NULL;
     }
-    
+
     // zero array
     memset(port_usage, 0, local_num_ports);
-    
+
     struct connection *least_con = NULL;
-    
+
     // flag inappropriate ports (those with the same remote address)
     for (LinkedList1Node *ln = LinkedList1_GetFirst(&clients_list); ln; ln = LinkedList1Node_Next(ln)) {
         struct client *client = UPPER_OBJECT(ln, struct client, clients_list_node);
-        
+
         for (LinkedList1Node *ln2 = LinkedList1_GetFirst(&client->connections_list); ln2; ln2 = LinkedList1Node_Next(ln2)) {
             struct connection *con = UPPER_OBJECT(ln2, struct connection, connections_list_node);
             ASSERT(con->client == client)
             ASSERT(!con->closing)
-            
+
             if (con->addr.type != remote_addr.type || con->local_port_index < 0) {
                 continue;
             }
             ASSERT(con->local_port_index < local_num_ports)
-            
+
             if (options.unique_local_ports) {
                 BIPAddr ip1;
                 BIPAddr ip2;
@@ -968,9 +968,9 @@ uint8_t * build_port_usage_array_and_find_least_used_connection (BAddr remote_ad
                     continue;
                 }
             }
-            
+
             port_usage[con->local_port_index] = 1;
-            
+
             if (!PacketPassFairQueueFlow_IsBusy(&con->send_qflow)) {
                 if (!least_con || con->last_use_time < least_con->last_use_time) {
                     least_con = con;
@@ -978,7 +978,7 @@ uint8_t * build_port_usage_array_and_find_least_used_connection (BAddr remote_ad
             }
         }
     }
-    
+
     *out_con = least_con;
     return port_usage;
 }
@@ -992,14 +992,14 @@ void connection_init (struct client *client, uint16_t conid, BAddr addr, BAddr o
     ASSERT(orig_addr.type == BADDR_TYPE_IPV4 || orig_addr.type == BADDR_TYPE_IPV6)
     ASSERT(data_len >= 0)
     ASSERT(data_len <= options.udp_mtu)
-    
+
     // allocate structure
     struct connection *con = (struct connection *)malloc(sizeof(*con));
     if (!con) {
         client_log(client, BLOG_ERROR, "malloc failed");
         goto fail0;
     }
-    
+
     // init arguments
     con->client = client;
     con->conid = conid;
@@ -1007,37 +1007,37 @@ void connection_init (struct client *client, uint16_t conid, BAddr addr, BAddr o
     con->orig_addr = orig_addr;
     con->first_data = data;
     con->first_data_len = data_len;
-    
+
     // set last use time
     con->last_use_time = btime_gettime();
-    
+
     // set not closing
     con->closing = 0;
-    
+
     // init first job
     BPending_Init(&con->first_job, BReactor_PendingGroup(&ss), (BPending_handler)connection_first_job_handler, con);
     BPending_Set(&con->first_job);
-    
+
     // init send queue flow
     PacketPassFairQueueFlow_Init(&con->send_qflow, &client->send_queue);
-    
+
     // init send PacketProtoFlow
     if (!PacketProtoFlow_Init(&con->send_ppflow, udpgw_mtu, CONNECTION_CLIENT_BUFFER_SIZE, PacketPassFairQueueFlow_GetInput(&con->send_qflow), BReactor_PendingGroup(&ss))) {
         client_log(client, BLOG_ERROR, "PacketProtoFlow_Init failed");
         goto fail1;
     }
     con->send_if = PacketProtoFlow_GetInput(&con->send_ppflow);
-    
+
     // init UDP dgram
     if (!BDatagram_Init(&con->udp_dgram, addr.type, &ss, con, (BDatagram_handler)connection_dgram_handler_event)) {
         client_log(client, BLOG_ERROR, "BDatagram_Init failed");
         goto fail2;
     }
-    
+
     con->local_port_index = -1;
-    
+
     int local_num_ports = get_local_num_ports(addr.type);
-    
+
     if (local_num_ports >= 0) {
         // build port usage array, find least used connection
         struct connection *least_con;
@@ -1046,23 +1046,23 @@ void connection_init (struct client *client, uint16_t conid, BAddr addr, BAddr o
             client_log(client, BLOG_ERROR, "build_port_usage_array failed");
             goto failed;
         }
-        
+
         // set SO_REUSEADDR
         if (!BDatagram_SetReuseAddr(&con->udp_dgram, 1)) {
             client_log(client, BLOG_ERROR, "set SO_REUSEADDR failed");
             goto failed;
         }
-        
+
         // get starting local address
         BAddr local_addr = get_local_addr(addr.type);
-        
+
         // try different ports
         for (int i = 0; i < local_num_ports; i++) {
             // skip inappropriate ports
             if (port_usage[i]) {
                 continue;
             }
-            
+
             BAddr bind_addr = local_addr;
             BAddr_SetPort(&bind_addr, hton16(ntoh16(BAddr_GetPort(&bind_addr)) + (uint16_t)i));
             if (BDatagram_Bind(&con->udp_dgram, bind_addr)) {
@@ -1071,24 +1071,24 @@ void connection_init (struct client *client, uint16_t conid, BAddr addr, BAddr o
                 goto cont;
             }
         }
-        
+
         // try closing an unused connection with the same remote addr
         if (!least_con) {
             goto failed;
         }
-        
+
         ASSERT(least_con->addr.type == addr.type)
         ASSERT(least_con->local_port_index >= 0)
         ASSERT(least_con->local_port_index < local_num_ports)
         ASSERT(!PacketPassFairQueueFlow_IsBusy(&least_con->send_qflow))
-        
+
         int i = least_con->local_port_index;
-        
+
         BLog(BLOG_INFO, "closing connection for its remote address");
-        
+
         // close the offending connection
         connection_close(least_con);
-        
+
         // try binding to its port
         BAddr bind_addr = local_addr;
         BAddr_SetPort(&bind_addr, hton16(ntoh16(BAddr_GetPort(&bind_addr)) + (uint16_t)i));
@@ -1097,53 +1097,53 @@ void connection_init (struct client *client, uint16_t conid, BAddr addr, BAddr o
             con->local_port_index = i;
             goto cont;
         }
-        
+
     failed:
         client_log(client, BLOG_WARNING, "failed to bind to any local address; proceeding regardless");
     cont:;
         BFree(port_usage);
     }
-    
+
     // set UDP dgram send address
     BIPAddr ipaddr;
     BIPAddr_InitInvalid(&ipaddr);
     BDatagram_SetSendAddrs(&con->udp_dgram, addr, ipaddr);
-    
+
     // init UDP dgram interfaces
     BDatagram_SendAsync_Init(&con->udp_dgram, options.udp_mtu);
     BDatagram_RecvAsync_Init(&con->udp_dgram, options.udp_mtu);
-    
+
     // init UDP writer
     BufferWriter_Init(&con->udp_send_writer, options.udp_mtu, BReactor_PendingGroup(&ss));
-    
+
     // init UDP buffer
     if (!PacketBuffer_Init(&con->udp_send_buffer, BufferWriter_GetOutput(&con->udp_send_writer), BDatagram_SendAsync_GetIf(&con->udp_dgram), CONNECTION_UDP_BUFFER_SIZE, BReactor_PendingGroup(&ss))) {
         client_log(client, BLOG_ERROR, "PacketBuffer_Init failed");
         goto fail4;
     }
-    
+
     // init UDP recv interface
     PacketPassInterface_Init(&con->udp_recv_if, options.udp_mtu, (PacketPassInterface_handler_send)connection_udp_recv_if_handler_send, con, BReactor_PendingGroup(&ss));
-    
+
     // init UDP recv buffer
     if (!SinglePacketBuffer_Init(&con->udp_recv_buffer, BDatagram_RecvAsync_GetIf(&con->udp_dgram), &con->udp_recv_if, BReactor_PendingGroup(&ss))) {
         client_log(client, BLOG_ERROR, "SinglePacketBuffer_Init failed");
         goto fail5;
     }
-    
+
     // insert to client's connections tree
     ASSERT_EXECUTE(BAVL_Insert(&client->connections_tree, &con->connections_tree_node, NULL))
-    
+
     // insert to client's connections list
     LinkedList1_Append(&client->connections_list, &con->connections_list_node);
-    
+
     // increment number of connections
     client->num_connections++;
-    
+
     connection_log(con, BLOG_DEBUG, "initialized");
-    
+
     return;
-    
+
 fail5:
     PacketPassInterface_Free(&con->udp_recv_if);
     PacketBuffer_Free(&con->udp_send_buffer);
@@ -1166,33 +1166,33 @@ void connection_free (struct connection *con)
 {
     struct client *client = con->client;
     PacketPassFairQueueFlow_AssertFree(&con->send_qflow);
-    
+
     if (con->closing) {
         // remove from client's closing connections list
         LinkedList1_Remove(&client->closing_connections_list, &con->closing_connections_list_node);
     } else {
         // decrement number of connections
         client->num_connections--;
-        
+
         // remove from client's connections list
         LinkedList1_Remove(&client->connections_list, &con->connections_list_node);
-        
+
         // remove from client's connections tree
         BAVL_Remove(&client->connections_tree, &con->connections_tree_node);
-        
+
         // free UDP
         connection_free_udp(con);
     }
-    
+
     // free send PacketProtoFlow
     PacketProtoFlow_Free(&con->send_ppflow);
-    
+
     // free send queue flow
     PacketPassFairQueueFlow_Free(&con->send_qflow);
-    
+
     // free first job
     BPending_Free(&con->first_job);
-    
+
     // free structure
     free(con);
 }
@@ -1200,7 +1200,7 @@ void connection_free (struct connection *con)
 void connection_logfunc (struct connection *con)
 {
     client_logfunc(con->client);
-    
+
     if (con->closing) {
         BLog_Append("old connection %"PRIu16": ", con->conid);
     } else {
@@ -1220,20 +1220,20 @@ void connection_free_udp (struct connection *con)
 {
     // free UDP receive buffer
     SinglePacketBuffer_Free(&con->udp_recv_buffer);
-    
+
     // free UDP receive interface
     PacketPassInterface_Free(&con->udp_recv_if);
-    
+
     // free UDP buffer
     PacketBuffer_Free(&con->udp_send_buffer);
-    
+
     // free UDP writer
     BufferWriter_Free(&con->udp_send_writer);
-    
+
     // free UDP dgram interfaces
     BDatagram_RecvAsync_Free(&con->udp_dgram);
     BDatagram_SendAsync_Free(&con->udp_dgram);
-    
+
     // free UDP dgram
     BDatagram_Free(&con->udp_dgram);
 }
@@ -1241,7 +1241,7 @@ void connection_free_udp (struct connection *con)
 void connection_first_job_handler (struct connection *con)
 {
     ASSERT(!con->closing)
-    
+
     connection_send_to_udp(con, con->first_data, con->first_data_len);
 }
 
@@ -1249,14 +1249,14 @@ void connection_send_to_client (struct connection *con, uint8_t flags, const uin
 {
     ASSERT(data_len >= 0)
     ASSERT(data_len <= options.udp_mtu)
-    
+
     size_t addr_len = (con->orig_addr.type == BADDR_TYPE_IPV6) ? sizeof(struct udpgw_addr_ipv6) :
                       (con->orig_addr.type == BADDR_TYPE_IPV4) ? sizeof(struct udpgw_addr_ipv4) : 0;
     if (data_len > udpgw_mtu - (int)(sizeof(struct udpgw_header) + addr_len)) {
         connection_log(con, BLOG_WARNING, "packet is too large, cannot send to client");
         return;
     }
-    
+
     // get buffer location
     uint8_t *out;
     if (!BufferWriter_StartPacket(con->send_if, &out)) {
@@ -1264,18 +1264,18 @@ void connection_send_to_client (struct connection *con, uint8_t flags, const uin
         return;
     }
     int out_pos = 0;
-    
+
     if (con->orig_addr.type == BADDR_TYPE_IPV6) {
         flags |= UDPGW_CLIENT_FLAG_IPV6;
     }
-    
+
     // write header
     struct udpgw_header header;
     header.flags = htol8(flags);
     header.conid = htol16(con->conid);
     memcpy(out + out_pos, &header, sizeof(header));
     out_pos += sizeof(header);
-    
+
     // write address
     switch (con->orig_addr.type) {
         case BADDR_TYPE_IPV4: {
@@ -1293,11 +1293,11 @@ void connection_send_to_client (struct connection *con, uint8_t flags, const uin
             out_pos += sizeof(addr_ipv6);
         } break;
     }
-    
+
     // write message
     memcpy(out + out_pos, data, data_len);
     out_pos += data_len;
-    
+
     // submit written message
     ASSERT(out_pos <= udpgw_mtu)
     BufferWriter_EndPacket(con->send_if, out_pos);
@@ -1309,29 +1309,29 @@ int connection_send_to_udp (struct connection *con, const uint8_t *data, int dat
     ASSERT(!con->closing)
     ASSERT(data_len >= 0)
     ASSERT(data_len <= options.udp_mtu)
-    
+
     connection_log(con, BLOG_DEBUG, "from client %d bytes", data_len);
-    
+
     // set last use time
     con->last_use_time = btime_gettime();
-    
+
     // move connection to front
     LinkedList1_Remove(&client->connections_list, &con->connections_list_node);
     LinkedList1_Append(&client->connections_list, &con->connections_list_node);
-    
+
     // get buffer location
     uint8_t *out;
     if (!BufferWriter_StartPacket(&con->udp_send_writer, &out)) {
         connection_log(con, BLOG_ERROR, "out of UDP buffer");
         return 0;
     }
-    
+
     // write message
     memcpy(out, data, data_len);
-    
+
     // submit written message
     BufferWriter_EndPacket(&con->udp_send_writer, data_len);
-    
+
     return 1;
 }
 
@@ -1339,36 +1339,36 @@ void connection_close (struct connection *con)
 {
     struct client *client = con->client;
     ASSERT(!con->closing)
-    
+
     // if possible, free connection immediately
     if (!PacketPassFairQueueFlow_IsBusy(&con->send_qflow)) {
         connection_free(con);
         return;
     }
-    
+
     connection_log(con, BLOG_DEBUG, "closing later");
-    
+
     // decrement number of connections
     client->num_connections--;
-    
+
     // remove from client's connections list
     LinkedList1_Remove(&client->connections_list, &con->connections_list_node);
-    
+
     // remove from client's connections tree
     BAVL_Remove(&client->connections_tree, &con->connections_tree_node);
-    
+
     // free UDP
     connection_free_udp(con);
-    
+
     // insert to client's closing connections list
     LinkedList1_Append(&client->closing_connections_list, &con->closing_connections_list_node);
-    
+
     // set busy handler
     PacketPassFairQueueFlow_SetBusyHandler(&con->send_qflow, (PacketPassFairQueue_handler_busy)connection_send_qflow_busy_handler, con);
-    
+
     // unset first job
     BPending_Unset(&con->first_job);
-    
+
     // set closing
     con->closing = 1;
 }
@@ -1377,9 +1377,9 @@ void connection_send_qflow_busy_handler (struct connection *con)
 {
     ASSERT(con->closing)
     PacketPassFairQueueFlow_AssertFree(&con->send_qflow);
-    
+
     connection_log(con, BLOG_DEBUG, "closing finally");
-    
+
     // free connection
     connection_free(con);
 }
@@ -1387,9 +1387,9 @@ void connection_send_qflow_busy_handler (struct connection *con)
 void connection_dgram_handler_event (struct connection *con, int event)
 {
     ASSERT(!con->closing)
-    
+
     connection_log(con, BLOG_INFO, "UDP error");
-    
+
     // close connection
     connection_close(con);
 }
@@ -1400,19 +1400,19 @@ void connection_udp_recv_if_handler_send (struct connection *con, uint8_t *data,
     ASSERT(!con->closing)
     ASSERT(data_len >= 0)
     ASSERT(data_len <= options.udp_mtu)
-    
+
     connection_log(con, BLOG_DEBUG, "from UDP %d bytes", data_len);
-    
+
     // set last use time
     con->last_use_time = btime_gettime();
-    
+
     // move connection to front
     LinkedList1_Remove(&client->connections_list, &con->connections_list_node);
     LinkedList1_Append(&client->connections_list, &con->connections_list_node);
-    
+
     // accept packet
     PacketPassInterface_Done(&con->udp_recv_if);
-    
+
     // send packet to client
     connection_send_to_client(con, 0, data, data_len);
 }
@@ -1426,7 +1426,7 @@ struct connection * find_connection (struct client *client, uint16_t conid)
     struct connection *con = UPPER_OBJECT(tree_node, struct connection, connections_tree_node);
     ASSERT(con->conid == conid)
     ASSERT(!con->closing)
-    
+
     return con;
 }
 
@@ -1444,29 +1444,29 @@ void maybe_update_dns (void)
     }
     last_dns_update_time = now;
     BLog(BLOG_DEBUG, "update dns");
-    
+
     if (res_init() != 0) {
         BLog(BLOG_ERROR, "res_init failed");
         goto fail;
     }
-    
+
     if (_res.nscount == 0) {
         BLog(BLOG_ERROR, "no name servers available");
         goto fail;
     }
-    
+
     BAddr addr;
     BAddr_InitIPv4(&addr, _res.nsaddr_list[0].sin_addr.s_addr, hton16(53));
-    
+
     if (!BAddr_Compare(&addr, &dns_addr)) {
         char str[BADDR_MAX_PRINT_LEN];
         BAddr_Print(&addr, str);
         BLog(BLOG_INFO, "using DNS server %s", str);
     }
-    
+
     dns_addr = addr;
     return;
-    
+
 fail:
     BAddr_InitNone(&dns_addr);
 #endif

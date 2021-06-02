@@ -42,7 +42,7 @@ case "$1" in
         $0 stop
 	$0 start
     ;;
-    
+
     *)
 	echo "Usage: /etc/init.d/pdnsd {start|stop|restart}" >&2
 	exit 1

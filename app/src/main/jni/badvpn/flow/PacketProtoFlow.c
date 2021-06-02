@@ -1,9 +1,9 @@
 /**
  * @file PacketProtoFlow.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,22 +38,22 @@ int PacketProtoFlow_Init (PacketProtoFlow *o, int input_mtu, int num_packets, Pa
     ASSERT(input_mtu <= PACKETPROTO_MAXPAYLOAD)
     ASSERT(num_packets > 0)
     ASSERT(PacketPassInterface_GetMTU(output) >= PACKETPROTO_ENCLEN(input_mtu))
-    
+
     // init async input
     BufferWriter_Init(&o->ainput, input_mtu, pg);
-    
+
     // init encoder
     PacketProtoEncoder_Init(&o->encoder, BufferWriter_GetOutput(&o->ainput), pg);
-    
+
     // init buffer
     if (!PacketBuffer_Init(&o->buffer, PacketProtoEncoder_GetOutput(&o->encoder), output, num_packets, pg)) {
         goto fail0;
     }
-    
+
     DebugObject_Init(&o->d_obj);
-    
+
     return 1;
-    
+
 fail0:
     PacketProtoEncoder_Free(&o->encoder);
     BufferWriter_Free(&o->ainput);
@@ -63,13 +63,13 @@ fail0:
 void PacketProtoFlow_Free (PacketProtoFlow *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     // free buffer
     PacketBuffer_Free(&o->buffer);
-    
+
     // free encoder
     PacketProtoEncoder_Free(&o->encoder);
-    
+
     // free async input
     BufferWriter_Free(&o->ainput);
 }
@@ -77,6 +77,6 @@ void PacketProtoFlow_Free (PacketProtoFlow *o)
 BufferWriter * PacketProtoFlow_GetInput (PacketProtoFlow *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return &o->ainput;
 }

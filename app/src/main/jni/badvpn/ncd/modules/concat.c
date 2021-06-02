@@ -1,9 +1,9 @@
 /**
  * @file concat.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,13 +25,13 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Synopsis:
  *   concat([string elem ...])
  *   concatv(list strings)
- * 
+ *
  * Description:
  *   Concatenates zero or more strings. The result is available as the empty
  *   string variable. For concatv(), the strings are provided as a single
@@ -66,7 +66,7 @@ struct instance {
 static void result_ref_target_func_release (BRefTarget *ref_target)
 {
     struct result *result = UPPER_OBJECT(ref_target, struct result, ref_target);
-    
+
     BFree(result);
 }
 
@@ -75,32 +75,32 @@ static void new_concat_common (void *vo, NCDModuleInst *i, NCDValRef list)
     ASSERT(NCDVal_IsList(list))
     struct instance *o = vo;
     o->i = i;
-    
+
     size_t count = NCDVal_ListCount(list);
     bsize_t result_size = bsize_fromsize(sizeof(struct result));
-    
+
     // check arguments and compute result size
     for (size_t j = 0; j < count; j++) {
         NCDValRef arg = NCDVal_ListGet(list, j);
-        
+
         if (!NCDVal_IsString(arg)) {
             ModuleLog(i, BLOG_ERROR, "wrong type");
             goto fail0;
         }
-        
+
         result_size = bsize_add(result_size, bsize_fromsize(NCDVal_StringLength(arg)));
     }
-    
+
     // allocate result
     o->result = BAllocSize(result_size);
     if (!o->result) {
         ModuleLog(i, BLOG_ERROR, "BAllocSize failed");
         goto fail0;
     }
-    
+
     // init ref target
     BRefTarget_Init(&o->result->ref_target, result_ref_target_func_release);
-    
+
     // copy data to result
     o->result->length = 0;
     for (size_t j = 0; j < count; j++) {
@@ -109,11 +109,11 @@ static void new_concat_common (void *vo, NCDModuleInst *i, NCDValRef list)
         b_cstring_copy_to_buf(cstr, 0, cstr.length, o->result->data + o->result->length);
         o->result->length += cstr.length;
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(o->i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -134,10 +134,10 @@ static void func_new_concatv (void *vo, NCDModuleInst *i, const struct NCDModule
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     new_concat_common(vo, i, list_arg);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -145,22 +145,22 @@ fail0:
 static void func_die (void *vo)
 {
     struct instance *o = vo;
-    
+
     // release result reference
     BRefTarget_Deref(&o->result->ref_target);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
 static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out)
 {
     struct instance *o = vo;
-    
+
     if (name == NCD_STRING_EMPTY) {
         *out = NCDVal_NewExternalString(mem, o->result->data, o->result->length, &o->result->ref_target);
         return 1;
     }
-    
+
     return 0;
 }
 

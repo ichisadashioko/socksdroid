@@ -1,9 +1,9 @@
 /**
  * @file bstring.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -67,7 +67,7 @@ static void BString__assert (BString *o)
         case BSTRING_TYPE_EXTERNAL:
             return;
     }
-    
+
     ASSERT(0);
 }
 
@@ -83,7 +83,7 @@ static int BString_Init (BString *o, const char *str)
         strcpy(o->u.ud.dynamic_string, str);
         o->u.ud.type = BSTRING_TYPE_DYNAMIC;
     }
-    
+
     BString__assert(o);
     return 1;
 }
@@ -91,10 +91,10 @@ static int BString_Init (BString *o, const char *str)
 static void BString_InitStatic (BString *o, const char *str)
 {
     ASSERT(strlen(str) <= BSTRING_STATIC_MAX)
-    
+
     strcpy(o->u.us.static_string, str);
     o->u.us.type = BSTRING_TYPE_STATIC;
-    
+
     BString__assert(o);
 }
 
@@ -102,7 +102,7 @@ static void BString_InitExternal (BString *o, const char *str)
 {
     o->u.ue.external_string = str;
     o->u.ue.type = BSTRING_TYPE_EXTERNAL;
-    
+
     BString__assert(o);
 }
 
@@ -110,14 +110,14 @@ static void BString_InitAllocated (BString *o, char *str)
 {
     o->u.ud.dynamic_string = str;
     o->u.ud.type = BSTRING_TYPE_DYNAMIC;
-    
+
     BString__assert(o);
 }
 
 static void BString_Free (BString *o)
 {
     BString__assert(o);
-    
+
     if (o->u.ud.type == BSTRING_TYPE_DYNAMIC) {
         free(o->u.ud.dynamic_string);
     }
@@ -126,13 +126,13 @@ static void BString_Free (BString *o)
 static const char * BString_Get (BString *o)
 {
     BString__assert(o);
-    
+
     switch (o->u.us.type) {
         case BSTRING_TYPE_STATIC: return o->u.us.static_string;
         case BSTRING_TYPE_DYNAMIC: return o->u.ud.dynamic_string;
         case BSTRING_TYPE_EXTERNAL: return o->u.ue.external_string;
     }
-    
+
     ASSERT(0);
     return NULL;
 }

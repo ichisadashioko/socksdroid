@@ -1,9 +1,9 @@
 /**
  * @file ncd_value_parser_test.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -39,36 +39,36 @@
 int main (int argc, char *argv[])
 {
     int res = 1;
-    
+
     if (argc != 2) {
         printf("Usage: %s <string>\n", (argc > 0 ? argv[0] : ""));
         goto fail0;
     }
-    
+
     BLog_InitStdout();
-    
+
     NCDValMem mem;
     NCDValMem_Init(&mem);
-    
+
     // parse
     NCDValRef val;
     if (!NCDValParser_Parse(argv[1], strlen(argv[1]), &mem, &val)) {
         DEBUG("NCDValParser_Parse failed");
         goto fail1;
     }
-    
+
     // generate value string
     char *str = NCDValGenerator_Generate(val);
     if (!str) {
         DEBUG("NCDValGenerator_Generate failed");
         goto fail1;
     }
-    
+
     // print value string
     printf("%s\n", str);
-    
+
     res = 0;
-    
+
     free(str);
 fail1:
     NCDValMem_Free(&mem);

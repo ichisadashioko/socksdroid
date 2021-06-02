@@ -1,9 +1,9 @@
 /**
  * @file arithmetic.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,11 +25,11 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Arithmetic functions for unsigned integers.
- * 
+ *
  * Synopsis:
  *   num_lesser(string n1, string n2)
  *   num_greater(string n1, string n2)
@@ -37,28 +37,28 @@
  *   num_greater_equal(string n1, string n2)
  *   num_equal(string n1, string n2)
  *   num_different(string n1, string n2)
- * 
+ *
  * Variables:
  *   (empty) - "true" or "false", reflecting the value of the relation in question
- * 
+ *
  * Description:
  *   These statements perform arithmetic comparisons. The operands passed must be
  *   non-negative decimal integers representable in a uintmax_t. Otherwise, an error
  *   is triggered.
- * 
+ *
  * Synopsis:
  *   num_add(string n1, string n2)
  *   num_subtract(string n1, string n2)
  *   num_multiply(string n1, string n2)
  *   num_divide(string n1, string n2)
  *   num_modulo(string n1, string n2)
- * 
+ *
  * Description:
  *   These statements perform arithmetic operations. The operands passed must be
  *   non-negative decimal integers representable in a uintmax_t, and the result must
  *   also be representable and non-negative. For divide and modulo, n2 must be non-zero.
  *   If any of these restrictions is violated, an error is triggered.
- * 
+ *
  * Variables:
  *   (empty) - the result of the operation as a string representing a decimal number
  */
@@ -176,7 +176,7 @@ static void new_boolean_templ (void *vo, NCDModuleInst *i, const struct NCDModul
 {
     struct boolean_instance *o = vo;
     o->i = i;
-    
+
     NCDValRef n1_arg;
     NCDValRef n2_arg;
     if (!NCDVal_ListRead(params->args, 2, &n1_arg, &n2_arg)) {
@@ -187,24 +187,24 @@ static void new_boolean_templ (void *vo, NCDModuleInst *i, const struct NCDModul
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     uintmax_t n1;
     if (!ncd_read_uintmax(n1_arg, &n1)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong first argument");
         goto fail0;
     }
-    
+
     uintmax_t n2;
     if (!ncd_read_uintmax(n2_arg, &n2)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong second argument");
         goto fail0;
     }
-    
+
     o->value = cfunc(n1, n2);
-    
+
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -212,12 +212,12 @@ fail0:
 static int boolean_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out)
 {
     struct boolean_instance *o = vo;
-    
+
     if (name == NCD_STRING_EMPTY) {
         *out = ncd_make_boolean(mem, o->value, o->i->params->iparams->string_index);
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -225,7 +225,7 @@ static void new_number_templ (void *vo, NCDModuleInst *i, const struct NCDModule
 {
     struct number_instance *o = vo;
     o->i = i;
-    
+
     NCDValRef n1_arg;
     NCDValRef n2_arg;
     if (!NCDVal_ListRead(params->args, 2, &n1_arg, &n2_arg)) {
@@ -236,26 +236,26 @@ static void new_number_templ (void *vo, NCDModuleInst *i, const struct NCDModule
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     uintmax_t n1;
     if (!ncd_read_uintmax(n1_arg, &n1)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong first argument");
         goto fail0;
     }
-    
+
     uintmax_t n2;
     if (!ncd_read_uintmax(n2_arg, &n2)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong second argument");
         goto fail0;
     }
-    
+
     if (!cfunc(i, n1, n2, &o->value)) {
         goto fail0;
     }
-    
+
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -263,12 +263,12 @@ fail0:
 static int number_func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out)
 {
     struct number_instance *o = vo;
-    
+
     if (name == NCD_STRING_EMPTY) {
         *out = ncd_make_uintmax(mem, o->value);
         return 1;
     }
-    
+
     return 0;
 }
 

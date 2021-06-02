@@ -1,9 +1,9 @@
 /**
  * @file DHCPIpUdpEncoder.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -45,10 +45,10 @@
 static void output_handler_recv (DHCPIpUdpEncoder *o, uint8_t *data)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     // remember output packet
     o->data = data;
-    
+
     // receive payload
     PacketRecvInterface_Receiver_Recv(o->input, o->data + IPUDP_HEADER_SIZE);
 }
@@ -56,7 +56,7 @@ static void output_handler_recv (DHCPIpUdpEncoder *o, uint8_t *data)
 static void input_handler_done (DHCPIpUdpEncoder *o, int data_len)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     // build IP header
     struct ipv4_header iph;
     iph.version4_ihl4 = IPV4_MAKE_VERSION_IHL(sizeof(iph));
@@ -70,7 +70,7 @@ static void input_handler_done (DHCPIpUdpEncoder *o, int data_len)
     iph.source_address = hton32(0x00000000);
     iph.destination_address = hton32(0xFFFFFFFF);
     iph.checksum = ipv4_checksum(&iph, NULL, 0);
-    
+
     // write UDP header
     struct udp_header udph;
     udph.source_port = hton16(DHCP_CLIENT_PORT);
@@ -78,11 +78,11 @@ static void input_handler_done (DHCPIpUdpEncoder *o, int data_len)
     udph.length = hton16(sizeof(udph) + data_len);
     udph.checksum = hton16(0);
     udph.checksum = udp_checksum(&udph, o->data + IPUDP_HEADER_SIZE, data_len, iph.source_address, iph.destination_address);
-    
+
     // write header
     memcpy(o->data, &iph, sizeof(iph));
     memcpy(o->data + sizeof(iph), &udph, sizeof(udph));
-    
+
     // finish packet
     PacketRecvInterface_Done(&o->output, IPUDP_HEADER_SIZE + data_len);
 }
@@ -90,23 +90,23 @@ static void input_handler_done (DHCPIpUdpEncoder *o, int data_len)
 void DHCPIpUdpEncoder_Init (DHCPIpUdpEncoder *o, PacketRecvInterface *input, BPendingGroup *pg)
 {
     ASSERT(PacketRecvInterface_GetMTU(input) <= INT_MAX - IPUDP_HEADER_SIZE)
-    
+
     // init arguments
     o->input = input;
-    
+
     // init input
     PacketRecvInterface_Receiver_Init(o->input, (PacketRecvInterface_handler_done)input_handler_done, o);
-    
+
     // init output
     PacketRecvInterface_Init(&o->output, IPUDP_HEADER_SIZE + PacketRecvInterface_GetMTU(o->input), (PacketRecvInterface_handler_recv)output_handler_recv, o, pg);
-    
+
     DebugObject_Init(&o->d_obj);
 }
 
 void DHCPIpUdpEncoder_Free (DHCPIpUdpEncoder *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     // free output
     PacketRecvInterface_Free(&o->output);
 }
@@ -114,6 +114,6 @@ void DHCPIpUdpEncoder_Free (DHCPIpUdpEncoder *o)
 PacketRecvInterface * DHCPIpUdpEncoder_GetOutput (DHCPIpUdpEncoder *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return &o->output;
 }

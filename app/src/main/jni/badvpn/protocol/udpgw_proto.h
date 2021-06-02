@@ -2,7 +2,7 @@
  * Copyright (C) Ambroz Bizjak <ambrop7@gmail.com>
  * Contributions:
  * Transparent DNS: Copyright (C) Kerem Hadimli <kerem.hadimli@gmail.com>
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -13,7 +13,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -82,16 +82,16 @@ static int udpgw_compute_mtu (int dgram_mtu)
             bsize_max(
                 bsize_fromsize(sizeof(struct udpgw_addr_ipv4)),
                 bsize_fromsize(sizeof(struct udpgw_addr_ipv6))
-            ), 
+            ),
             bsize_fromint(dgram_mtu)
         )
     );
-    
+
     int s;
     if (!bsize_toint(bs, &s)) {
         return -1;
     }
-    
+
     return s;
 }
 

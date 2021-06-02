@@ -1,9 +1,9 @@
 /**
  * @file logical.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,19 +25,19 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Module for logical operators.
- * 
+ *
  * Synopsis: not(string val)
  * Variables:
  *   string (empty) - "true" if val does not equal "true", "false" otherwise
- * 
+ *
  * Synopsis: or([string val1, ...])
  * Variables:
  *   string (empty) - "true" if at least one of the values equals "true", "false" otherwise
- * 
+ *
  * Synopsis: and([string val1, ...])
  * Variables:
  *   string (empty) - "true" if all of the values equal "true", "false" otherwise
@@ -63,7 +63,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // compute value from arguments
     if (is_not) {
         NCDValRef arg;
@@ -75,21 +75,21 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
             ModuleLog(o->i, BLOG_ERROR, "wrong type");
             goto fail0;
         }
-        
+
         o->value = !ncd_read_boolean(arg);
     } else {
         o->value = (is_or ? 0 : 1);
-        
+
         size_t count = NCDVal_ListCount(params->args);
-        
+
         for (size_t j = 0; j < count; j++) {
             NCDValRef arg = NCDVal_ListGet(params->args, j);
-            
+
             if (!NCDVal_IsString(arg)) {
                 ModuleLog(o->i, BLOG_ERROR, "wrong type");
                 goto fail0;
             }
-            
+
             int this_value = ncd_read_boolean(arg);
             if (is_or) {
                 o->value = o->value || this_value;
@@ -98,11 +98,11 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
             }
         }
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(o->i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -125,12 +125,12 @@ static void func_new_and (void *vo, NCDModuleInst *i, const struct NCDModuleInst
 static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out)
 {
     struct instance *o = vo;
-    
+
     if (name == NCD_STRING_EMPTY) {
         *out = ncd_make_boolean(mem, o->value, o->i->params->iparams->string_index);
         return 1;
     }
-    
+
     return 0;
 }
 

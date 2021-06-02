@@ -1,9 +1,9 @@
 /**
  * @file SingleStreamReceiver.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -36,16 +36,16 @@ static void input_handler_done (SingleStreamReceiver *o, int data_len)
     DebugObject_Access(&o->d_obj);
     ASSERT(data_len > 0)
     ASSERT(data_len <= o->packet_len - o->pos)
-    
+
     // update position
     o->pos += data_len;
-    
+
     // if everything was received, notify user
     if (o->pos == o->packet_len) {
         DEBUGERROR(&o->d_err, o->handler(o->user));
         return;
     }
-    
+
     // receive more
     StreamRecvInterface_Receiver_Recv(o->input, o->packet + o->pos, o->packet_len - o->pos);
 }
@@ -54,23 +54,23 @@ void SingleStreamReceiver_Init (SingleStreamReceiver *o, uint8_t *packet, int pa
 {
     ASSERT(packet_len > 0)
     ASSERT(handler)
-    
+
     // init arguments
     o->packet = packet;
     o->packet_len = packet_len;
     o->input = input;
     o->user = user;
     o->handler = handler;
-    
+
     // set position zero
     o->pos = 0;
-    
+
     // init output
     StreamRecvInterface_Receiver_Init(o->input, (StreamRecvInterface_handler_done)input_handler_done, o);
-    
+
     // start receiving
     StreamRecvInterface_Receiver_Recv(o->input, o->packet + o->pos, o->packet_len - o->pos);
-    
+
     DebugError_Init(&o->d_err, pg);
     DebugObject_Init(&o->d_obj);
 }

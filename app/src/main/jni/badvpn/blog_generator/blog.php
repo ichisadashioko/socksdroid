@@ -118,4 +118,3 @@ if (file_put_contents("{$output_dir}/blog_channels_defines.h", $channels_defines
 if (file_put_contents("{$output_dir}/blog_channels_list.h", $channels_list) === NULL) {
     fatal_error("{$input_file}: Failed to write channels list file");
 }
-

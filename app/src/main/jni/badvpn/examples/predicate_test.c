@@ -1,9 +1,9 @@
 /**
  * @file predicate_test.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -41,7 +41,7 @@ static int func_hello (void *user, void **args)
 static int func_neg (void *user, void **args)
 {
     int arg = *((int *)args[0]);
-    
+
     return !arg;
 }
 
@@ -49,7 +49,7 @@ static int func_conj (void *user, void **args)
 {
     int arg1 = *((int *)args[0]);
     int arg2 = *((int *)args[1]);
-    
+
     return (arg1 && arg2);
 }
 
@@ -57,7 +57,7 @@ static int func_strcmp (void *user, void **args)
 {
     char *arg1 = (char *)args[0];
     char *arg2 = (char *)args[1];
-    
+
     return (!strcmp(arg1, arg2));
 }
 
@@ -72,17 +72,17 @@ int main (int argc, char **argv)
         fprintf(stderr, "Usage: %s <predicate>\n", argv[0]);
         return 1;
     }
-    
+
     // init logger
     BLog_InitStdout();
-    
+
     // init predicate
     BPredicate pr;
     if (!BPredicate_Init(&pr, argv[1])) {
         fprintf(stderr, "BPredicate_Init failed\n");
         return 1;
     }
-    
+
     // init functions
     BPredicateFunction f_hello;
     BPredicateFunction_Init(&f_hello, &pr, "hello", NULL, 0, func_hello, NULL);
@@ -97,20 +97,20 @@ int main (int argc, char **argv)
     BPredicateFunction_Init(&f_strcmp, &pr, "strcmp", arr3, 2, func_strcmp, NULL);
     BPredicateFunction f_error;
     BPredicateFunction_Init(&f_error, &pr, "error", NULL, 0, func_error, NULL);
-    
+
     // evaluate
     int result = BPredicate_Eval(&pr);
     printf("%d\n", result);
-    
+
     // free functions
     BPredicateFunction_Free(&f_hello);
     BPredicateFunction_Free(&f_neg);
     BPredicateFunction_Free(&f_conj);
     BPredicateFunction_Free(&f_strcmp);
     BPredicateFunction_Free(&f_error);
-    
+
     // free predicate
     BPredicate_Free(&pr);
-    
+
     return 0;
 }

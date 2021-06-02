@@ -1,9 +1,9 @@
 /**
  * @file BSecurity.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -52,7 +52,7 @@ int bsecurity_num_locks;
 static unsigned long id_callback (void)
 {
     ASSERT(bsecurity_initialized)
-    
+
     return (unsigned long)pthread_self();
 }
 
@@ -61,7 +61,7 @@ static void locking_callback (int mode, int type, const char *file, int line)
     ASSERT(bsecurity_initialized)
     ASSERT(type >= 0)
     ASSERT(type < bsecurity_num_locks)
-    
+
     if ((mode & CRYPTO_LOCK)) {
         ASSERT_FORCE(pthread_mutex_lock(&bsecurity_locks[type]) == 0)
     } else {
@@ -74,18 +74,18 @@ static void locking_callback (int mode, int type, const char *file, int line)
 int BSecurity_GlobalInitThreadSafe (void)
 {
     ASSERT(!bsecurity_initialized)
-    
+
     #ifdef BADVPN_THREADWORK_USE_PTHREAD
-    
+
     // get number of locks
     int num_locks = CRYPTO_num_locks();
     ASSERT_FORCE(num_locks >= 0)
-    
+
     // alloc locks array
     if (!(bsecurity_locks = BAllocArray(num_locks, sizeof(bsecurity_locks[0])))) {
         goto fail0;
     }
-    
+
     // init locks
     bsecurity_num_locks = 0;
     for (int i = 0; i < num_locks; i++) {
@@ -94,18 +94,18 @@ int BSecurity_GlobalInitThreadSafe (void)
         }
         bsecurity_num_locks++;
     }
-    
+
     #endif
-    
+
     bsecurity_initialized = 1;
-    
+
     #ifdef BADVPN_THREADWORK_USE_PTHREAD
     CRYPTO_set_id_callback(id_callback);
     CRYPTO_set_locking_callback(locking_callback);
     #endif
-    
+
     return 1;
-    
+
     #ifdef BADVPN_THREADWORK_USE_PTHREAD
 fail1:
     while (bsecurity_num_locks > 0) {
@@ -121,24 +121,24 @@ fail0:
 void BSecurity_GlobalFreeThreadSafe (void)
 {
     ASSERT(bsecurity_initialized)
-    
+
     #ifdef BADVPN_THREADWORK_USE_PTHREAD
-    
+
     // remove callbacks
     CRYPTO_set_locking_callback(NULL);
     CRYPTO_set_id_callback(NULL);
-    
+
     // free locks
     while (bsecurity_num_locks > 0) {
         ASSERT_FORCE(pthread_mutex_destroy(&bsecurity_locks[bsecurity_num_locks - 1]) == 0)
         bsecurity_num_locks--;
     }
-    
+
     // free locks array
     BFree(bsecurity_locks);
-    
+
     #endif
-    
+
     bsecurity_initialized = 0;
 }
 

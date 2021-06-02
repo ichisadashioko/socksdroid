@@ -1,9 +1,9 @@
 /**
  * @file BAVL.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * AVL tree.
  */
 
@@ -49,7 +49,7 @@
  *   - The value of a node in the tree, or a node that is being inserted is:
  *     (uint8_t *)node + offset.
  *   - The value being looked up is the same as given to the lookup function.
- * 
+ *
  * @param user as in {@link BAVL_Init}
  * @param val1 first value
  * @param val2 second value
@@ -83,7 +83,7 @@ typedef struct BAVLNode {
 
 /**
  * Initializes the tree.
- * 
+ *
  * @param o tree to initialize
  * @param offset offset of a value from its node
  * @param comparator value comparator handler function
@@ -94,7 +94,7 @@ static void BAVL_Init (BAVL *o, int offset, BAVL_comparator comparator, void *us
 /**
  * Inserts a node into the tree.
  * Must not be called from comparator.
- * 
+ *
  * @param o the tree
  * @param node uninitialized node to insert. Must have a valid value (its value
  *             may be passed to the comparator during insertion).
@@ -109,7 +109,7 @@ static int BAVL_Insert (BAVL *o, BAVLNode *node, BAVLNode **ref);
 /**
  * Removes a node from the tree.
  * Must not be called from comparator.
- * 
+ *
  * @param o the tree
  * @param node node to remove
  */
@@ -118,7 +118,7 @@ static void BAVL_Remove (BAVL *o, BAVLNode *node);
 /**
  * Checks if the tree is empty.
  * Must not be called from comparator.
- * 
+ *
  * @param o the tree
  * @return 1 if empty, 0 if not
  */
@@ -127,7 +127,7 @@ static int BAVL_IsEmpty (const BAVL *o);
 /**
  * Looks for a value in the tree.
  * Must not be called from comparator.
- * 
+ *
  * @param o the tree
  * @param val value to look for
  * @return If a node is in the thee with an equal value, that node.
@@ -141,7 +141,7 @@ static BAVLNode * BAVL_Lookup (const BAVL *o, void *val);
 /**
  * Looks for a value in the tree.
  * Must not be called from comparator.
- * 
+ *
  * @param o the tree
  * @param val value to look for
  * @return If a node is in the thee with an equal value, that node.
@@ -151,7 +151,7 @@ static BAVLNode * BAVL_LookupExact (const BAVL *o, void *val);
 
 /**
  * Returns the smallest node in the tree, or NULL if the tree is empty.
- * 
+ *
  * @param o the tree
  * @return smallest node or NULL
  */
@@ -159,7 +159,7 @@ static BAVLNode * BAVL_GetFirst (const BAVL *o);
 
 /**
  * Returns the greatest node in the tree, or NULL if the tree is empty.
- * 
+ *
  * @param o the tree
  * @return greatest node or NULL
  */
@@ -168,7 +168,7 @@ static BAVLNode * BAVL_GetLast (const BAVL *o);
 /**
  * Returns the node that follows the given node, or NULL if it's the
  * last node.
- * 
+ *
  * @param o the tree
  * @param n node
  * @return next node, or NULL
@@ -178,7 +178,7 @@ static BAVLNode * BAVL_GetNext (const BAVL *o, BAVLNode *n);
 /**
  * Returns the node that precedes the given node, or NULL if it's the
  * first node.
- * 
+ *
  * @param o the tree
  * @param n node
  * @return previous node, or NULL
@@ -204,9 +204,9 @@ static void * _BAVL_node_value (const BAVL *o, BAVLNode *n)
 static int _BAVL_compare_values (const BAVL *o, void *v1, void *v2)
 {
     int res = o->comparator(o->user, v1, v2);
-    
+
     ASSERT(res == -1 || res == 0 || res == 1)
-    
+
     return res;
 }
 
@@ -225,14 +225,14 @@ static int _BAVL_assert_recurser (BAVL *o, BAVLNode *n)
 {
     ASSERT_FORCE(n->balance >= -1)
     ASSERT_FORCE(n->balance <= 1)
-    
+
     int height_left = 0;
     int height_right = 0;
 #ifdef BAVL_COUNT
     uint64_t count_left = 0;
     uint64_t count_right = 0;
 #endif
-    
+
     // check left subtree
     if (n->link[0]) {
         // check parent link
@@ -245,7 +245,7 @@ static int _BAVL_assert_recurser (BAVL *o, BAVLNode *n)
         count_left = n->link[0]->count;
 #endif
     }
-    
+
     // check right subtree
     if (n->link[1]) {
         // check parent link
@@ -258,15 +258,15 @@ static int _BAVL_assert_recurser (BAVL *o, BAVLNode *n)
         count_right = n->link[1]->count;
 #endif
     }
-    
+
     // check balance factor
     ASSERT_FORCE(n->balance == height_right - height_left)
-    
+
 #ifdef BAVL_COUNT
     // check count
     ASSERT_FORCE(n->count == 1 + count_left + count_right)
 #endif
-    
+
     return (BAVL_MAX(height_left, height_right) + 1);
 }
 
@@ -280,7 +280,7 @@ static void _BAVL_update_count_from_children (BAVLNode *n)
 static void _BAVL_rotate (BAVL *tree, BAVLNode *r, uint8_t dir)
 {
     BAVLNode *nr = r->link[!dir];
-    
+
     r->link[!dir] = nr->link[dir];
     if (r->link[!dir]) {
         r->link[!dir]->parent = r;
@@ -293,7 +293,7 @@ static void _BAVL_rotate (BAVL *tree, BAVLNode *r, uint8_t dir)
         tree->root = nr;
     }
     r->parent = nr;
-    
+
 #ifdef BAVL_COUNT
     // update counts
     _BAVL_update_count_from_children(r); // first r!
@@ -313,7 +313,7 @@ static BAVLNode * _BAVL_subtree_max (BAVLNode *n)
 static void _BAVL_replace_subtree (BAVL *tree, BAVLNode *dest, BAVLNode *n)
 {
     ASSERT(dest)
-    
+
     if (dest->parent) {
         dest->parent->link[dest == dest->parent->link[1]] = n;
     } else {
@@ -322,7 +322,7 @@ static void _BAVL_replace_subtree (BAVL *tree, BAVLNode *dest, BAVLNode *n)
     if (n) {
         n->parent = dest->parent;
     }
-    
+
 #ifdef BAVL_COUNT
     // update counts
     for (BAVLNode *c = dest->parent; c; c = c->parent) {
@@ -346,23 +346,23 @@ static void _BAVL_swap_nodes (BAVL *tree, BAVLNode *n1, BAVLNode *n2)
             n1 = n2;
             n2 = t;
         }
-        
+
         uint8_t side = (n2 == n1->link[1]);
         BAVLNode *c = n1->link[!side];
-        
+
         if (n1->link[0] = n2->link[0]) {
             n1->link[0]->parent = n1;
         }
         if (n1->link[1] = n2->link[1]) {
             n1->link[1]->parent = n1;
         }
-        
+
         if (n2->parent = n1->parent) {
             n2->parent->link[n1 == n1->parent->link[1]] = n2;
         } else {
             tree->root = n2;
         }
-        
+
         n2->link[side] = n1;
         n1->parent = n2;
         if (n2->link[!side] = c) {
@@ -370,7 +370,7 @@ static void _BAVL_swap_nodes (BAVL *tree, BAVLNode *n1, BAVLNode *n2)
         }
     } else {
         BAVLNode *temp;
-        
+
         // swap parents
         temp = n1->parent;
         if (n1->parent = n2->parent) {
@@ -383,7 +383,7 @@ static void _BAVL_swap_nodes (BAVL *tree, BAVLNode *n1, BAVLNode *n2)
         } else {
             tree->root = n2;
         }
-        
+
         // swap left children
         temp = n1->link[0];
         if (n1->link[0] = n2->link[0]) {
@@ -392,7 +392,7 @@ static void _BAVL_swap_nodes (BAVL *tree, BAVLNode *n1, BAVLNode *n2)
         if (n2->link[0] = temp) {
             n2->link[0]->parent = n2;
         }
-        
+
         // swap right children
         temp = n1->link[1];
         if (n1->link[1] = n2->link[1]) {
@@ -402,12 +402,12 @@ static void _BAVL_swap_nodes (BAVL *tree, BAVLNode *n1, BAVLNode *n2)
             n2->link[1]->parent = n2;
         }
     }
-    
+
     // swap balance factors
     int8_t b = n1->balance;
     n1->balance = n2->balance;
     n2->balance = b;
-    
+
 #ifdef BAVL_COUNT
     // swap counts
     uint64_t c = n1->count;
@@ -421,22 +421,22 @@ static void _BAVL_rebalance (BAVL *o, BAVLNode *node, uint8_t side, int8_t delta
     ASSERT(side == 0 || side == 1)
     ASSERT(deltac >= -1 && deltac <= 1)
     ASSERT(node->balance >= -1 && node->balance <= 1)
-    
+
     // if no subtree changed its height, no more rebalancing is needed
     if (deltac == 0) {
         return;
     }
-    
+
     // calculate how much our height changed
     int8_t delta = BAVL_MAX(deltac, BAVL_OPTNEG(node->balance, side)) - BAVL_MAX(0, BAVL_OPTNEG(node->balance, side));
     ASSERT(delta >= -1 && delta <= 1)
-    
+
     // update our balance factor
     node->balance -= BAVL_OPTNEG(deltac, side);
-    
+
     BAVLNode *child;
     BAVLNode *gchild;
-    
+
     // perform transformations if the balance factor is wrong
     if (node->balance == 2 || node->balance == -2) {
         uint8_t bside;
@@ -448,7 +448,7 @@ static void _BAVL_rebalance (BAVL *o, BAVLNode *node, uint8_t side, int8_t delta
             bside = 0;
             bsidef = -1;
         }
-        
+
         ASSERT(node->link[bside])
         child = node->link[bside];
         switch (child->balance * bsidef) {
@@ -480,7 +480,7 @@ static void _BAVL_rebalance (BAVL *o, BAVLNode *node, uint8_t side, int8_t delta
                 ASSERT(0);
         }
     }
-    
+
     ASSERT(delta >= -1 && delta <= 1)
     // Transformations above preserve this. Proof:
     //     - if a child subtree gained 1 height and rebalancing was needed,
@@ -491,7 +491,7 @@ static void _BAVL_rebalance (BAVL *o, BAVLNode *node, uint8_t side, int8_t delta
     //       was the lighter subtree. Then delta was originally 0, because
     //       the height of the heaviest subtree was unchanged. If the transformation
     //       reduces delta by one, it becomes -1.
-    
+
     if (node->parent) {
         _BAVL_rebalance(o, node->parent, node == node->parent->link[1], delta);
     }
@@ -503,7 +503,7 @@ void BAVL_Init (BAVL *o, int offset, BAVL_comparator comparator, void *user)
     o->comparator = comparator;
     o->user = user;
     o->root = NULL;
-    
+
     BAVL_ASSERT(o)
 }
 
@@ -519,22 +519,22 @@ int BAVL_Insert (BAVL *o, BAVLNode *node, BAVLNode **ref)
 #ifdef BAVL_COUNT
         node->count = 1;
 #endif
-        
+
         BAVL_ASSERT(o)
-        
+
         if (ref) {
             *ref = NULL;
         }
         return 1;
     }
-    
+
     // find node to insert to
     BAVLNode *c = o->root;
     int side;
     while (1) {
         // compare
         int comp = _BAVL_compare_nodes(o, node, c);
-        
+
         // have we found a node that compares equal?
         if (comp == 0) {
             if (ref) {
@@ -542,17 +542,17 @@ int BAVL_Insert (BAVL *o, BAVLNode *node, BAVLNode **ref)
             }
             return 0;
         }
-        
+
         side = (comp == 1);
-        
+
         // have we reached a leaf?
         if (!c->link[side]) {
             break;
         }
-        
+
         c = c->link[side];
     }
-    
+
     // insert
     c->link[side] = node;
     node->parent = c;
@@ -562,7 +562,7 @@ int BAVL_Insert (BAVL *o, BAVLNode *node, BAVLNode **ref)
 #ifdef BAVL_COUNT
     node->count = 1;
 #endif
-    
+
 #ifdef BAVL_COUNT
     // update counts
     for (BAVLNode *p = c; p; p = p->parent) {
@@ -570,12 +570,12 @@ int BAVL_Insert (BAVL *o, BAVLNode *node, BAVLNode **ref)
         p->count++;
     }
 #endif
-    
+
     // rebalance
     _BAVL_rebalance(o, c, side, 1);
-    
+
     BAVL_ASSERT(o)
-    
+
     if (ref) {
         *ref = c;
     }
@@ -592,13 +592,13 @@ void BAVL_Remove (BAVL *o, BAVLNode *node)
         // swap the nodes
         _BAVL_swap_nodes(o, node, max);
     }
-    
+
     // have at most one child now
     ASSERT(!(node->link[0] && node->link[1]))
-    
+
     BAVLNode *parent = node->parent;
     BAVLNode *child = (node->link[0] ? node->link[0] : node->link[1]);
-    
+
     if (parent) {
         // remember on which side node is
         int side = (node == parent->link[1]);
@@ -610,7 +610,7 @@ void BAVL_Remove (BAVL *o, BAVLNode *node)
         // replace node with child
         _BAVL_replace_subtree(o, node, child);
     }
-    
+
     BAVL_ASSERT(o)
 }
 
@@ -624,24 +624,24 @@ BAVLNode * BAVL_Lookup (const BAVL *o, void *val)
     if (!o->root) {
         return NULL;
     }
-    
+
     BAVLNode *c = o->root;
     while (1) {
         // compare
         int comp = _BAVL_compare_values(o, val, _BAVL_node_value(o, c));
-        
+
         // have we found a node that compares equal?
         if (comp == 0) {
             return c;
         }
-        
+
         int side = (comp == 1);
-        
+
         // have we reached a leaf?
         if (!c->link[side]) {
             return c;
         }
-        
+
         c = c->link[side];
     }
 }
@@ -651,24 +651,24 @@ BAVLNode * BAVL_LookupExact (const BAVL *o, void *val)
     if (!o->root) {
         return NULL;
     }
-    
+
     BAVLNode *c = o->root;
     while (1) {
         // compare
         int comp = _BAVL_compare_values(o, val, _BAVL_node_value(o, c));
-        
+
         // have we found a node that compares equal?
         if (comp == 0) {
             return c;
         }
-        
+
         int side = (comp == 1);
-        
+
         // have we reached a leaf?
         if (!c->link[side]) {
             return NULL;
         }
-        
+
         c = c->link[side];
     }
 }
@@ -678,12 +678,12 @@ BAVLNode * BAVL_GetFirst (const BAVL *o)
     if (!o->root) {
         return NULL;
     }
-    
+
     BAVLNode *n = o->root;
     while (n->link[0]) {
         n = n->link[0];
     }
-    
+
     return n;
 }
 
@@ -692,12 +692,12 @@ BAVLNode * BAVL_GetLast (const BAVL *o)
     if (!o->root) {
         return NULL;
     }
-    
+
     BAVLNode *n = o->root;
     while (n->link[1]) {
         n = n->link[1];
     }
-    
+
     return n;
 }
 
@@ -714,7 +714,7 @@ BAVLNode * BAVL_GetNext (const BAVL *o, BAVLNode *n)
         }
         n = n->parent;
     }
-    
+
     return n;
 }
 
@@ -731,7 +731,7 @@ BAVLNode * BAVL_GetPrev (const BAVL *o, BAVLNode *n)
         }
         n = n->parent;
     }
-    
+
     return n;
 }
 
@@ -745,7 +745,7 @@ static uint64_t BAVL_Count (const BAVL *o)
 static uint64_t BAVL_IndexOf (const BAVL *o, BAVLNode *n)
 {
     uint64_t index = (n->link[0] ? n->link[0]->count : 0);
-    
+
     for (BAVLNode *c = n; c->parent; c = c->parent) {
         if (c == c->parent->link[1]) {
             ASSERT(c->parent->count > c->count)
@@ -753,7 +753,7 @@ static uint64_t BAVL_IndexOf (const BAVL *o, BAVLNode *n)
             index += c->parent->count - c->count;
         }
     }
-    
+
     return index;
 }
 
@@ -762,19 +762,19 @@ static BAVLNode * BAVL_GetAt (const BAVL *o, uint64_t index)
     if (index >= BAVL_Count(o)) {
         return NULL;
     }
-    
+
     BAVLNode *c = o->root;
-    
+
     while (1) {
         ASSERT(c)
         ASSERT(index < c->count)
-        
+
         uint64_t left_count = (c->link[0] ? c->link[0]->count : 0);
-        
+
         if (index == left_count) {
             return c;
         }
-        
+
         if (index < left_count) {
             c = c->link[0];
         } else {

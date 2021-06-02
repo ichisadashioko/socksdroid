@@ -11,7 +11,7 @@ process main {
     };
     val_equal(list.length, "100") a;
     assert(a);
-    
+
     value({}) list;
     var("0") i;
     blocker() blk;
@@ -26,6 +26,6 @@ process main {
     };
     val_equal(list.length, "100") a;
     assert(a);
-    
+
     exit("0");
 }

@@ -16,9 +16,9 @@ int num_left;
 static void handler_done (void *user)
 {
     printf("work done\n");
-    
+
     num_left--;
-    
+
     if (num_left == 0) {
         printf("all works done, quitting\n");
         BReactor_Quit(&reactor, 0);
@@ -28,7 +28,7 @@ static void handler_done (void *user)
 static void work_func (void *user)
 {
     unsigned int x = 0;
-    
+
     for (int i = 0; i < 10000; i++) {
         for (int j = 0; j < 10000; j++) {
             x++;
@@ -49,31 +49,31 @@ int main ()
 {
     BLog_InitStdout();
     BLog_SetChannelLoglevel(BLOG_CHANNEL_BThreadWork, BLOG_DEBUG);
-    
+
     if (!BReactor_Init(&reactor)) {
         DEBUG("BReactor_Init failed");
         goto fail1;
     }
-    
+
     if (!BThreadWorkDispatcher_Init(&twd, &reactor, 1)) {
         DEBUG("BThreadWorkDispatcher_Init failed");
         goto fail2;
     }
-    
+
     dummy_works(200);
-    
+
     BThreadWork_Init(&tw1, &twd, handler_done, NULL, work_func, NULL);
-    
+
     BThreadWork_Init(&tw2, &twd, handler_done, NULL, work_func, NULL);
-    
+
     BThreadWork_Init(&tw3, &twd, handler_done, NULL, work_func, NULL);
-    
+
     dummy_works(200);
-    
+
     num_left = 3;
-    
+
     BReactor_Exec(&reactor);
-    
+
     BThreadWork_Free(&tw3);
     BThreadWork_Free(&tw2);
     BThreadWork_Free(&tw1);

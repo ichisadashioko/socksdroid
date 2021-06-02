@@ -1,9 +1,9 @@
 /**
  * @file read_file.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Function for reading a file into memory using stdio.
  */
 
@@ -45,31 +45,31 @@ static int read_file (const char *file, uint8_t **out_data, size_t *out_len)
     if (!f) {
         goto fail0;
     }
-    
+
     size_t buf_len = 0;
     size_t buf_size = 128;
-    
+
     uint8_t *buf = (uint8_t *)malloc(buf_size);
     if (!buf) {
         goto fail1;
     }
-    
+
     while (1) {
         if (buf_len == buf_size) {
             if (2 > SIZE_MAX / buf_size) {
                 goto fail;
             }
             size_t newsize = 2 * buf_size;
-            
+
             uint8_t *newbuf = (uint8_t *)realloc(buf, newsize);
             if (!newbuf) {
                 goto fail;
             }
-            
+
             buf = newbuf;
             buf_size = newsize;
         }
-        
+
         size_t bytes = fread(buf + buf_len, 1, buf_size - buf_len, f);
         if (bytes == 0) {
             if (feof(f)) {
@@ -77,16 +77,16 @@ static int read_file (const char *file, uint8_t **out_data, size_t *out_len)
             }
             goto fail;
         }
-        
+
         buf_len += bytes;
     }
-    
+
     fclose(f);
-    
+
     *out_data = buf;
     *out_len = buf_len;
     return 1;
-    
+
 fail:
     free(buf);
 fail1:

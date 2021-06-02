@@ -28,7 +28,7 @@ template make_igmpproxy_config {
 
     # Perform replacements.
     regex_replace(template_data, regex, replace) replaced_data;
-    
+
     # Build string value from replaced_data, to which we will append
     # configuration for disabled interfaces.
     value(replaced_data) output_data;
@@ -40,14 +40,14 @@ template make_igmpproxy_config {
         val_equal(iface, downstream_iface) is_down;
         or(is_up, is_down) is_not_disabled;
         not(is_not_disabled) is_disabled;
-        
+
         # If it's disabled, append to the configuration file.
         If (is_disabled) {
             concat("phyint ", iface, " disabled\n") str;
             output_data->append(str);
         };
     };
-    
+
     # Write config.
     file_write(output_file, output_data);
 }

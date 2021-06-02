@@ -1,9 +1,9 @@
 /**
  * @file addr.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,11 +25,11 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * AddrProto, a protocol for encoding network addresses.
- * 
+ *
  * AddrProto is built with BProto, the protocol and code generator for building
  * custom message protocols. The BProto specification file is addr.bproto.
  */
@@ -93,7 +93,7 @@ static int addr_read (uint8_t *data, int data_len, BAddr *out_addr) WARN_UNUSED;
 int addr_supported (BAddr addr)
 {
     BAddr_Assert(&addr);
-    
+
     switch (addr.type) {
         case BADDR_TYPE_IPV4:
         case BADDR_TYPE_IPV6:
@@ -106,7 +106,7 @@ int addr_supported (BAddr addr)
 int addr_size (BAddr addr)
 {
     ASSERT(addr_supported(addr))
-    
+
     switch (addr.type) {
         case BADDR_TYPE_IPV4:
             return ADDR_SIZE_IPV4;
@@ -121,10 +121,10 @@ int addr_size (BAddr addr)
 void addr_write (uint8_t *out, BAddr addr)
 {
     ASSERT(addr_supported(addr))
-    
+
     addrWriter writer;
     addrWriter_Init(&writer, out);
-    
+
     switch (addr.type) {
         case BADDR_TYPE_IPV4: {
             addrWriter_Addtype(&writer, ADDR_TYPE_IPV4);
@@ -143,26 +143,26 @@ void addr_write (uint8_t *out, BAddr addr)
         default:
             ASSERT(0);
     }
-    
+
     int len = addrWriter_Finish(&writer);
     B_USE(len)
-    
+
     ASSERT(len == addr_size(addr))
 }
 
 int addr_read (uint8_t *data, int data_len, BAddr *out_addr)
 {
     ASSERT(data_len >= 0)
-    
+
     addrParser parser;
     if (!addrParser_Init(&parser, data, data_len)) {
         BLog(BLOG_ERROR, "failed to parse addr");
         return 0;
     }
-    
+
     uint8_t type = 0; // to remove warning
     addrParser_Gettype(&parser, &type);
-    
+
     switch (type) {
         case ADDR_TYPE_IPV4: {
             uint8_t *port_data;
@@ -200,7 +200,7 @@ int addr_read (uint8_t *data, int data_len, BAddr *out_addr)
             BLog(BLOG_ERROR, "unknown address type %d", (int)type);
             return 0;
     }
-    
+
     return 1;
 }
 

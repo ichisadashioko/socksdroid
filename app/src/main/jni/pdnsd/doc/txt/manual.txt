@@ -2014,4 +2014,3 @@ Copyright (C) 2000, 2001 Thomas Moestl
 Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2012 Paul A. Rombouts
 
 Last revised: 19 April 2012 by Paul A. Rombouts
-

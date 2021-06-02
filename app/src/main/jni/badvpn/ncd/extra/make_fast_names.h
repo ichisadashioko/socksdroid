@@ -1,9 +1,9 @@
 /**
  * @file make_fast_names.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -51,7 +51,7 @@
 static size_t MakeFastNames_count_names (const char *str, size_t str_len)
 {
     size_t count = 1;
-    
+
     while (str_len > 0) {
         if (*str == '.') {
             count++;
@@ -59,7 +59,7 @@ static size_t MakeFastNames_count_names (const char *str, size_t str_len)
         str++;
         str_len--;
     }
-    
+
     return count;
 }
 
@@ -67,40 +67,40 @@ static int MakeFastNames_add_name (NAMES_PARAM_TYPE *o, NCDStringIndex *string_i
 {
     ASSERT(str)
     ASSERT(!!o->NAMES_PARAM_MEMBER_DYNAMIC_NAMES == (o->NAMES_PARAM_MEMBER_NUM_NAMES > NAMES_PARAM_NUM_STATIC_NAMES))
-    
+
     NCD_string_id_t id = NCDStringIndex_GetBin(string_index, str, str_len);
     if (id < 0) {
         return 0;
     }
-    
+
     if (o->NAMES_PARAM_MEMBER_NUM_NAMES < NAMES_PARAM_NUM_STATIC_NAMES) {
         o->NAMES_PARAM_MEMBER_STATIC_NAMES[o->NAMES_PARAM_MEMBER_NUM_NAMES++] = id;
         return 1;
     }
-    
+
     if (o->NAMES_PARAM_MEMBER_NUM_NAMES == NAMES_PARAM_NUM_STATIC_NAMES) {
         size_t num_more = (!remain ? 0 : MakeFastNames_count_names(remain, remain_len));
         size_t num_all = o->NAMES_PARAM_MEMBER_NUM_NAMES + 1 + num_more;
-        
+
         if (!(o->NAMES_PARAM_MEMBER_DYNAMIC_NAMES = BAllocArray(num_all, sizeof(o->NAMES_PARAM_MEMBER_DYNAMIC_NAMES[0])))) {
             return 0;
         }
-        
+
         memcpy(o->NAMES_PARAM_MEMBER_DYNAMIC_NAMES, o->NAMES_PARAM_MEMBER_STATIC_NAMES, NAMES_PARAM_NUM_STATIC_NAMES * sizeof(o->NAMES_PARAM_MEMBER_DYNAMIC_NAMES[0]));
     }
-    
+
     o->NAMES_PARAM_MEMBER_DYNAMIC_NAMES[o->NAMES_PARAM_MEMBER_NUM_NAMES++] = id;
-    
+
     return 1;
 }
 
 static int MakeFastNames_InitNames (NAMES_PARAM_TYPE *o, NCDStringIndex *string_index, const char *str, size_t str_len)
 {
     ASSERT(str)
-    
+
     o->NAMES_PARAM_MEMBER_NUM_NAMES = 0;
     o->NAMES_PARAM_MEMBER_DYNAMIC_NAMES = NULL;
-    
+
     size_t i = 0;
     while (i < str_len) {
         if (str[i] == '.') {
@@ -114,13 +114,13 @@ static int MakeFastNames_InitNames (NAMES_PARAM_TYPE *o, NCDStringIndex *string_
         }
         i++;
     }
-    
+
     if (!MakeFastNames_add_name(o, string_index, str, i, NULL, 0)) {
         goto fail;
     }
-    
+
     return 1;
-    
+
 fail:
     BFree(o->NAMES_PARAM_MEMBER_DYNAMIC_NAMES);
     return 0;
@@ -136,7 +136,7 @@ static void MakeFastNames_FreeNames (NAMES_PARAM_TYPE *o)
 static NCD_string_id_t * MakeFastNames_GetNames (NAMES_PARAM_TYPE *o)
 {
     ASSERT(o->NAMES_PARAM_MEMBER_NUM_NAMES > 0)
-    
+
     return (o->NAMES_PARAM_MEMBER_DYNAMIC_NAMES ? o->NAMES_PARAM_MEMBER_DYNAMIC_NAMES : o->NAMES_PARAM_MEMBER_STATIC_NAMES);
 }
 

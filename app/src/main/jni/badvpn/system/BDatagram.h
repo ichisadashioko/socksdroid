@@ -1,9 +1,9 @@
 /**
  * @file BDatagram.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -53,7 +53,7 @@ typedef struct BDatagram_s BDatagram;
  * The datagram object is no longer usable and must be freed from withing the job closure of
  * this handler. No further I/O, interface initialization, binding and send address setting
  * must occur.
- * 
+ *
  * @param user as in {@link BDatagram_Init}
  * @param event always BDATAGRAM_EVENT_ERROR
  */
@@ -62,7 +62,7 @@ typedef void (*BDatagram_handler) (void *user, int event);
 /**
  * Checks if the given address family (from {@link BAddr.h}) is supported by {@link BDatagram}
  * and related objects.
- * 
+ *
  * @param family family to check
  * @return 1 if supported, 0 if not
  */
@@ -71,7 +71,7 @@ int BDatagram_AddressFamilySupported (int family);
 /**
  * Initializes the object.
  * {@link BNetwork_GlobalInit} must have been done.
- * 
+ *
  * @param o the object
  * @param family address family. Must be supported according to {@link BDatagram_AddressFamilySupported}.
  * @param reactor reactor we live in
@@ -85,7 +85,7 @@ int BDatagram_Init (BDatagram *o, int family, BReactor *reactor, void *user,
 /**
  * Frees the object.
  * The send and receive interfaces must not be initialized.
- * 
+ *
  * @param o the object
  */
 void BDatagram_Free (BDatagram *o);
@@ -93,7 +93,7 @@ void BDatagram_Free (BDatagram *o);
 /**
  * Binds to the given local address.
  * May initiate I/O.
- * 
+ *
  * @param o the object
  * @param addr address to bind to. Its family must be supported according to {@link BDatagram_AddressFamilySupported}.
  * @return 1 on success, 0 on failure
@@ -103,7 +103,7 @@ int BDatagram_Bind (BDatagram *o, BAddr addr) WARN_UNUSED;
 /**
  * Sets addresses for sending.
  * May initiate I/O.
- * 
+ *
  * @param o the object
  * @param remote_addr destination address for sending datagrams. Its family must be supported according
  *                    to {@link BDatagram_AddressFamilySupported}.
@@ -115,7 +115,7 @@ void BDatagram_SetSendAddrs (BDatagram *o, BAddr remote_addr, BIPAddr local_addr
 /**
  * Returns the remote and local address of the last datagram received.
  * Fails if and only if no datagrams have been received yet.
- * 
+ *
  * @param o the object
  * @param remote_addr returns the remote source address of the datagram. May be an invalid address, theoretically.
  * @param local_addr returns the local destination IP address. May be an invalid address.
@@ -127,7 +127,7 @@ int BDatagram_GetLastReceiveAddrs (BDatagram *o, BAddr *remote_addr, BIPAddr *lo
 /**
  * Returns the underlying socket file descriptor of the datagram object.
  * Available on Unix-like systems only.
- * 
+ *
  * @param o the object
  * @return file descriptor
  */
@@ -136,7 +136,7 @@ int BDatagram_GetFd (BDatagram *o);
 
 /**
  * Sets the SO_REUSEADDR option for the underlying socket.
- * 
+ *
  * @param o the object
  * @param reuse value of the option. Must be 0 or 1.
  */
@@ -145,7 +145,7 @@ int BDatagram_SetReuseAddr (BDatagram *o, int reuse);
 /**
  * Initializes the send interface.
  * The send interface must not be initialized.
- * 
+ *
  * @param o the object
  * @param mtu maximum transmission unit. Must be >=0.
  */
@@ -156,7 +156,7 @@ void BDatagram_SendAsync_Init (BDatagram *o, int mtu);
  * The send interface must be initialized.
  * If the send interface was busy when this is called, the datagram object is no longer usable and must be
  * freed before any further I/O or interface initialization.
- * 
+ *
  * @param o the object
  */
 void BDatagram_SendAsync_Free (BDatagram *o);
@@ -165,7 +165,7 @@ void BDatagram_SendAsync_Free (BDatagram *o);
  * Returns the send interface.
  * The send interface must be initialized.
  * The MTU of the interface will be as in {@link BDatagram_SendAsync_Init}.
- * 
+ *
  * @param o the object
  * @return send interface
  */
@@ -174,7 +174,7 @@ PacketPassInterface * BDatagram_SendAsync_GetIf (BDatagram *o);
 /**
  * Initializes the receive interface.
  * The receive interface must not be initialized.
- * 
+ *
  * @param o the object
  * @param mtu maximum transmission unit. Must be >=0.
  */
@@ -185,7 +185,7 @@ void BDatagram_RecvAsync_Init (BDatagram *o, int mtu);
  * The receive interface must be initialized.
  * If the receive interface was busy when this is called, the datagram object is no longer usable and must be
  * freed before any further I/O or interface initialization.
- * 
+ *
  * @param o the object
  */
 void BDatagram_RecvAsync_Free (BDatagram *o);
@@ -194,7 +194,7 @@ void BDatagram_RecvAsync_Free (BDatagram *o);
  * Returns the receive interface.
  * The receive interface must be initialized.
  * The MTU of the interface will be as in {@link BDatagram_RecvAsync_Init}.
- * 
+ *
  * @param o the object
  * @return receive interface
  */

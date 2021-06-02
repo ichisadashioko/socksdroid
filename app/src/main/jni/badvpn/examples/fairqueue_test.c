@@ -1,9 +1,9 @@
 /**
  * @file fairqueue_test.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -67,18 +67,18 @@ static void free_input (int i)
 static void reset_input (void)
 {
     PacketPassFairQueueFlow_AssertFree(&flows[current_cancel]);
-    
+
     printf("removing %d\n", current_cancel);
-    
+
     // remove flow
     free_input(current_cancel);
-    
+
     // init flow
     init_input(current_cancel);
-    
+
     // increment cancel
     current_cancel = (current_cancel + 1) % NUM_INPUTS;
-    
+
     // reset timer
     BReactor_SetTimer(&reactor, &timer);
 }
@@ -86,7 +86,7 @@ static void reset_input (void)
 static void flow_handler_busy (void *user)
 {
     PacketPassFairQueueFlow_AssertFree(&flows[current_cancel]);
-    
+
     reset_input();
 }
 
@@ -99,7 +99,7 @@ static void timer_handler (void *user)
         PacketPassFairQueueFlow_SetBusyHandler(&flows[current_cancel], flow_handler_busy, NULL);
         return;
     }
-    
+
     reset_input();
 }
 
@@ -107,37 +107,37 @@ int main ()
 {
     // initialize logging
     BLog_InitStdout();
-    
+
     // init time
     BTime_Init();
-    
+
     // initialize reactor
     if (!BReactor_Init(&reactor)) {
         DEBUG("BReactor_Init failed");
         return 1;
     }
-    
+
     // initialize sink
     TimerPacketSink_Init(&sink, &reactor, 500, OUTPUT_INTERVAL);
-    
+
     // initialize queue
     if (!PacketPassFairQueue_Init(&fq, TimerPacketSink_GetInput(&sink), BReactor_PendingGroup(&reactor), 1, 1)) {
         DEBUG("PacketPassFairQueue_Init failed");
         return 1;
     }
-    
+
     // initialize inputs
     for (int i = 0; i < NUM_INPUTS; i++) {
         init_input(i);
     }
-    
+
     // init cancel timer
     BTimer_Init(&timer, REMOVE_INTERVAL, timer_handler, NULL);
     BReactor_SetTimer(&reactor, &timer);
-    
+
     // init cancel counter
     current_cancel = 0;
-    
+
     // run reactor
     int ret = BReactor_Exec(&reactor);
     BReactor_Free(&reactor);

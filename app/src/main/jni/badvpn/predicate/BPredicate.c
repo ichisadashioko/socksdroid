@@ -1,9 +1,9 @@
 /**
  * @file BPredicate.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -59,7 +59,7 @@ static int string_comparator (void *user, char *s1, char *s2)
 static int eval_function (BPredicate *p, struct predicate_node *root)
 {
     ASSERT(root->type == NODE_FUNCTION)
-    
+
     // lookup function by name
     ASSERT(root->function.name)
     BAVLNode *tree_node;
@@ -68,7 +68,7 @@ static int eval_function (BPredicate *p, struct predicate_node *root)
         return 0;
     }
     BPredicateFunction *func = UPPER_OBJECT(tree_node, BPredicateFunction, tree_node);
-    
+
     // evaluate arguments
     struct arguments_node *arg = root->function.args;
     void *args[PREDICATE_MAX_ARGS];
@@ -100,12 +100,12 @@ static int eval_function (BPredicate *p, struct predicate_node *root)
         }
         arg = arg->next;
     }
-    
+
     if (arg) {
         BLog(BLOG_WARNING, "too many arguments");
         return 0;
     }
-    
+
     // call callback
     #ifndef NDEBUG
     p->in_function = 1;
@@ -118,7 +118,7 @@ static int eval_function (BPredicate *p, struct predicate_node *root)
         BLog(BLOG_WARNING, "callback returned non-boolean");
         return 0;
     }
-    
+
     root->eval_value = res;
     return 1;
 }
@@ -126,7 +126,7 @@ static int eval_function (BPredicate *p, struct predicate_node *root)
 int eval_predicate_node (BPredicate *p, struct predicate_node *root)
 {
     ASSERT(root)
-    
+
     switch (root->type) {
         case NODE_CONSTANT:
             root->eval_value = root->constant.val;
@@ -184,18 +184,18 @@ int BPredicate_Init (BPredicate *p, char *str)
     // initialize input buffer object
     LexMemoryBufferInput input;
     LexMemoryBufferInput_Init(&input, str, strlen(str));
-    
+
     // initialize lexical analyzer
     yyscan_t scanner;
     yylex_init_extra(&input, &scanner);
-    
+
     // parse
     struct predicate_node *root = NULL;
     int result = yyparse(scanner, &root);
-    
+
     // free lexical analyzer
     yylex_destroy(scanner);
-    
+
     // check for errors
     if (LexMemoryBufferInput_HasError(&input) || result != 0 || !root) {
         if (root) {
@@ -203,21 +203,21 @@ int BPredicate_Init (BPredicate *p, char *str)
         }
         return 0;
     }
-    
+
     // init tree
     p->root = root;
-    
+
     // init functions tree
     BAVL_Init(&p->functions_tree, OFFSET_DIFF(BPredicateFunction, name, tree_node), (BAVL_comparator)string_comparator, NULL);
-    
+
     // init debuggind
     #ifndef NDEBUG
     p->in_function = 0;
     #endif
-    
+
     // init debug object
     DebugObject_Init(&p->d_obj);
-    
+
     return 1;
 }
 
@@ -225,10 +225,10 @@ void BPredicate_Free (BPredicate *p)
 {
     ASSERT(BAVL_IsEmpty(&p->functions_tree))
     ASSERT(!p->in_function)
-    
+
     // free debug object
     DebugObject_Free(&p->d_obj);
-    
+
     // free tree
     free_predicate_node((struct predicate_node *)p->root);
 }
@@ -236,11 +236,11 @@ void BPredicate_Free (BPredicate *p)
 int BPredicate_Eval (BPredicate *p)
 {
     ASSERT(!p->in_function)
-    
+
     if (!eval_predicate_node(p, (struct predicate_node *)p->root)) {
         return -1;
     }
-    
+
     return ((struct predicate_node *)p->root)->eval_value;
 }
 
@@ -254,7 +254,7 @@ void BPredicateFunction_Init (BPredicateFunction *o, BPredicate *p, char *name, 
         ASSERT(args[i] == PREDICATE_TYPE_BOOL || args[i] == PREDICATE_TYPE_STRING)
     }
     ASSERT(!p->in_function)
-    
+
     // init arguments
     o->p = p;
     strcpy(o->name, name);
@@ -262,10 +262,10 @@ void BPredicateFunction_Init (BPredicateFunction *o, BPredicate *p, char *name, 
     o->num_args = num_args;
     o->callback = callback;
     o->user = user;
-    
+
     // add to tree
     ASSERT_EXECUTE(BAVL_Insert(&p->functions_tree, &o->tree_node, NULL))
-    
+
     // init debug object
     DebugObject_Init(&o->d_obj);
 }
@@ -273,12 +273,12 @@ void BPredicateFunction_Init (BPredicateFunction *o, BPredicate *p, char *name, 
 void BPredicateFunction_Free (BPredicateFunction *o)
 {
     ASSERT(!o->p->in_function)
-    
+
     BPredicate *p = o->p;
-    
+
     // free debug object
     DebugObject_Free(&o->d_obj);
-    
+
     // remove from tree
     BAVL_Remove(&p->functions_tree, &o->tree_node);
 }

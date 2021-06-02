@@ -1,9 +1,9 @@
 /**
  * @file PacketProtoFlow.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Buffer which encodes packets with PacketProto, with {@link BufferWriter}
  * input and {@link PacketPassInterface} output.
  */
@@ -55,7 +55,7 @@ typedef struct {
 
 /**
  * Initializes the object.
- * 
+ *
  * @param o the object
  * @param input_mtu maximum input packet size. Must be >=0 and <=PACKETPROTO_MAXPAYLOAD.
  * @param num_packets minimum number of packets the buffer should hold. Must be >0.
@@ -67,14 +67,14 @@ int PacketProtoFlow_Init (PacketProtoFlow *o, int input_mtu, int num_packets, Pa
 
 /**
  * Frees the object.
- * 
+ *
  * @param o the object
  */
 void PacketProtoFlow_Free (PacketProtoFlow *o);
 
 /**
  * Returns the input interface.
- * 
+ *
  * @param o the object
  * @return input interface
  */

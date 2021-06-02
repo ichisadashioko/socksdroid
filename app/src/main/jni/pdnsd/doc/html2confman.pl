@@ -34,19 +34,19 @@ exit unless defined($_);
 
 print <<ENDOFHEADER;
 .\\\" Generated automatically from the html documentation by $myname
-.\\\" 
+.\\\"
 .\\\" Manpage for pdnsd.conf (pdnsd configuration file)
-.\\\" 
+.\\\"
 .\\\" Copyright (C) 2000, 2001 Thomas Moestl
 .\\\" Copyright (C) 2003, 2004, 2005, 2006, 2007 Paul A. Rombouts
-.\\\" 
+.\\\"
 .\\\" This manual is a part of the pdnsd package, and may be distributed in
 .\\\" original or modified  form  under  terms  of  the  GNU  General  Public
 .\\\" License,  as  published by the Free Software Foundation; either version
 .\\\" 3, or (at your option) any later version.
 .\\\" You can find a copy of the GNU GPL in the file COPYING in the source
 .\\\" or documentation directory.
-.\\\" 
+.\\\"
 ENDOFHEADER
 
 

@@ -1,9 +1,9 @@
 /**
  * @file process_manager.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,15 +25,15 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Module which allows starting and controlling template processes using an imperative
  * interface.
- * 
+ *
  * Synopsis:
  *   process_manager()
- * 
+ *
  * Description:
  *   Represents a set of managed processes. Each process has a "name", which is a value
  *   that uniquely identifies it within its process manager.
@@ -41,11 +41,11 @@
  *   and waits for all of them to terminate before deinitializing.
  *   Managed processes can access objects as seen from the process_manager() statement
  *   via the special _caller object.
- * 
+ *
  * Synopsis:
  *   process_manager::start(name, string template_name, list args)
  *   process_manager::start(string template_name, list args)
- * 
+ *
  * Description:
  *   Creates a new process from the template named 'template_name', with arguments 'args',
  *   identified by 'name' within the process manager. If the two-argument form of start() is
@@ -56,10 +56,10 @@
  *   after it terminates. If the process does not exist, it is created immediately, and the
  *   immediate effects of the process being created happnen before the immediate effects of
  *   the start() statement going up.
- * 
+ *
  * Synopsis:
  *   process_manager::stop(name)
- * 
+ *
  * Description:
  *   Initiates termination of the process identified by 'name' within the process manager.
  *   If there is no such process, or the process is already being terminated, does nothing.
@@ -127,7 +127,7 @@ static void instance_free (struct instance *o);
 static struct process * find_process (struct instance *o, NCDValRef name)
 {
     ASSERT(!NCDVal_IsInvalid(name))
-    
+
     LinkedList1Node *n = LinkedList1_GetFirst(&o->processes_list);
     while (n) {
         struct process *p = UPPER_OBJECT(n, struct process, processes_list_node);
@@ -137,7 +137,7 @@ static struct process * find_process (struct instance *o, NCDValRef name)
         }
         n = LinkedList1Node_Next(n);
     }
-    
+
     return NULL;
 }
 
@@ -147,14 +147,14 @@ static int process_new (struct instance *o, NCDValMem *mem, NCDValSafeRef name, 
     ASSERT(NCDVal_IsInvalid(NCDVal_FromSafe(mem, name)) || !find_process(o, NCDVal_FromSafe(mem, name)))
     ASSERT(NCDVal_IsString(NCDVal_FromSafe(mem, template_name)))
     ASSERT(NCDVal_IsList(NCDVal_FromSafe(mem, args)))
-    
+
     // allocate structure
     struct process *p = BAlloc(sizeof(*p));
     if (!p) {
         ModuleLog(o->i, BLOG_ERROR, "BAlloc failed");
         goto fail0;
     }
-    
+
     // set manager
     p->manager = o;
 
@@ -163,28 +163,28 @@ static int process_new (struct instance *o, NCDValMem *mem, NCDValSafeRef name, 
 
     // init retry timer
     BSmallTimer_Init(&p->retry_timer, process_retry_timer_handler);
-    
+
     // init template name
     p->template_name = ncd_get_string_id(NCDVal_FromSafe(mem, template_name), o->i->params->iparams->string_index);
     if (p->template_name < 0) {
         ModuleLog(o->i, BLOG_ERROR, "ncd_get_string_id failed");
         goto fail1;
     }
-    
+
     // init current mem as a copy of mem
     if (!NCDValMem_InitCopy(&p->current_mem, mem)) {
         ModuleLog(o->i, BLOG_ERROR, "NCDValMem_InitCopy failed");
         goto fail1;
     }
-    
+
     // remember name and args
     p->current_name = name;
     p->current_args = args;
-    
+
     // try starting it
     process_try(p);
     return 1;
-    
+
 fail1:
     LinkedList1_Remove(&o->processes_list, &p->processes_list_node);
     BFree(p);
@@ -195,16 +195,16 @@ fail0:
 static void process_free (struct process *p)
 {
     struct instance *o = p->manager;
-    
+
     // free current mem
     NCDValMem_Free(&p->current_mem);
-    
+
     // free timer
     BReactor_RemoveSmallTimer(o->i->params->iparams->reactor, &p->retry_timer);
-    
+
     // remove from processes list
     LinkedList1_Remove(&o->processes_list, &p->processes_list_node);
-    
+
     // free structure
     BFree(p);
 }
@@ -214,24 +214,24 @@ static void process_try (struct process *p)
     struct instance *o = p->manager;
     ASSERT(!o->dying)
     ASSERT(!BSmallTimer_IsRunning(&p->retry_timer))
-    
+
     // init module process
     if (!NCDModuleProcess_InitId(&p->module_process, o->i, p->template_name, NCDVal_FromSafe(&p->current_mem, p->current_args), process_module_process_handler_event)) {
         ModuleLog(o->i, BLOG_ERROR, "NCDModuleProcess_Init failed");
         goto fail;
     }
-        
+
     // set special objects function
     NCDModuleProcess_SetSpecialFuncs(&p->module_process, process_module_process_func_getspecialobj);
-    
+
     // set state
     p->state = PROCESS_STATE_RUNNING;
     return;
-    
+
 fail:
     // set timer
     BReactor_SetSmallTimer(o->i->params->iparams->reactor, &p->retry_timer, BTIMER_SET_RELATIVE, RETRY_TIME);
-    
+
     // set state
     p->state = PROCESS_STATE_RETRYING;
 }
@@ -243,7 +243,7 @@ static void process_retry_timer_handler (BSmallTimer *retry_timer)
     B_USE(o)
     ASSERT(p->state == PROCESS_STATE_RETRYING)
     ASSERT(!o->dying)
-    
+
     // retry
     process_try(p);
 }
@@ -255,42 +255,42 @@ void process_module_process_handler_event (NCDModuleProcess *module_process, int
     ASSERT(p->state != PROCESS_STATE_RETRYING)
     ASSERT(p->state != PROCESS_STATE_RESTARTING || !o->dying)
     ASSERT(!BSmallTimer_IsRunning(&p->retry_timer))
-    
+
     switch (event) {
         case NCDMODULEPROCESS_EVENT_UP: {
             ASSERT(p->state == PROCESS_STATE_RUNNING)
         } break;
-        
+
         case NCDMODULEPROCESS_EVENT_DOWN: {
             ASSERT(p->state == PROCESS_STATE_RUNNING)
-            
+
             // allow process to continue
             NCDModuleProcess_Continue(&p->module_process);
         } break;
-        
+
         case NCDMODULEPROCESS_EVENT_TERMINATED: {
             ASSERT(p->state == PROCESS_STATE_RESTARTING || p->state == PROCESS_STATE_STOPPING)
-            
+
             // free module process
             NCDModuleProcess_Free(&p->module_process);
-            
+
             if (p->state == PROCESS_STATE_RESTARTING) {
                 // free current mem
                 NCDValMem_Free(&p->current_mem);
-                
+
                 // move next mem/values over current mem/values
                 p->current_mem = p->next_mem;
                 p->current_name = p->next_name;
                 p->current_args = p->next_args;
-                
+
                 // try starting it again
                 process_try(p);
                 return;
             }
-            
+
             // free process
             process_free(p);
-            
+
             // if manager is dying and there are no more processes, let it die
             if (o->dying && LinkedList1_IsEmpty(&o->processes_list)) {
                 instance_free(o);
@@ -303,12 +303,12 @@ static int process_module_process_func_getspecialobj (NCDModuleProcess *module_p
 {
     struct process *p = UPPER_OBJECT(module_process, struct process, module_process);
     ASSERT(p->state != PROCESS_STATE_RETRYING)
-    
+
     if (name == NCD_STRING_CALLER) {
         *out_object = NCDObject_Build(-1, p, NCDObject_no_getvar, process_module_process_caller_obj_func_getobj);
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -317,7 +317,7 @@ static int process_module_process_caller_obj_func_getobj (const NCDObject *obj, 
     struct process *p = NCDObject_DataPtr(obj);
     struct instance *o = p->manager;
     ASSERT(p->state != PROCESS_STATE_RETRYING)
-    
+
     return NCDModuleInst_Backend_GetObj(o->i, name, out_object);
 }
 
@@ -328,27 +328,27 @@ static void process_stop (struct process *p)
             // free process
             process_free(p);
         } break;
-        
+
         case PROCESS_STATE_RUNNING: {
             // request process to terminate
             NCDModuleProcess_Terminate(&p->module_process);
-            
+
             // set state
             p->state = PROCESS_STATE_STOPPING;
         } break;
-        
+
         case PROCESS_STATE_RESTARTING: {
             // free next mem
             NCDValMem_Free(&p->next_mem);
-            
+
             // set state
             p->state = PROCESS_STATE_STOPPING;
         } break;
-        
+
         case PROCESS_STATE_STOPPING: {
             // nothing to do
         } break;
-        
+
         default: ASSERT(0);
     }
 }
@@ -362,21 +362,21 @@ static int process_restart (struct process *p, NCDValMem *mem, NCDValSafeRef nam
     ASSERT(NCDVal_IsInvalid(NCDVal_FromSafe(&p->current_mem, p->current_name)) || NCDVal_Compare(NCDVal_FromSafe(mem, name), NCDVal_FromSafe(&p->current_mem, p->current_name)) == 0)
     ASSERT(NCDVal_IsString(NCDVal_FromSafe(mem, template_name)))
     ASSERT(NCDVal_IsList(NCDVal_FromSafe(mem, args)))
-    
+
     // copy mem to next mem
     if (!NCDValMem_InitCopy(&p->next_mem, mem)) {
         ModuleLog(o->i, BLOG_ERROR, "NCDValMem_InitCopy failed");
         goto fail0;
     }
-    
+
     // remember name and args to next
     p->next_name = name;
     p->next_args = args;
-    
+
     // set state
     p->state = PROCESS_STATE_RESTARTING;
     return 1;
-    
+
 fail0:
     return 0;
 }
@@ -385,23 +385,23 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // check arguments
     if (!NCDVal_ListRead(params->args, 0)) {
         ModuleLog(o->i, BLOG_ERROR, "wrong arity");
         goto fail0;
     }
-    
+
     // init processes list
     LinkedList1_Init(&o->processes_list);
-    
+
     // set not dying
     o->dying = 0;
-    
+
     // signal up
     NCDModuleInst_Backend_Up(o->i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -409,7 +409,7 @@ fail0:
 void instance_free (struct instance *o)
 {
     ASSERT(LinkedList1_IsEmpty(&o->processes_list))
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
@@ -417,7 +417,7 @@ static void func_die (void *vo)
 {
     struct instance *o = vo;
     ASSERT(!o->dying)
-    
+
     // request all processes to die
     LinkedList1Node *n = LinkedList1_GetFirst(&o->processes_list);
     while (n) {
@@ -426,13 +426,13 @@ static void func_die (void *vo)
         process_stop(p);
         n = next;
     }
-    
+
     // if there are no processes, die immediately
     if (LinkedList1_IsEmpty(&o->processes_list)) {
         instance_free(o);
         return;
     }
-    
+
     // set dying
     o->dying = 1;
 }
@@ -453,14 +453,14 @@ static void start_func_new (void *unused, NCDModuleInst *i, const struct NCDModu
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // signal up.
     // Do it before creating the process so that the process starts initializing before our own process continues.
     NCDModuleInst_Backend_Up(i);
-    
+
     // get method object
     struct instance *mo = NCDModuleInst_Backend_GetUser((NCDModuleInst *)params->method_user);
-    
+
     if (!mo->dying) {
         struct process *p = (NCDVal_IsInvalid(name_arg) ? NULL : find_process(mo, name_arg));
         if (!p || p->state == PROCESS_STATE_STOPPING) {
@@ -477,9 +477,9 @@ static void start_func_new (void *unused, NCDModuleInst *i, const struct NCDModu
             }
         }
     }
-    
+
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -492,23 +492,23 @@ static void stop_func_new (void *unused, NCDModuleInst *i, const struct NCDModul
         ModuleLog(i, BLOG_ERROR, "wrong arity");
         goto fail0;
     }
-    
+
     // signal up.
     // Do it before stopping the process so that the process starts terminating before our own process continues.
     NCDModuleInst_Backend_Up(i);
-    
+
     // get method object
     struct instance *mo = NCDModuleInst_Backend_GetUser((NCDModuleInst *)params->method_user);
-    
+
     if (!mo->dying) {
         struct process *p = find_process(mo, name_arg);
         if (p && p->state != PROCESS_STATE_STOPPING) {
             process_stop(p);
         }
     }
-    
+
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }

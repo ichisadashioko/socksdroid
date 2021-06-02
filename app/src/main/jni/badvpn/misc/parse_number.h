@@ -1,9 +1,9 @@
 /**
  * @file parse_number.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Numeric string parsing.
  */
 
@@ -81,7 +81,7 @@ static int decode_decimal_digit (char c)
         case '8': return 8;
         case '9': return 9;
     }
-    
+
     return -1;
 }
 
@@ -105,25 +105,25 @@ static int decode_hex_digit (char c)
         case 'E': case 'e': return 14;
         case 'F': case 'f': return 15;
     }
-    
+
     return -1;
 }
 
 static int parse__no_overflow (const char *str, size_t str_len, uintmax_t *out)
 {
     uintmax_t n = 0;
-    
+
     while (str_len > 0) {
         if (*str < '0' || *str > '9') {
             return 0;
         }
-        
+
         n = 10 * n + (*str - '0');
-        
+
         str++;
         str_len--;
     }
-    
+
     *out = n;
     return 1;
 }
@@ -134,19 +134,19 @@ int parse_unsigned_integer_bin (const char *str, size_t str_len, uintmax_t *out)
     if (str_len == 0) {
         return 0;
     }
-    
+
     // remove leading zeros
     while (str_len > 0 && *str == '0') {
         str++;
         str_len--;
     }
-    
+
     // detect overflow
     if (str_len > sizeof(parse_number__uintmax_max_str) - 1 ||
         (str_len == sizeof(parse_number__uintmax_max_str) - 1 && memcmp(str, parse_number__uintmax_max_str, sizeof(parse_number__uintmax_max_str) - 1) > 0)) {
         return 0;
     }
-    
+
     // will not overflow (but can still have invalid characters)
     return parse__no_overflow(str, str_len, out);
 }
@@ -159,13 +159,13 @@ int parse_unsigned_integer (const char *str, uintmax_t *out)
 int parse_unsigned_integer_cstr (b_cstring cstr, size_t offset, size_t length, uintmax_t *out)
 {
     b_cstring_assert_range(cstr, offset, length);
-    
+
     if (length == 0) {
         return 0;
     }
-    
+
     uintmax_t n = 0;
-    
+
     B_CSTRING_LOOP_RANGE(cstr, offset, length, pos, chunk_data, chunk_length, {
         for (size_t i = 0; i < chunk_length; i++) {
             int digit = decode_decimal_digit(chunk_data[i]);
@@ -182,7 +182,7 @@ int parse_unsigned_integer_cstr (b_cstring cstr, size_t offset, size_t length, u
             n += digit;
         }
     })
-    
+
     *out = n;
     return 1;
 }
@@ -190,31 +190,31 @@ int parse_unsigned_integer_cstr (b_cstring cstr, size_t offset, size_t length, u
 int parse_unsigned_hex_integer_bin (const char *str, size_t str_len, uintmax_t *out)
 {
     uintmax_t n = 0;
-    
+
     if (str_len == 0) {
         return 0;
     }
-    
+
     while (str_len > 0) {
         int digit = decode_hex_digit(*str);
         if (digit < 0) {
             return 0;
         }
-        
+
         if (n > UINTMAX_MAX / 16) {
             return 0;
         }
         n *= 16;
-        
+
         if (digit > UINTMAX_MAX - n) {
             return 0;
         }
         n += digit;
-        
+
         str++;
         str_len--;
     }
-    
+
     *out = n;
     return 1;
 }
@@ -232,11 +232,11 @@ int parse_signmag_integer_bin (const char *str, size_t str_len, int *out_sign, u
         str++;
         str_len--;
     }
-    
+
     if (!parse_unsigned_integer_bin(str, str_len, out_mag)) {
         return 0;
     }
-    
+
     *out_sign = sign;
     return 1;
 }
@@ -249,18 +249,18 @@ int parse_signmag_integer (const char *str, int *out_sign, uintmax_t *out_mag)
 int parse_signmag_integer_cstr (b_cstring cstr, size_t offset, size_t length, int *out_sign, uintmax_t *out_mag)
 {
     b_cstring_assert_range(cstr, offset, length);
-    
+
     int sign = 1;
     if (length > 0 && (b_cstring_at(cstr, offset) == '+' || b_cstring_at(cstr, offset) == '-')) {
         sign = 1 - 2 * (b_cstring_at(cstr, offset) == '-');
         offset++;
         length--;
     }
-    
+
     if (!parse_unsigned_integer_cstr(cstr, offset, length, out_mag)) {
         return 0;
     }
-    
+
     *out_sign = sign;
     return 1;
 }
@@ -268,12 +268,12 @@ int parse_signmag_integer_cstr (b_cstring cstr, size_t offset, size_t length, in
 int compute_decimal_repr_size (uintmax_t x)
 {
     int size = 0;
-    
+
     do {
         size++;
         x /= 10;
     } while (x > 0);
-    
+
     return size;
 }
 
@@ -281,9 +281,9 @@ void generate_decimal_repr (uintmax_t x, char *out, int repr_size)
 {
     ASSERT(out)
     ASSERT(repr_size == compute_decimal_repr_size(x))
-    
+
     out += repr_size;
-    
+
     do {
         *(--out) = '0' + (x % 10);
         x /= 10;
@@ -293,11 +293,11 @@ void generate_decimal_repr (uintmax_t x, char *out, int repr_size)
 int generate_decimal_repr_string (uintmax_t x, char *out)
 {
     ASSERT(out)
-    
+
     int repr_size = compute_decimal_repr_size(x);
     generate_decimal_repr(x, out, repr_size);
     out[repr_size] = '\0';
-    
+
     return repr_size;
 }
 

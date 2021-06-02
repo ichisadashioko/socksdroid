@@ -1,9 +1,9 @@
 /**
  * @file NCDBProcessOpts.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -47,18 +47,18 @@ int NCDBProcessOpts_Init2 (NCDBProcessOpts *o, NCDValRef opts_arg, NCDBProcessOp
         NCDModuleInst_Backend_Log(i, blog_channel, BLOG_ERROR, "options must be a map");
         goto fail0;
     }
-    
+
     o->username = NULL;
     o->do_setsid = 0;
-    
+
     int keep_stdout = 0;
     int keep_stderr = 0;
-    
+
     if (!NCDVal_IsInvalid(opts_arg)) {
         for (NCDValMapElem me = NCDVal_MapFirst(opts_arg); !NCDVal_MapElemInvalid(me); me = NCDVal_MapNext(opts_arg, me)) {
             NCDValRef key = NCDVal_MapElemKey(opts_arg, me);
             NCDValRef val = NCDVal_MapElemVal(opts_arg, me);
-            
+
             if (NCDVal_IsString(key) && NCDVal_StringEquals(key, "keep_stdout")) {
                 keep_stdout = ncd_read_boolean(val);
             }
@@ -88,7 +88,7 @@ int NCDBProcessOpts_Init2 (NCDBProcessOpts *o, NCDValRef opts_arg, NCDBProcessOp
             }
         }
     }
-    
+
     o->nfds = 0;
     if (keep_stdout) {
         o->fds[o->nfds] = 1;
@@ -99,16 +99,16 @@ int NCDBProcessOpts_Init2 (NCDBProcessOpts *o, NCDValRef opts_arg, NCDBProcessOp
         o->fds_map[o->nfds++] = 2;
     }
     o->fds[o->nfds] = -1;
-    
+
     if (out_keep_stdout) {
         *out_keep_stdout = keep_stdout;
     }
     if (out_keep_stderr) {
         *out_keep_stderr = keep_stderr;
     }
-    
+
     return 1;
-    
+
 fail1:
     if (o->username) {
         BFree(o->username);
@@ -121,7 +121,7 @@ void NCDBProcessOpts_InitOld (NCDBProcessOpts *o, int keep_stdout, int keep_stde
 {
     o->username = NULL;
     o->do_setsid = do_setsid;
-    
+
     o->nfds = 0;
     if (keep_stdout) {
         o->fds[o->nfds] = 1;
@@ -144,11 +144,11 @@ void NCDBProcessOpts_Free (NCDBProcessOpts *o)
 struct BProcess_params NCDBProcessOpts_GetParams (NCDBProcessOpts *o)
 {
     struct BProcess_params params;
-    
+
     params.username = o->username;
     params.fds = o->fds;
     params.fds_map = o->fds_map;
     params.do_setsid = o->do_setsid;
-    
+
     return params;
 }

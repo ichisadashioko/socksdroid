@@ -1,9 +1,9 @@
 /**
  * @file PasswordListener.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Object used to listen on a socket, accept clients and identify them
  * based on a number they send.
  */
@@ -56,7 +56,7 @@
  * belonging to one of the password entries.
  * The password entry is unregistered before the handler is called
  * and must not be unregistered again.
- * 
+ *
  * @param user as in {@link PasswordListener_AddEntry}
  * @param sock structure containing a {@link BConnection} and, if TLS is enabled,
  *             the SSL socket with the bottom layer connected to the async interfaces
@@ -104,7 +104,7 @@ struct PasswordListenerClient {
 
 /**
  * Initializes the object.
- * 
+ *
  * @param l the object
  * @param bsys reactor we live in
  * @param twd thread work dispatcher. May be NULL if ssl_flags does not request performing SSL
@@ -123,14 +123,14 @@ int PasswordListener_Init (PasswordListener *l, BReactor *bsys, BThreadWorkDispa
 
 /**
  * Frees the object.
- * 
+ *
  * @param l the object
  */
 void PasswordListener_Free (PasswordListener *l);
 
 /**
  * Registers a password entry.
- * 
+ *
  * @param l the object
  * @param entry uninitialized entry structure
  * @param handler_client handler function to call when a client identifies
@@ -147,7 +147,7 @@ uint64_t PasswordListener_AddEntry (PasswordListener *l, PasswordListener_pwentr
  * Unregisters a password entry.
  * Note that when a client is dispatched, its entry is unregistered
  * automatically and must not be unregistered again here.
- * 
+ *
  * @param l the object
  * @param entry entry to unregister
  */

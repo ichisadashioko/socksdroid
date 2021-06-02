@@ -1,4 +1,3 @@
-
 # no need to create links. 'chkconfig' will take care of this.
 # In the spec case, chkconfig is called during rpm install
 install-exec-local:
@@ -9,4 +8,3 @@ install-exec-local:
 	      /sbin/chkconfig --add pdnsd; \
 	    fi \
 	fi
-

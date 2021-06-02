@@ -1,9 +1,9 @@
 /**
  * @file command_template.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -47,7 +47,7 @@ static void lock_handler (command_template_instance *o)
     ASSERT(o->state == STATE_ADDING_LOCK || o->state == STATE_DELETING_LOCK)
     ASSERT(!(o->state == STATE_ADDING_LOCK) || o->do_exec)
     ASSERT(!(o->state == STATE_DELETING_LOCK) || o->undo_exec)
-    
+
     if (o->state == STATE_ADDING_LOCK) {
         // start process
         if (!BProcess_Init(&o->process, o->i->params->iparams->manager, (BProcess_handler)process_handler, o, o->do_exec, CmdLine_Get(&o->do_cmdline), NULL)) {
@@ -55,7 +55,7 @@ static void lock_handler (command_template_instance *o)
             free_template(o, 1);
             return;
         }
-        
+
         // set state
         o->state = STATE_ADDING;
     } else {
@@ -65,7 +65,7 @@ static void lock_handler (command_template_instance *o)
             free_template(o, 1);
             return;
         }
-        
+
         // set state
         o->state = STATE_DELETING;
     }
@@ -74,34 +74,34 @@ static void lock_handler (command_template_instance *o)
 static void process_handler (command_template_instance *o, int normally, uint8_t normally_exit_status)
 {
     ASSERT(o->state == STATE_ADDING || o->state == STATE_ADDING_NEED_DELETE || o->state == STATE_DELETING)
-    
+
     // release lock
     BEventLockJob_Release(&o->elock_job);
-    
+
     // free process
     BProcess_Free(&o->process);
-    
+
     if (!normally || normally_exit_status != 0) {
         NCDModuleInst_Backend_Log(o->i, o->blog_channel, BLOG_ERROR, "command failed");
-        
+
         free_template(o, 1);
         return;
     }
-    
+
     switch (o->state) {
         case STATE_ADDING: {
             // set state
             o->state = STATE_DONE;
-            
+
             // signal up
             NCDModuleInst_Backend_Up(o->i);
         } break;
-        
+
         case STATE_ADDING_NEED_DELETE: {
             if (o->undo_exec) {
                 // wait for lock
                 BEventLockJob_Wait(&o->elock_job);
-                
+
                 // set state
                 o->state = STATE_DELETING_LOCK;
             } else {
@@ -109,7 +109,7 @@ static void process_handler (command_template_instance *o, int normally, uint8_t
                 return;
             }
         } break;
-        
+
         case STATE_DELETING: {
             // finish
             free_template(o, 0);
@@ -125,38 +125,38 @@ void command_template_new (command_template_instance *o, NCDModuleInst *i, const
     o->free_func = free_func;
     o->user = user;
     o->blog_channel = blog_channel;
-    
+
     // build do command
     if (!build_cmdline(o->i, params->args, 0, &o->do_exec, &o->do_cmdline)) {
         NCDModuleInst_Backend_Log(o->i, o->blog_channel, BLOG_ERROR, "build_cmdline do callback failed");
         goto fail0;
     }
-    
+
     // build undo command
     if (!build_cmdline(o->i, params->args, 1, &o->undo_exec, &o->undo_cmdline)) {
         NCDModuleInst_Backend_Log(o->i, o->blog_channel, BLOG_ERROR, "build_cmdline undo callback failed");
         goto fail1;
     }
-    
+
     // init lock job
     BEventLockJob_Init(&o->elock_job, elock, (BEventLock_handler)lock_handler, o);
-    
+
     if (o->do_exec) {
         // wait for lock
         BEventLockJob_Wait(&o->elock_job);
-        
+
         // set state
         o->state = STATE_ADDING_LOCK;
     } else {
         // set state
         o->state = STATE_DONE;
-        
+
         // signal up
         NCDModuleInst_Backend_Up(o->i);
     }
-    
+
     return;
-    
+
 fail1:
     if (o->do_exec) {
         free(o->do_exec);
@@ -170,19 +170,19 @@ static void free_template (command_template_instance *o, int is_error)
 {
     // free lock job
     BEventLockJob_Free(&o->elock_job);
-    
+
     // free undo command
     if (o->undo_exec) {
         free(o->undo_exec);
         CmdLine_Free(&o->undo_cmdline);
     }
-    
+
     // free do command
     if (o->do_exec) {
         free(o->do_exec);
         CmdLine_Free(&o->do_cmdline);
     }
-    
+
     // call free function
     o->free_func(o->user, is_error);
 }
@@ -190,23 +190,23 @@ static void free_template (command_template_instance *o, int is_error)
 void command_template_die (command_template_instance *o)
 {
     ASSERT(o->state == STATE_ADDING_LOCK || o->state == STATE_ADDING || o->state == STATE_DONE)
-    
+
     switch (o->state) {
         case STATE_ADDING_LOCK: {
             free_template(o, 0);
             return;
         } break;
-        
+
         case STATE_ADDING: {
             // set state
             o->state = STATE_ADDING_NEED_DELETE;
         } break;
-        
+
         case STATE_DONE: {
             if (o->undo_exec) {
                 // wait for lock
                 BEventLockJob_Wait(&o->elock_job);
-                
+
                 // set state
                 o->state = STATE_DELETING_LOCK;
             } else {

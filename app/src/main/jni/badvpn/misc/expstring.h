@@ -1,9 +1,9 @@
 /**
  * @file expstring.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -56,10 +56,10 @@ int ExpString_Init (ExpString *c)
     if (!ExpArray_init(&c->arr, 1, 16)) {
         return 0;
     }
-    
+
     c->n = 0;
     ((char *)c->arr.v)[c->n] = '\0';
-    
+
     return 1;
 }
 
@@ -71,80 +71,80 @@ void ExpString_Free (ExpString *c)
 int ExpString_Append (ExpString *c, const char *str)
 {
     ASSERT(str)
-    
+
     size_t l = strlen(str);
     bsize_t newsize = bsize_add(bsize_fromsize(c->n), bsize_add(bsize_fromsize(l), bsize_fromint(1)));
-    
+
     if (newsize.is_overflow || !ExpArray_resize(&c->arr, newsize.value)) {
         return 0;
     }
-    
+
     memcpy((char *)c->arr.v + c->n, str, l);
     c->n += l;
     ((char *)c->arr.v)[c->n] = '\0';
-    
+
     return 1;
 }
 
 int ExpString_AppendChar (ExpString *c, char ch)
 {
     ASSERT(ch != '\0')
-    
+
     bsize_t newsize = bsize_add(bsize_fromsize(c->n), bsize_fromint(2));
-    
+
     if (newsize.is_overflow || !ExpArray_resize(&c->arr, newsize.value)) {
         return 0;
     }
-    
+
     ((char *)c->arr.v)[c->n] = ch;
     c->n++;
     ((char *)c->arr.v)[c->n] = '\0';
-    
+
     return 1;
 }
 
 int ExpString_AppendByte (ExpString *c, uint8_t x)
 {
     bsize_t newsize = bsize_add(bsize_fromsize(c->n), bsize_fromint(2));
-    
+
     if (newsize.is_overflow || !ExpArray_resize(&c->arr, newsize.value)) {
         return 0;
     }
-    
+
     ((uint8_t *)c->arr.v)[c->n] = x;
     c->n++;
     ((char *)c->arr.v)[c->n] = '\0';
-    
+
     return 1;
 }
 
 int ExpString_AppendBinary (ExpString *c, const uint8_t *data, size_t len)
 {
     bsize_t newsize = bsize_add(bsize_fromsize(c->n), bsize_add(bsize_fromsize(len), bsize_fromint(1)));
-    
+
     if (newsize.is_overflow || !ExpArray_resize(&c->arr, newsize.value)) {
         return 0;
     }
-    
+
     memcpy((char *)c->arr.v + c->n, data, len);
     c->n += len;
     ((char *)c->arr.v)[c->n] = '\0';
-    
+
     return 1;
 }
 
 int ExpString_AppendZeros (ExpString *c, size_t len)
 {
     bsize_t newsize = bsize_add(bsize_fromsize(c->n), bsize_add(bsize_fromsize(len), bsize_fromint(1)));
-    
+
     if (newsize.is_overflow || !ExpArray_resize(&c->arr, newsize.value)) {
         return 0;
     }
-    
+
     memset((char *)c->arr.v + c->n, 0, len);
     c->n += len;
     ((char *)c->arr.v)[c->n] = '\0';
-    
+
     return 1;
 }
 

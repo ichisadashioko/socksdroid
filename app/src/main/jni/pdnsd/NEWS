@@ -215,30 +215,30 @@ authrec server option).
 Version 1.1.3 added contrib/ and had a lot of robustness fixes.
 This release addresses a security hole that affects only Linux systems. Due to
 a bug in glibc, pdnsd could crash during a port scan. This release contains
-a workaround for this, as well as a fix for a deadlock under heavy load 
-conditions. It also fixes a possible problem that could be triggered by 
+a workaround for this, as well as a fix for a deadlock under heavy load
+conditions. It also fixes a possible problem that could be triggered by
 malicious servers, and contains numerous bug fixes.
 A script, contributed by Marko Stolle, makes pdnsd useful in a DHCP setup.
 pdnsd also preservers the case of names in the cache, and should work much
-better on alpha machines (thanks for the contributions by Bjoern Fischer 
-and P.J. Bostley that made this possible). New types were dded for rr 
+better on alpha machines (thanks for the contributions by Bjoern Fischer
+and P.J. Bostley that made this possible). New types were dded for rr
 sections and pdnsd-ctl.
 Upgrade is recommended.
 
-Version 1.1.2 has a fix for a bug that could cause SERVFAIL to be 
+Version 1.1.2 has a fix for a bug that could cause SERVFAIL to be
 returned when NXDOMAIN would be appropriate. The bug surfaced only when
 pdnsd queried name servers with a behaviour different from BIND's in the
-NXDOMAIN case, e.g. pdnsd querying another pdnsd or e.g. djbdns. 
+NXDOMAIN case, e.g. pdnsd querying another pdnsd or e.g. djbdns.
 
 Version 1.1.1 fixes a possible race condition in status socket creation.
-This race might be used by a local attacker to change the access 
-permissions of a certain file in /tmp. The risk of this is probably 
-negligible. The default setup uses a non-privileged user, default mode 
-0600, and the status socket is disabled normally, so this should be 
+This race might be used by a local attacker to change the access
+permissions of a certain file in /tmp. The risk of this is probably
+negligible. The default setup uses a non-privileged user, default mode
+0600, and the status socket is disabled normally, so this should be
 relatively safe. I don't see any possibility to exploit this, it is
 more of a paranoia fix.
-There are also some other minor fixes and documentation improvements. 
-Upgrade is recommended. 
+There are also some other minor fixes and documentation improvements.
+Upgrade is recommended.
 
 Version 1.1.0 introduces negative cacheing, pdnsd-ctl enhancements and
 a much improved FreeBSD support. The cache file format has changed from
@@ -275,7 +275,7 @@ Version 1.0.6 has another set of bugfixes, in addition to higher compile-
 time configurability and UDP query support. It also contains Debian rc
 scripts contributed by Markus Mohr.
 
-Version 1.0.5 has some bugfixes and the new "server_ip" option 
+Version 1.0.5 has some bugfixes and the new "server_ip" option
 contributed by Wolfgang Ocker.
 
 Version 1.0.4 introduces the new options run_as, strict_setuid and
@@ -283,15 +283,15 @@ paranoid. These new options are optional security enhancements.
 
 Versions 1.0.1, 1.0.2 and 1.0.3 are bugfix releases.
 
-Version 1.0.0 has a lot of changes compared to the 0.9.x tree, but much of 
+Version 1.0.0 has a lot of changes compared to the 0.9.x tree, but much of
 them "under the hood":
 - IPv6 support (experimental; compile- and run-time configurable)
 - FreeBSD (and such hopefully *BSD) support
 - better rfc2181 compatability
 - new options:
   - serve_aliases in source section
-  - linkdown_kluge in global section 
-  - max_ttl in global section 
+  - linkdown_kluge in global section
+  - max_ttl in global section
 - cache-code reorganization, only one unified hash (of variable depth)
 - Optimizations & cleanups
 - Automatic deps (only interesting for developers ;-)
@@ -301,11 +301,11 @@ world writeable by default). Please see ChangeLog.old for details.
 
 Version 0.9.10 fixes some bugs and improves build on Red Hat.
 
-Version 0.9.9 contains the rc scripts for Red Hat Linux contributed by Torben 
+Version 0.9.9 contains the rc scripts for Red Hat Linux contributed by Torben
 Janssen, in addition to code cleanups and bugfixes.
 The meaning of the option -v has changed in this release.
-There is also a new config file option "lean_query" that is on by default. It 
-is an optimization, so please look in the docs when updating whether you want 
+There is also a new config file option "lean_query" that is on by default. It
+is an optimization, so please look in the docs when updating whether you want
 it switched on or not.
 
 When compiling versions after 0.9.8, you will probably get more
@@ -319,6 +319,5 @@ The versions 0.9.6 and 0.9.7 are bugfix releases.
 Version 0.9.5 introduces uptest=exec, and a modified config file syntax (cache
 sizes are now specified in kB).
 
-Version 0.9.4 was the first to be released to the public. For information on 
+Version 0.9.4 was the first to be released to the public. For information on
 changes, see ChangeLog.
-

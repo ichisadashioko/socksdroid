@@ -18,4 +18,3 @@ Aside from simple code adaptions, there are some files that are different, howev
 There is of course potential for bugs in it, but when analyzing of reporting bugs, it is strongly encouraged to
 compare the code in question to pppd 2.3.11 (our basis) and newer versions (perhaps it's already fixed?) and to
 share this knowledge with us when reporting a bug.
-

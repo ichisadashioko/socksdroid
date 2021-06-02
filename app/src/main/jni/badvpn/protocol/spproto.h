@@ -1,9 +1,9 @@
 /**
  * @file spproto.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,11 +25,11 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Protocol for securing datagram communication.
- * 
+ *
  * Security features implemented:
  *   - Encryption. Encrypts packets with a block cipher.
  *     Protects against a third party from seeing the data
@@ -40,13 +40,13 @@
  *   - One-time passwords. Adds a password to each packet
  *     for the receiver to recognize. Protects agains replaying
  *     packets and crafting new packets.
- * 
+ *
  * A SPProto plaintext packet contains the following, in order:
  *   - if OTPs are used, a struct {@link spproto_otpdata} which contains
  *     the seed ID and the OTP,
  *   - if hashes are used, the hash,
  *   - payload data.
- * 
+ *
  * If encryption is used:
  *   - the plaintext is padded by appending a 0x01 byte and as many 0x00
  *     bytes as needed to align to block size,
@@ -81,21 +81,21 @@ struct spproto_security_params {
      * hash mode.
      */
     int hash_mode;
-    
+
     /**
      * Encryption mode.
      * Either SPPROTO_ENCRYPTION_MODE_NONE for no encryption, or a valid
      * {@link BEncryption} cipher.
      */
     int encryption_mode;
-    
+
     /**
      * One-time password (OTP) mode.
      * Either SPPROTO_OTP_MODE_NONE for no OTPs, or a valid
      * {@link BEncryption} cipher.
      */
     int otp_mode;
-    
+
     /**
      * If OTPs are used (otp_mode != SPPROTO_OTP_MODE_NONE), number of
      * OTPs generated from a single seed.
@@ -129,7 +129,7 @@ B_END_PACKED
 
 /**
  * Asserts that the given SPProto security parameters are valid.
- * 
+ *
  * @param params security parameters
  */
 static void spproto_assert_security_params (struct spproto_security_params params)
@@ -143,7 +143,7 @@ static void spproto_assert_security_params (struct spproto_security_params param
 /**
  * Calculates the maximum payload size for SPProto given the
  * security parameters and the maximum encoded packet size.
- * 
+ *
  * @param params security parameters
  * @param carrier_mtu maximum encoded packet size. Must be >=0.
  * @return maximum payload size. Negative means is is impossible
@@ -153,7 +153,7 @@ static int spproto_payload_mtu_for_carrier_mtu (struct spproto_security_params p
 {
     spproto_assert_security_params(params);
     ASSERT(carrier_mtu >= 0)
-    
+
     if (params.encryption_mode == SPPROTO_ENCRYPTION_MODE_NONE) {
         return (carrier_mtu - SPPROTO_HEADER_LEN(params));
     } else {
@@ -165,7 +165,7 @@ static int spproto_payload_mtu_for_carrier_mtu (struct spproto_security_params p
 /**
  * Calculates the maximum encoded packet size for SPProto given the
  * security parameters and the maximum payload size.
- * 
+ *
  * @param params security parameters
  * @param payload_mtu maximum payload size. Must be >=0.
  * @return maximum encoded packet size, -1 if payload_mtu is too large
@@ -174,20 +174,20 @@ static int spproto_carrier_mtu_for_payload_mtu (struct spproto_security_params p
 {
     spproto_assert_security_params(params);
     ASSERT(payload_mtu >= 0)
-    
+
     if (params.encryption_mode == SPPROTO_ENCRYPTION_MODE_NONE) {
         if (payload_mtu > INT_MAX - SPPROTO_HEADER_LEN(params)) {
             return -1;
         }
-        
+
         return (SPPROTO_HEADER_LEN(params) + payload_mtu);
     } else {
         int block_size = BEncryption_cipher_block_size(params.encryption_mode);
-        
+
         if (payload_mtu > INT_MAX - (block_size + SPPROTO_HEADER_LEN(params) + block_size)) {
             return -1;
         }
-        
+
         return (block_size + balign_up((SPPROTO_HEADER_LEN(params) + payload_mtu + 1), block_size));
     }
 }

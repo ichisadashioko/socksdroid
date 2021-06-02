@@ -136,7 +136,7 @@ else ()
         add_definitions(-Werror=implicit-function-declaration -Wno-switch-enum -Wno-unused-function
                         -Wstrict-aliasing)
     endif ()
-    
+
     if (CMAKE_C_COMPILER_ID MATCHES "^Clang")
         add_definitions(-Wno-initializer-overrides -Wno-tautological-constant-out-of-range-compare)
     endif ()
@@ -382,13 +382,13 @@ foreach (name ${BUILD_COMPONENTS})
     #    endif ()
     #    set(name_withspaces "${name_withspaces} ")
     #endwhile ()
-    
+
     # determine if we're building
     if (BUILD_${name})
         set(building "yes")
     else ()
         set(building "no")
     endif ()
-    
+
     message(STATUS "    ${name_withspaces} ${building}")
 endforeach ()

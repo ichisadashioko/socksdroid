@@ -1,9 +1,9 @@
 /**
  * @file BPending.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -41,10 +41,10 @@ void BPendingGroup_Init (BPendingGroup *g)
 {
     // init jobs list
     BPending__List_Init(&g->jobs);
-    
+
     // init pending counter
     DebugCounter_Init(&g->pending_ctr);
-    
+
     // init debug object
     DebugObject_Init(&g->d_obj);
 }
@@ -59,7 +59,7 @@ void BPendingGroup_Free (BPendingGroup *g)
 int BPendingGroup_HasJobs (BPendingGroup *g)
 {
     DebugObject_Access(&g->d_obj);
-    
+
     return !BPending__List_IsEmpty(&g->jobs);
 }
 
@@ -67,21 +67,21 @@ void BPendingGroup_ExecuteJob (BPendingGroup *g)
 {
     ASSERT(!BPending__List_IsEmpty(&g->jobs))
     DebugObject_Access(&g->d_obj);
-    
+
     // get a job
     BSmallPending *p = BPending__List_First(&g->jobs);
     ASSERT(p->pending_node.next != p)
     ASSERT(p->pending)
-    
+
     // remove from jobs list
     BPending__List_Remove(&g->jobs, p);
-    
+
     // set not pending
     p->pending_node.next = p;
 #ifndef NDEBUG
     p->pending = 0;
 #endif
-    
+
     // execute job
     p->handler(p->user);
     return;
@@ -90,7 +90,7 @@ void BPendingGroup_ExecuteJob (BPendingGroup *g)
 BSmallPending * BPendingGroup_PeekJob (BPendingGroup *g)
 {
     DebugObject_Access(&g->d_obj);
-    
+
     return BPending__List_First(&g->jobs);
 }
 
@@ -99,16 +99,16 @@ void BSmallPending_Init (BSmallPending *o, BPendingGroup *g, BSmallPending_handl
     // init arguments
     o->handler = handler;
     o->user = user;
-    
+
     // set not pending
     o->pending_node.next = o;
 #ifndef NDEBUG
     o->pending = 0;
 #endif
-    
+
     // increment pending counter
     DebugCounter_Increment(&g->pending_ctr);
-    
+
     // init debug object
     DebugObject_Init(&o->d_obj);
 }
@@ -118,7 +118,7 @@ void BSmallPending_Free (BSmallPending *o, BPendingGroup *g)
     DebugCounter_Decrement(&g->pending_ctr);
     DebugObject_Free(&o->d_obj);
     ASSERT(o->pending == (o->pending_node.next != o))
-    
+
     // remove from jobs list
     if (o->pending_node.next != o) {
         BPending__List_Remove(&g->jobs, o);
@@ -128,7 +128,7 @@ void BSmallPending_Free (BSmallPending *o, BPendingGroup *g)
 void BSmallPending_SetHandler (BSmallPending *o, BSmallPending_handler handler, void *user)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     // set handler
     o->handler = handler;
     o->user = user;
@@ -138,15 +138,15 @@ void BSmallPending_Set (BSmallPending *o, BPendingGroup *g)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->pending == (o->pending_node.next != o))
-    
+
     // remove from jobs list
     if (o->pending_node.next != o) {
         BPending__List_Remove(&g->jobs, o);
     }
-    
+
     // insert to jobs list
     BPending__List_Prepend(&g->jobs, o);
-    
+
     // set pending
 #ifndef NDEBUG
     o->pending = 1;
@@ -157,11 +157,11 @@ void BSmallPending_Unset (BSmallPending *o, BPendingGroup *g)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->pending == (o->pending_node.next != o))
-    
+
     if (o->pending_node.next != o) {
         // remove from jobs list
         BPending__List_Remove(&g->jobs, o);
-        
+
         // set not pending
         o->pending_node.next = o;
 #ifndef NDEBUG
@@ -174,7 +174,7 @@ int BSmallPending_IsSet (BSmallPending *o)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->pending == (o->pending_node.next != o))
-    
+
     return (o->pending_node.next != o);
 }
 

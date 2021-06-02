@@ -1,9 +1,9 @@
 /**
  * @file StreamBuffer.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -51,7 +51,7 @@ typedef struct {
 
 /**
  * Initializes the buffer object.
- * 
+ *
  * @param o object to initialize
  * @param buf_size size of the buffer. Must be >0.
  * @param input input interface
@@ -62,7 +62,7 @@ int StreamBuffer_Init (StreamBuffer *o, int buf_size, StreamRecvInterface *input
 
 /**
  * Frees the buffer object.
- * 
+ *
  * @param o object to free
  */
 void StreamBuffer_Free (StreamBuffer *o);

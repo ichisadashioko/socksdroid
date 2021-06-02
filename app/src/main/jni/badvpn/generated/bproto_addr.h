@@ -89,7 +89,7 @@ void addrWriter_Addtype (addrWriter *o, uint8_t v)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->type_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(1);
@@ -109,7 +109,7 @@ uint8_t * addrWriter_Addip_port (addrWriter *o)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->ip_port_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(2);
@@ -134,7 +134,7 @@ uint8_t * addrWriter_Addipv4_addr (addrWriter *o)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->ipv4_addr_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(3);
@@ -159,7 +159,7 @@ uint8_t * addrWriter_Addipv6_addr (addrWriter *o)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->ipv6_addr_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(4);
@@ -672,4 +672,3 @@ void addrParser_Forwardipv6_addr (addrParser *o)
 {
     o->ipv6_addr_pos = o->ipv6_addr_span;
 }
-

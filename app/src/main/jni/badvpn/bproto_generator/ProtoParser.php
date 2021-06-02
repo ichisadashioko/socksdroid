@@ -21,7 +21,7 @@ not the foot.
 class ProtoParser extends lime_parser {
 var $qi = 0;
 var $i = array (
-  0 => 
+  0 =>
   array (
     'directives' => 's 1',
     'directive' => 's 30',
@@ -30,36 +30,36 @@ var $i = array (
     '\'start\'' => 'a \'start\'',
     'message' => 'r 1',
   ),
-  1 => 
+  1 =>
   array (
     'messages' => 's 2',
     'msgspec' => 's 3',
     'message' => 's 5',
   ),
-  2 => 
+  2 =>
   array (
     '#' => 'r 0',
   ),
-  3 => 
+  3 =>
   array (
     'msgspec' => 's 3',
     'messages' => 's 4',
     'message' => 's 5',
     '#' => 'r 4',
   ),
-  4 => 
+  4 =>
   array (
     '#' => 'r 5',
   ),
-  5 => 
+  5 =>
   array (
     'name' => 's 6',
   ),
-  6 => 
+  6 =>
   array (
     'spar' => 's 7',
   ),
-  7 => 
+  7 =>
   array (
     'entries' => 's 8',
     'entry' => 's 11',
@@ -68,20 +68,20 @@ var $i = array (
     'optional' => 's 27',
     'required' => 's 28',
   ),
-  8 => 
+  8 =>
   array (
     'epar' => 's 9',
   ),
-  9 => 
+  9 =>
   array (
     'semicolon' => 's 10',
   ),
-  10 => 
+  10 =>
   array (
     'message' => 'r 6',
     '#' => 'r 6',
   ),
-  11 => 
+  11 =>
   array (
     'entry' => 's 11',
     'entries' => 's 12',
@@ -91,118 +91,118 @@ var $i = array (
     'required' => 's 28',
     'epar' => 'r 7',
   ),
-  12 => 
+  12 =>
   array (
     'epar' => 'r 8',
   ),
-  13 => 
+  13 =>
   array (
     'type' => 's 14',
     'uint' => 's 19',
     'data' => 's 20',
     'message' => 's 24',
   ),
-  14 => 
+  14 =>
   array (
     'name' => 's 15',
   ),
-  15 => 
+  15 =>
   array (
     'equals' => 's 16',
   ),
-  16 => 
+  16 =>
   array (
     'number' => 's 17',
   ),
-  17 => 
+  17 =>
   array (
     'semicolon' => 's 18',
   ),
-  18 => 
+  18 =>
   array (
     'repeated' => 'r 9',
     'optional' => 'r 9',
     'required' => 'r 9',
     'epar' => 'r 9',
   ),
-  19 => 
+  19 =>
   array (
     'name' => 'r 14',
   ),
-  20 => 
+  20 =>
   array (
     'srpar' => 's 21',
     'name' => 'r 15',
   ),
-  21 => 
+  21 =>
   array (
     'string' => 's 22',
   ),
-  22 => 
+  22 =>
   array (
     'erpar' => 's 23',
   ),
-  23 => 
+  23 =>
   array (
     'name' => 'r 16',
   ),
-  24 => 
+  24 =>
   array (
     'name' => 's 25',
   ),
-  25 => 
+  25 =>
   array (
     'name' => 'r 17',
   ),
-  26 => 
+  26 =>
   array (
     'uint' => 'r 10',
     'data' => 'r 10',
     'message' => 'r 10',
   ),
-  27 => 
+  27 =>
   array (
     'uint' => 'r 11',
     'data' => 'r 11',
     'message' => 'r 11',
   ),
-  28 => 
+  28 =>
   array (
     'repeated' => 's 29',
     'uint' => 'r 12',
     'data' => 'r 12',
     'message' => 'r 12',
   ),
-  29 => 
+  29 =>
   array (
     'uint' => 'r 13',
     'data' => 'r 13',
     'message' => 'r 13',
   ),
-  30 => 
+  30 =>
   array (
     'semicolon' => 's 31',
   ),
-  31 => 
+  31 =>
   array (
     'directive' => 's 30',
     'directives' => 's 32',
     'include' => 's 33',
     'message' => 'r 1',
   ),
-  32 => 
+  32 =>
   array (
     'message' => 'r 2',
   ),
-  33 => 
+  33 =>
   array (
     'string' => 's 34',
   ),
-  34 => 
+  34 =>
   array (
     'semicolon' => 'r 3',
   ),
-  35 => 
+  35 =>
   array (
     '#' => 'r 18',
   ),
@@ -227,7 +227,7 @@ function reduce_1_directives_1($tokens, &$result) {
 $result = reset($tokens);
 
         $result = array();
-    
+
 }
 
 function reduce_2_directives_2($tokens, &$result) {
@@ -237,7 +237,7 @@ function reduce_2_directives_2($tokens, &$result) {
 $result = reset($tokens);
 
         $result = array_merge(array($tokens[0]), $tokens[2]);
-    
+
 }
 
 function reduce_3_directive_1($tokens, &$result) {
@@ -250,7 +250,7 @@ $result = reset($tokens);
             "type" => "include",
             "file" => $tokens[1]
         );
-    
+
 }
 
 function reduce_4_messages_1($tokens, &$result) {
@@ -260,7 +260,7 @@ function reduce_4_messages_1($tokens, &$result) {
 $result = reset($tokens);
 
         $result = array($tokens[0]);
-    
+
 }
 
 function reduce_5_messages_2($tokens, &$result) {
@@ -270,7 +270,7 @@ function reduce_5_messages_2($tokens, &$result) {
 $result = reset($tokens);
 
         $result = array_merge(array($tokens[0]), $tokens[1]);
-    
+
 }
 
 function reduce_6_msgspec_1($tokens, &$result) {
@@ -293,7 +293,7 @@ function reduce_7_entries_1($tokens, &$result) {
 $result = reset($tokens);
 
         $result = array($tokens[0]);
-    
+
 }
 
 function reduce_8_entries_2($tokens, &$result) {
@@ -303,7 +303,7 @@ function reduce_8_entries_2($tokens, &$result) {
 $result = reset($tokens);
 
         $result = array_merge(array($tokens[0]), $tokens[1]);
-    
+
 }
 
 function reduce_9_entry_1($tokens, &$result) {
@@ -318,7 +318,7 @@ $result = reset($tokens);
             "name" => $tokens[2],
             "id" => $tokens[4]
         );
-    
+
 }
 
 function reduce_10_cardinality_1($tokens, &$result) {
@@ -328,7 +328,7 @@ function reduce_10_cardinality_1($tokens, &$result) {
 $result = reset($tokens);
 
         $result = "repeated";
-    
+
 }
 
 function reduce_11_cardinality_2($tokens, &$result) {
@@ -338,7 +338,7 @@ function reduce_11_cardinality_2($tokens, &$result) {
 $result = reset($tokens);
 
         $result = "optional";
-    
+
 }
 
 function reduce_12_cardinality_3($tokens, &$result) {
@@ -348,7 +348,7 @@ function reduce_12_cardinality_3($tokens, &$result) {
 $result = reset($tokens);
 
         $result = "required";
-    
+
 }
 
 function reduce_13_cardinality_4($tokens, &$result) {
@@ -358,7 +358,7 @@ function reduce_13_cardinality_4($tokens, &$result) {
 $result = reset($tokens);
 
         $result = "required repeated";
-    
+
 }
 
 function reduce_14_type_1($tokens, &$result) {
@@ -371,7 +371,7 @@ $result = reset($tokens);
             "type" => "uint",
             "size" => $tokens[0]
         );
-    
+
 }
 
 function reduce_15_type_2($tokens, &$result) {
@@ -383,7 +383,7 @@ $result = reset($tokens);
         $result = array(
             "type" => "data"
         );
-    
+
 }
 
 function reduce_16_type_3($tokens, &$result) {
@@ -396,7 +396,7 @@ $result = reset($tokens);
             "type" => "constdata",
             "size" => $tokens[2]
         );
-    
+
 }
 
 function reduce_17_type_4($tokens, &$result) {
@@ -409,7 +409,7 @@ $result = reset($tokens);
             "type" => "message",
             "message" => $tokens[1]
         );
-    
+
 }
 
 function reduce_18_start_1($tokens, &$result) {
@@ -442,115 +442,115 @@ var $method = array (
   18 => 'reduce_18_start_1',
 );
 var $a = array (
-  0 => 
+  0 =>
   array (
     'symbol' => 'file',
     'len' => 2,
     'replace' => true,
   ),
-  1 => 
+  1 =>
   array (
     'symbol' => 'directives',
     'len' => 0,
     'replace' => true,
   ),
-  2 => 
+  2 =>
   array (
     'symbol' => 'directives',
     'len' => 3,
     'replace' => true,
   ),
-  3 => 
+  3 =>
   array (
     'symbol' => 'directive',
     'len' => 2,
     'replace' => true,
   ),
-  4 => 
+  4 =>
   array (
     'symbol' => 'messages',
     'len' => 1,
     'replace' => true,
   ),
-  5 => 
+  5 =>
   array (
     'symbol' => 'messages',
     'len' => 2,
     'replace' => true,
   ),
-  6 => 
+  6 =>
   array (
     'symbol' => 'msgspec',
     'len' => 6,
     'replace' => true,
   ),
-  7 => 
+  7 =>
   array (
     'symbol' => 'entries',
     'len' => 1,
     'replace' => true,
   ),
-  8 => 
+  8 =>
   array (
     'symbol' => 'entries',
     'len' => 2,
     'replace' => true,
   ),
-  9 => 
+  9 =>
   array (
     'symbol' => 'entry',
     'len' => 6,
     'replace' => true,
   ),
-  10 => 
+  10 =>
   array (
     'symbol' => 'cardinality',
     'len' => 1,
     'replace' => true,
   ),
-  11 => 
+  11 =>
   array (
     'symbol' => 'cardinality',
     'len' => 1,
     'replace' => true,
   ),
-  12 => 
+  12 =>
   array (
     'symbol' => 'cardinality',
     'len' => 1,
     'replace' => true,
   ),
-  13 => 
+  13 =>
   array (
     'symbol' => 'cardinality',
     'len' => 2,
     'replace' => true,
   ),
-  14 => 
+  14 =>
   array (
     'symbol' => 'type',
     'len' => 1,
     'replace' => true,
   ),
-  15 => 
+  15 =>
   array (
     'symbol' => 'type',
     'len' => 1,
     'replace' => true,
   ),
-  16 => 
+  16 =>
   array (
     'symbol' => 'type',
     'len' => 4,
     'replace' => true,
   ),
-  17 => 
+  17 =>
   array (
     'symbol' => 'type',
     'len' => 2,
     'replace' => true,
   ),
-  18 => 
+  18 =>
   array (
     'symbol' => '\'start\'',
     'len' => 1,

@@ -68,7 +68,7 @@ template turing {
     # Head state.
     var(initial_state) state;
 
-    # Tape. Positions go like this: ... L2 L1 L0 R0 R1 R2 ... 
+    # Tape. Positions go like this: ... L2 L1 L0 R0 R1 R2 ...
     value(initial_tape_left) tape_left;
     value(initial_tape_right) tape_right;
 

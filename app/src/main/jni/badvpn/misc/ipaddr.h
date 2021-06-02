@@ -1,9 +1,9 @@
 /**
  * @file ipaddr.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * IP address parsing functions.
  */
 
@@ -69,30 +69,30 @@ int ipaddr_parse_ipv4_addr_bin (const char *name, size_t name_len, uint32_t *out
     for (size_t i = 0; ; i++) {
         size_t j;
         for (j = 0; j < name_len && name[j] != '.'; j++);
-        
+
         if ((j == name_len && i < 3) || (j < name_len && i == 3)) {
             return 0;
         }
-        
+
         if (j < 1 || j > 3) {
             return 0;
         }
-        
+
         uintmax_t d;
         if (!parse_unsigned_integer_bin(name, j, &d)) {
             return 0;
         }
-        
+
         if (d > 255) {
             return 0;
         }
-        
+
         ((uint8_t *)out_addr)[i] = d;
-        
+
         if (i == 3) {
             return 1;
         }
-        
+
         name += j + 1;
         name_len -= j + 1;
     }
@@ -112,7 +112,7 @@ int ipaddr_parse_ipv4_prefix_bin (const char *str, size_t str_len, int *num)
     if (d > 32) {
         return 0;
     }
-    
+
     *num = d;
     return 1;
 }
@@ -128,7 +128,7 @@ int ipaddr_parse_ipv4_ifaddr_bin (const char *str, size_t str_len, struct ipv4_i
     if (!b_find_char_bin(str, str_len, '/', &slash_pos)) {
         return 0;
     }
-    
+
     return (ipaddr_parse_ipv4_addr_bin(str, slash_pos, &out->addr) &&
             ipaddr_parse_ipv4_prefix_bin(str + slash_pos + 1, str_len - slash_pos - 1, &out->prefix));
 }
@@ -144,7 +144,7 @@ int ipaddr_ipv4_ifaddr_from_addr_mask (uint32_t addr, uint32_t mask, struct ipv4
     if (!ipaddr_ipv4_prefix_from_mask(mask, &prefix)) {
         return 0;
     }
-    
+
     out->addr = addr;
     out->prefix = prefix;
     return 1;
@@ -154,12 +154,12 @@ uint32_t ipaddr_ipv4_mask_from_prefix (int prefix)
 {
     ASSERT(prefix >= 0)
     ASSERT(prefix <= 32)
-    
+
     uint32_t t = 0;
     for (int i = 0; i < prefix; i++) {
         t |= 1 << (32 - i - 1);
     }
-    
+
     return hton32(t);
 }
 
@@ -178,7 +178,7 @@ int ipaddr_ipv4_prefix_from_mask (uint32_t mask, int *out_prefix)
     if (!(i <= 32)) {
         return 0;
     }
-    
+
     *out_prefix = i;
     return 1;
 }
@@ -187,18 +187,18 @@ int ipaddr_ipv4_addrs_in_network (uint32_t addr1, uint32_t addr2, int netprefix)
 {
     ASSERT(netprefix >= 0)
     ASSERT(netprefix <= 32)
-    
+
     uint32_t mask = ipaddr_ipv4_mask_from_prefix(netprefix);
-    
+
     return !!((addr1 & mask) == (addr2 & mask));
 }
 
 void ipaddr_print_addr (uint32_t addr, char *out)
 {
     ASSERT(out)
-    
+
     uint8_t *b = (uint8_t *)&addr;
-    
+
     sprintf(out, "%"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8,
             b[0], b[1], b[2], b[3]);
 }
@@ -208,9 +208,9 @@ void ipaddr_print_ifaddr (struct ipv4_ifaddr ifaddr, char *out)
     ASSERT(ifaddr.prefix >= 0)
     ASSERT(ifaddr.prefix <= 32)
     ASSERT(out)
-    
+
     uint8_t *b = (uint8_t *)&ifaddr.addr;
-    
+
     sprintf(out, "%"PRIu8".%"PRIu8".%"PRIu8".%"PRIu8"/%d",
             b[0], b[1], b[2], b[3], ifaddr.prefix);
 }

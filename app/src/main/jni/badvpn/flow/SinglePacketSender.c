@@ -1,9 +1,9 @@
 /**
  * @file SinglePacketSender.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -39,7 +39,7 @@ static void call_handler (SinglePacketSender *o)
 static void output_handler_done (SinglePacketSender *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     // notify user
     call_handler(o);
     return;
@@ -49,18 +49,18 @@ void SinglePacketSender_Init (SinglePacketSender *o, uint8_t *packet, int packet
 {
     ASSERT(packet_len >= 0)
     ASSERT(packet_len <= PacketPassInterface_GetMTU(output))
-    
+
     // init arguments
     o->output = output;
     o->handler = handler;
     o->user = user;
-    
+
     // init output
     PacketPassInterface_Sender_Init(o->output, (PacketPassInterface_handler_done)output_handler_done, o);
-    
+
     // schedule send
     PacketPassInterface_Sender_Send(o->output, packet, packet_len);
-    
+
     DebugObject_Init(&o->d_obj);
     DebugError_Init(&o->d_err, pg);
 }

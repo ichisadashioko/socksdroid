@@ -1,9 +1,9 @@
 /**
  * @file CHash_impl.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -61,20 +61,20 @@ static CHashRef CHashDerefMayNull (CHashArg arg, CHashLink link)
     if (link == CHashNullLink()) {
         return CHashNullRef();
     }
-    
+
     CHashRef entry = {CHASH_PARAM_DEREF(arg, link), link};
     ASSERT(entry.ptr)
-    
+
     return entry;
 }
 
 static CHashRef CHashDerefNonNull (CHashArg arg, CHashLink link)
 {
     ASSERT(link != CHashNullLink())
-    
+
     CHashRef entry = {CHASH_PARAM_DEREF(arg, link), link};
     ASSERT(entry.ptr)
-    
+
     return entry;
 }
 
@@ -83,18 +83,18 @@ static int CHash_Init (CHash *o, size_t num_buckets)
     if (num_buckets == 0) {
         num_buckets = 1;
     }
-    
+
     o->num_buckets = num_buckets;
-    
-    o->buckets = (CHashLink *)BAllocArray(o->num_buckets, sizeof(o->buckets[0])); 
+
+    o->buckets = (CHashLink *)BAllocArray(o->num_buckets, sizeof(o->buckets[0]));
     if (!o->buckets) {
         return 0;
     }
-    
+
     for (size_t i = 0; i < o->num_buckets; i++) {
         o->buckets[i] = CHashNullLink();
     }
-    
+
     return 1;
 }
 
@@ -106,9 +106,9 @@ static void CHash_Free (CHash *o)
 static int CHash_Insert (CHash *o, CHashArg arg, CHashRef entry, CHashRef *out_existing)
 {
     CHash_assert_valid_entry(arg, entry);
-    
+
     size_t index = CHASH_PARAM_ENTRYHASH(arg, entry) % o->num_buckets;
-    
+
     CHashLink link = o->buckets[index];
     while (link != CHashNullLink()) {
         CHashRef cur = CHashDerefNonNull(arg, link);
@@ -120,19 +120,19 @@ static int CHash_Insert (CHash *o, CHashArg arg, CHashRef entry, CHashRef *out_e
         }
         link = CHash_next(cur);
     }
-    
+
     CHash_next(entry) = o->buckets[index];
     o->buckets[index] = entry.link;
-    
+
     return 1;
 }
 
 static void CHash_InsertMulti (CHash *o, CHashArg arg, CHashRef entry)
 {
     CHash_assert_valid_entry(arg, entry);
-    
+
     size_t index = CHASH_PARAM_ENTRYHASH(arg, entry) % o->num_buckets;
-    
+
     CHashRef prev = CHashNullRef();
     CHashLink link = o->buckets[index];
     while (link != CHashNullLink()) {
@@ -143,7 +143,7 @@ static void CHash_InsertMulti (CHash *o, CHashArg arg, CHashRef entry)
         prev = cur;
         link = CHash_next(cur);
     }
-    
+
     if (link == CHashNullLink() || prev.link == CHashNullLink()) {
         CHash_next(entry) = o->buckets[index];
         o->buckets[index] = entry.link;
@@ -156,9 +156,9 @@ static void CHash_InsertMulti (CHash *o, CHashArg arg, CHashRef entry)
 static void CHash_Remove (CHash *o, CHashArg arg, CHashRef entry)
 {
     CHash_assert_valid_entry(arg, entry);
-    
+
     size_t index = CHASH_PARAM_ENTRYHASH(arg, entry) % o->num_buckets;
-    
+
     CHashRef prev = CHashNullRef();
     CHashLink link = o->buckets[index];
     while (link != entry.link) {
@@ -167,7 +167,7 @@ static void CHash_Remove (CHash *o, CHashArg arg, CHashRef entry)
         link = CHash_next(cur);
         ASSERT(link != CHashNullLink())
     }
-    
+
     if (prev.link == CHashNullLink()) {
         o->buckets[index] = CHash_next(entry);
     } else {
@@ -175,11 +175,11 @@ static void CHash_Remove (CHash *o, CHashArg arg, CHashRef entry)
     }
 }
 
-static CHashRef CHash_Lookup (const CHash *o, CHashArg arg, CHashKey key) 
+static CHashRef CHash_Lookup (const CHash *o, CHashArg arg, CHashKey key)
 {
     size_t hash = CHASH_PARAM_KEYHASH(arg, key);
     size_t index = hash % o->num_buckets;
-    
+
     CHashLink link = o->buckets[index];
     while (link != CHashNullLink()) {
         CHashRef cur = CHashDerefNonNull(arg, link);
@@ -192,32 +192,32 @@ static CHashRef CHash_Lookup (const CHash *o, CHashArg arg, CHashKey key)
         }
         link = CHash_next(cur);
     }
-    
+
     return CHashNullRef();
 }
 
 static CHashRef CHash_GetNextEqual (const CHash *o, CHashArg arg, CHashRef entry)
 {
     CHash_assert_valid_entry(arg, entry);
-    
+
     CHashLink next = CHash_next(entry);
-    
+
     if (next == CHashNullLink()) {
         return CHashNullRef();
     }
-    
+
     CHashRef next_ref = CHashDerefNonNull(arg, next);
     if (!CHASH_PARAM_COMPARE_ENTRIES(arg, next_ref, entry)) {
         return CHashNullRef();
     }
-    
+
     return next_ref;
 }
 
 static int CHash_MultiplyBuckets (CHash *o, CHashArg arg, int exp)
 {
     ASSERT(exp > 0)
-    
+
     size_t new_num_buckets = o->num_buckets;
     while (exp-- > 0) {
         if (new_num_buckets > SIZE_MAX / 2) {
@@ -225,59 +225,59 @@ static int CHash_MultiplyBuckets (CHash *o, CHashArg arg, int exp)
         }
         new_num_buckets *= 2;
     }
-    
+
     CHashLink *new_buckets = (CHashLink *)BReallocArray(o->buckets, new_num_buckets, sizeof(new_buckets[0]));
     if (!new_buckets) {
         return 0;
     }
     o->buckets = new_buckets;
-    
+
     for (size_t i = o->num_buckets; i < new_num_buckets; i++) {
         o->buckets[i] = CHashNullLink();
     }
-    
+
     for (size_t i = 0; i < o->num_buckets; i++) {
         CHashRef prev = CHashNullRef();
         CHashLink link = o->buckets[i];
-        
+
         while (link != CHashNullLink()) {
             CHashRef cur = CHashDerefNonNull(arg, link);
             link = CHash_next(cur);
-            
+
             size_t new_index = CHASH_PARAM_ENTRYHASH(arg, cur) % new_num_buckets;
             if (new_index == i) {
                 prev = cur;
                 continue;
             }
-            
+
             if (CHashIsNullRef(prev)) {
                 o->buckets[i] = CHash_next(cur);
             } else {
                 CHash_next(prev) = CHash_next(cur);
             }
-            
+
             CHash_next(cur) = o->buckets[new_index];
             o->buckets[new_index] = cur.link;
         }
     }
-    
+
     for (size_t i = o->num_buckets; i < new_num_buckets; i++) {
         CHashLink new_bucket_link = CHashNullLink();
-        
+
         CHashLink link = o->buckets[i];
         while (link != CHashNullLink()) {
             CHashRef cur = CHashDerefNonNull(arg, link);
             link = CHash_next(cur);
-            
+
             CHash_next(cur) = new_bucket_link;
             new_bucket_link = cur.link;
         }
-        
+
         o->buckets[i] = new_bucket_link;
     }
-    
+
     o->num_buckets = new_num_buckets;
-    
+
     return 1;
 }
 
@@ -285,25 +285,25 @@ static void CHash_Verify (const CHash *o, CHashArg arg)
 {
     ASSERT_FORCE(o->num_buckets > 0)
     ASSERT_FORCE(o->buckets)
-    
+
     for (size_t i = 0; i < o->num_buckets; i++) {
         CHashRef cur = CHashDerefMayNull(arg, o->buckets[i]);
         CHashRef same_first = cur;
-        
+
         while (!CHashIsNullRef(cur)) {
             size_t index = CHASH_PARAM_ENTRYHASH(arg, cur) % o->num_buckets;
             ASSERT_FORCE(index == i)
-            
+
             if (!CHASH_PARAM_COMPARE_ENTRIES(arg, cur, same_first)) {
                 same_first = cur;
             }
-            
+
             CHashRef ccur = CHashDerefNonNull(arg, o->buckets[i]);
             while (ccur.link != same_first.link) {
                 ASSERT_FORCE(!CHASH_PARAM_COMPARE_ENTRIES(arg, ccur, cur))
                 ccur = CHashDerefMayNull(arg, CHash_next(ccur));
             }
-            
+
             cur = CHashDerefMayNull(arg, CHash_next(cur));
         }
     }

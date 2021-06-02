@@ -22,7 +22,7 @@ process events_main {
 
 process events_watcher {
     depend("GLOBAL");
-  
+
     # Create process manager.
     process_manager() manager;
 

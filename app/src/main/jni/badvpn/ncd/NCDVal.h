@@ -1,9 +1,9 @@
 /**
  * @file NCDVal.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -198,12 +198,12 @@ typedef struct {
  * A value memory object holds memory for value structures. Values within
  * the memory are referenced using {@link NCDValRef} objects, which point
  * to values within memory objects.
- * 
+ *
  * Values may be added to a memory object using functions such as
  * {@link NCDVal_NewString}, {@link NCDVal_NewList} and {@link NCDVal_NewMap},
  * and {@link NCDVal_NewCopy}, which return references to the new values within
  * the memory object.
- * 
+ *
  * It is not possible to remove values from the memory object, or modify existing
  * values other than adding elements to pre-allocated slots in lists and maps.
  * Once a value is added, it will consume memory as long as its memory object
@@ -285,7 +285,7 @@ NCDValRef NCDVal_NewInvalid (void);
  * containing an integer placeholder identifier.
  * This always succeeds; however, the caller must ensure the identifier is
  * non-negative and satisfies (NCDVAL_MINIDX + plid < -1).
- * 
+ *
  * The placeholder type is only used internally in the interpreter for argument
  * resolution, and is never seen by modules. Also see {@link NCDPlaceholderDb}.
  */
@@ -400,7 +400,7 @@ NCDValRef NCDVal_NewString (NCDValMem *mem, const char *data);
  * WARNING: The buffer passed must NOT be part of any value in the
  * memory object specified. In particular, you may NOT use this
  * function to copy a string that resides in the same memory object.
- * 
+ *
  * A StoredString is a kind of ContinuousString which is represented directly in the
  * value memory object.
  */
@@ -417,7 +417,7 @@ NCDValRef NCDVal_NewStringUninitialized (NCDValMem *mem, size_t len);
  * Builds a new IdString.
  * Returns a reference to the new value, or an invalid reference
  * on out of memory.
- * 
+ *
  * An IdString is a kind of ContinuousString which is represented efficiently as a string
  * identifier via {@link NCDStringIndex}.
  */
@@ -430,7 +430,7 @@ NCDValRef NCDVal_NewIdString (NCDValMem *mem, NCD_string_id_t string_id,
  * NULL. The data must not change while this value exists.
  * Returns a reference to the new value, or an invalid reference
  * on out of memory.
- * 
+ *
  * An ExternalString is a kind of ContinuousString where the actual string contents are
  * stored outside of the value memory object.
  */
@@ -467,7 +467,7 @@ typedef struct {
  *   - resource = NCDVal_ComposedStringResource(composedstring),
  *   - offset = NCDVal_ComposedStringOffset(composedstring),
  *   - length = NCDVal_StringLength(composedstring).
- * 
+ *
  * The returned cstring is valid as long as the resource is not released. Note that
  * a reference to resource.ref_target may need to be taken to ensure the resource
  * is not released while it is being referenced by the returned cstring (unless
@@ -479,7 +479,7 @@ b_cstring NCDValComposedStringResource_Cstring (NCDValComposedStringResource res
  * Builds a new ComposedString from a string resource.
  * A reference to the underlying string resource via the {@link BRefTarget} object
  * specified in 'resource.ref_target'.
- * 
+ *
  * A ComposedString is a kind of String with an abstract representation exposed via the
  * {@link NCDVal_ComposedString_func_getptr} callback.
  */

@@ -1,9 +1,9 @@
 /**
  * @file StreamPacketSender.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -35,14 +35,14 @@ static void input_handler_send (StreamPacketSender *o, uint8_t *data, int data_l
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(data_len > 0)
-    
+
     // limit length to MTU and remember
     if (data_len > o->output_mtu) {
         o->sending_len = o->output_mtu;
     } else {
         o->sending_len = data_len;
     }
-    
+
     // send
     PacketPassInterface_Sender_Send(o->output, data, o->sending_len);
 }
@@ -50,7 +50,7 @@ static void input_handler_send (StreamPacketSender *o, uint8_t *data, int data_l
 static void output_handler_done (StreamPacketSender *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     // done
     StreamPassInterface_Done(&o->input, o->sending_len);
 }
@@ -58,26 +58,26 @@ static void output_handler_done (StreamPacketSender *o)
 void StreamPacketSender_Init (StreamPacketSender *o, PacketPassInterface *output, BPendingGroup *pg)
 {
     ASSERT(PacketPassInterface_GetMTU(output) > 0)
-    
+
     // init arguments
     o->output = output;
-    
+
     // remember output MTU
     o->output_mtu = PacketPassInterface_GetMTU(output);
-    
+
     // init input
     StreamPassInterface_Init(&o->input, (StreamPassInterface_handler_send)input_handler_send, o, pg);
-    
+
     // init output
     PacketPassInterface_Sender_Init(o->output, (PacketPassInterface_handler_done)output_handler_done, o);
-    
+
     DebugObject_Init(&o->d_obj);
 }
 
 void StreamPacketSender_Free (StreamPacketSender *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     // free input
     StreamPassInterface_Free(&o->input);
 }
@@ -85,6 +85,6 @@ void StreamPacketSender_Free (StreamPacketSender *o)
 StreamPassInterface * StreamPacketSender_GetInput (StreamPacketSender *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return &o->input;
 }

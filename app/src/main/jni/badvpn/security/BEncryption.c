@@ -1,9 +1,9 @@
 /**
  * @file BEncryption.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -74,12 +74,12 @@ void BEncryption_Init (BEncryption *enc, int mode, int cipher, uint8_t *key)
 {
     ASSERT(!(mode&~(BENCRYPTION_MODE_ENCRYPT|BENCRYPTION_MODE_DECRYPT)))
     ASSERT((mode&BENCRYPTION_MODE_ENCRYPT) || (mode&BENCRYPTION_MODE_DECRYPT))
-    
+
     enc->mode = mode;
     enc->cipher = cipher;
-    
+
     #ifdef BADVPN_USE_CRYPTODEV
-    
+
     switch (enc->cipher) {
         case BENCRYPTION_CIPHER_AES:
             enc->cryptodev.cipher = CRYPTO_AES_CBC;
@@ -87,17 +87,17 @@ void BEncryption_Init (BEncryption *enc, int mode, int cipher, uint8_t *key)
         default:
             goto fail1;
     }
-    
+
     if ((enc->cryptodev.fd = open("/dev/crypto", O_RDWR, 0)) < 0) {
         BLog(BLOG_ERROR, "failed to open /dev/crypto");
         goto fail1;
     }
-    
+
     if (ioctl(enc->cryptodev.fd, CRIOGET, &enc->cryptodev.cfd)) {
         BLog(BLOG_ERROR, "failed ioctl(CRIOGET)");
         goto fail2;
     }
-    
+
     struct session_op sess;
     memset(&sess, 0, sizeof(sess));
     sess.cipher = enc->cryptodev.cipher;
@@ -107,24 +107,24 @@ void BEncryption_Init (BEncryption *enc, int mode, int cipher, uint8_t *key)
         BLog(BLOG_ERROR, "failed ioctl(CIOCGSESSION)");
         goto fail3;
     }
-    
+
     enc->cryptodev.ses = sess.ses;
     enc->use_cryptodev = 1;
-    
+
     goto success;
-    
+
 fail3:
     ASSERT_FORCE(close(enc->cryptodev.cfd) == 0)
 fail2:
     ASSERT_FORCE(close(enc->cryptodev.fd) == 0)
 fail1:
-    
+
     enc->use_cryptodev = 0;
-    
+
     #endif
-    
+
     int res;
-    
+
     switch (enc->cipher) {
         case BENCRYPTION_CIPHER_BLOWFISH:
             BF_set_key(&enc->blowfish, BENCRYPTION_CIPHER_BLOWFISH_KEY_SIZE, key);
@@ -143,7 +143,7 @@ fail1:
             ASSERT(0)
             ;
     }
-    
+
     #ifdef BADVPN_USE_CRYPTODEV
 success:
     #endif
@@ -155,15 +155,15 @@ void BEncryption_Free (BEncryption *enc)
 {
     // free debug object
     DebugObject_Free(&enc->d_obj);
-    
+
     #ifdef BADVPN_USE_CRYPTODEV
-    
+
     if (enc->use_cryptodev) {
         ASSERT_FORCE(ioctl(enc->cryptodev.cfd, CIOCFSESSION, &enc->cryptodev.ses) == 0)
         ASSERT_FORCE(close(enc->cryptodev.cfd) == 0)
         ASSERT_FORCE(close(enc->cryptodev.fd) == 0)
     }
-    
+
     #endif
 }
 
@@ -172,9 +172,9 @@ void BEncryption_Encrypt (BEncryption *enc, uint8_t *in, uint8_t *out, int len, 
     ASSERT(enc->mode&BENCRYPTION_MODE_ENCRYPT)
     ASSERT(len >= 0)
     ASSERT(len % BEncryption_cipher_block_size(enc->cipher) == 0)
-    
+
     #ifdef BADVPN_USE_CRYPTODEV
-    
+
     if (enc->use_cryptodev) {
         struct crypt_op cryp;
         memset(&cryp, 0, sizeof(cryp));
@@ -185,12 +185,12 @@ void BEncryption_Encrypt (BEncryption *enc, uint8_t *in, uint8_t *out, int len, 
         cryp.iv = iv;
         cryp.op = COP_ENCRYPT;
         ASSERT_FORCE(ioctl(enc->cryptodev.cfd, CIOCCRYPT, &cryp) == 0)
-        
+
         return;
     }
-    
+
     #endif
-    
+
     switch (enc->cipher) {
         case BENCRYPTION_CIPHER_BLOWFISH:
             BF_cbc_encrypt(in, out, len, &enc->blowfish, iv, BF_ENCRYPT);
@@ -208,9 +208,9 @@ void BEncryption_Decrypt (BEncryption *enc, uint8_t *in, uint8_t *out, int len, 
     ASSERT(enc->mode&BENCRYPTION_MODE_DECRYPT)
     ASSERT(len >= 0)
     ASSERT(len % BEncryption_cipher_block_size(enc->cipher) == 0)
-    
+
     #ifdef BADVPN_USE_CRYPTODEV
-    
+
     if (enc->use_cryptodev) {
         struct crypt_op cryp;
         memset(&cryp, 0, sizeof(cryp));
@@ -221,12 +221,12 @@ void BEncryption_Decrypt (BEncryption *enc, uint8_t *in, uint8_t *out, int len, 
         cryp.iv = iv;
         cryp.op = COP_DECRYPT;
         ASSERT_FORCE(ioctl(enc->cryptodev.cfd, CIOCCRYPT, &cryp) == 0)
-        
+
         return;
     }
-    
+
     #endif
-    
+
     switch (enc->cipher) {
         case BENCRYPTION_CIPHER_BLOWFISH:
             BF_cbc_encrypt(in, out, len, &enc->blowfish, iv, BF_DECRYPT);

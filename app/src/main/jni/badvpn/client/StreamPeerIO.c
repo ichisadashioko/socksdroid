@@ -1,9 +1,9 @@
 /**
  * @file StreamPeerIO.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -73,9 +73,9 @@ static void reset_and_report_error (StreamPeerIO *pio);
 void decoder_handler_error (StreamPeerIO *pio)
 {
     DebugObject_Access(&pio->d_obj);
-    
+
     PeerLog(pio, BLOG_ERROR, "decoder error");
-    
+
     reset_and_report_error(pio);
     return;
 }
@@ -85,70 +85,70 @@ void connector_handler (StreamPeerIO *pio, int is_error)
     DebugObject_Access(&pio->d_obj);
     ASSERT(pio->mode == MODE_CONNECT)
     ASSERT(pio->connect.state == CONNECT_STATE_CONNECTING)
-    
+
     // check connection result
     if (is_error) {
         PeerLog(pio, BLOG_NOTICE, "connection failed");
         goto fail0;
     }
-    
+
     // init connection
     if (!BConnection_Init(&pio->connect.sock.con, BConnection_source_connector(&pio->connect.connector), pio->reactor, pio, (BConnection_handler)connection_handler)) {
         PeerLog(pio, BLOG_ERROR, "BConnection_Init failed");
         goto fail0;
     }
-    
+
     if (pio->ssl) {
         // init connection interfaces
         BConnection_SendAsync_Init(&pio->connect.sock.con);
         BConnection_RecvAsync_Init(&pio->connect.sock.con);
-        
+
         // create bottom NSPR file descriptor
         if (!BSSLConnection_MakeBackend(&pio->connect.sock.bottom_prfd, BConnection_SendAsync_GetIf(&pio->connect.sock.con), BConnection_RecvAsync_GetIf(&pio->connect.sock.con), pio->twd, pio->ssl_flags)) {
             PeerLog(pio, BLOG_ERROR, "BSSLConnection_MakeBackend failed");
             goto fail1;
         }
-        
+
         // create SSL file descriptor from the bottom NSPR file descriptor
         if (!(pio->connect.sock.ssl_prfd = SSL_ImportFD(NULL, &pio->connect.sock.bottom_prfd))) {
             ASSERT_FORCE(PR_Close(&pio->connect.sock.bottom_prfd) == PR_SUCCESS)
             goto fail1;
         }
-        
+
         // set client mode
         if (SSL_ResetHandshake(pio->connect.sock.ssl_prfd, PR_FALSE) != SECSuccess) {
             PeerLog(pio, BLOG_ERROR, "SSL_ResetHandshake failed");
             goto fail2;
         }
-        
+
         // set verify peer certificate hook
         if (SSL_AuthCertificateHook(pio->connect.sock.ssl_prfd, (SSLAuthCertificate)client_auth_certificate_callback, pio) != SECSuccess) {
             PeerLog(pio, BLOG_ERROR, "SSL_AuthCertificateHook failed");
             goto fail2;
         }
-        
+
         // set client certificate callback
         if (SSL_GetClientAuthDataHook(pio->connect.sock.ssl_prfd, (SSLGetClientAuthData)client_client_auth_data_callback, pio) != SECSuccess) {
             PeerLog(pio, BLOG_ERROR, "SSL_GetClientAuthDataHook failed");
             goto fail2;
         }
-        
+
         // init BSSLConnection
         BSSLConnection_Init(&pio->connect.sslcon, pio->connect.sock.ssl_prfd, 1, BReactor_PendingGroup(pio->reactor), pio, (BSSLConnection_handler)connect_sslcon_handler);
-        
+
         // change state
         pio->connect.state = CONNECT_STATE_HANDSHAKE;
     } else {
         // init connection send interface
         BConnection_SendAsync_Init(&pio->connect.sock.con);
-        
+
         // init password sender
         SingleStreamSender_Init(&pio->connect.pwsender, (uint8_t *)&pio->connect.password, sizeof(pio->connect.password), BConnection_SendAsync_GetIf(&pio->connect.sock.con), BReactor_PendingGroup(pio->reactor), pio, (SingleStreamSender_handler)pwsender_handler);
-        
+
         // change state
         pio->connect.state = CONNECT_STATE_SENDING;
     }
-    
+
     return;
 
     if (pio->ssl) {
@@ -170,13 +170,13 @@ void connection_handler (StreamPeerIO *pio, int event)
     ASSERT(pio->mode == MODE_CONNECT || pio->mode == MODE_LISTEN)
     ASSERT(!(pio->mode == MODE_CONNECT) || pio->connect.state >= CONNECT_STATE_HANDSHAKE)
     ASSERT(!(pio->mode == MODE_LISTEN) || pio->listen.state >= LISTEN_STATE_FINISHED)
-    
+
     if (event == BCONNECTION_EVENT_RECVCLOSED) {
         PeerLog(pio, BLOG_NOTICE, "connection closed");
     } else {
         PeerLog(pio, BLOG_NOTICE, "connection error");
     }
-    
+
     reset_and_report_error(pio);
     return;
 }
@@ -188,37 +188,37 @@ void connect_sslcon_handler (StreamPeerIO *pio, int event)
     ASSERT(pio->mode == MODE_CONNECT)
     ASSERT(pio->connect.state == CONNECT_STATE_HANDSHAKE || pio->connect.state == CONNECT_STATE_SENDING)
     ASSERT(event == BSSLCONNECTION_EVENT_UP || event == BSSLCONNECTION_EVENT_ERROR)
-    
+
     if (event == BSSLCONNECTION_EVENT_ERROR) {
         PeerLog(pio, BLOG_NOTICE, "SSL error");
-        
+
         reset_and_report_error(pio);
         return;
     }
-    
+
     // handshake complete
     ASSERT(pio->connect.state == CONNECT_STATE_HANDSHAKE)
-    
+
     // remove client certificate callback
     if (SSL_GetClientAuthDataHook(pio->connect.sock.ssl_prfd, NULL, NULL) != SECSuccess) {
         PeerLog(pio, BLOG_ERROR, "SSL_GetClientAuthDataHook failed");
         goto fail0;
     }
-    
+
     // remove verify peer certificate callback
     if (SSL_AuthCertificateHook(pio->connect.sock.ssl_prfd, NULL, NULL) != SECSuccess) {
         PeerLog(pio, BLOG_ERROR, "SSL_AuthCertificateHook failed");
         goto fail0;
     }
-    
+
     // init password sender
     SingleStreamSender_Init(&pio->connect.pwsender, (uint8_t *)&pio->connect.password, sizeof(pio->connect.password), BSSLConnection_GetSendIf(&pio->connect.sslcon), BReactor_PendingGroup(pio->reactor), pio, (SingleStreamSender_handler)pwsender_handler);
-    
+
     // change state
     pio->connect.state = CONNECT_STATE_SENDING;
-    
+
     return;
-    
+
 fail0:
     reset_and_report_error(pio);
     return;
@@ -229,15 +229,15 @@ void pwsender_handler (StreamPeerIO *pio)
     DebugObject_Access(&pio->d_obj);
     ASSERT(pio->mode == MODE_CONNECT)
     ASSERT(pio->connect.state == CONNECT_STATE_SENDING)
-    
+
     // stop using any buffers before they get freed
     if (pio->ssl) {
         BSSLConnection_ReleaseBuffers(&pio->connect.sslcon);
     }
-    
+
     // free password sender
     SingleStreamSender_Free(&pio->connect.pwsender);
-    
+
     if (pio->ssl) {
         // free BSSLConnection (we used the send interface)
         BSSLConnection_Free(&pio->connect.sslcon);
@@ -245,20 +245,20 @@ void pwsender_handler (StreamPeerIO *pio)
         // init connection send interface
         BConnection_SendAsync_Free(&pio->connect.sock.con);
     }
-    
+
     // change state
     pio->connect.state = CONNECT_STATE_SENT;
-    
+
     // setup i/o
     if (!init_io(pio, &pio->connect.sock)) {
         goto fail0;
     }
-    
+
     // change state
     pio->connect.state = CONNECT_STATE_FINISHED;
-    
+
     return;
-    
+
 fail0:
     reset_and_report_error(pio);
     return;
@@ -269,16 +269,16 @@ void listener_handler_client (StreamPeerIO *pio, sslsocket *sock)
     DebugObject_Access(&pio->d_obj);
     ASSERT(pio->mode == MODE_LISTEN)
     ASSERT(pio->listen.state == LISTEN_STATE_LISTENER)
-    
+
     // remember socket
     pio->listen.sock = sock;
-    
+
     // set connection handler
     BConnection_SetHandlers(&pio->listen.sock->con, pio, (BConnection_handler)connection_handler);
-    
+
     // change state
     pio->listen.state = LISTEN_STATE_GOTCLIENT;
-    
+
     // check ceritficate
     if (pio->ssl) {
         CERTCertificate *peer_cert = SSL_PeerCertificate(pio->listen.sock->ssl_prfd);
@@ -286,26 +286,26 @@ void listener_handler_client (StreamPeerIO *pio, sslsocket *sock)
             PeerLog(pio, BLOG_ERROR, "SSL_PeerCertificate failed");
             goto fail0;
         }
-        
+
         // compare certificate to the one provided by the server
         if (!compare_certificate(pio, peer_cert)) {
             CERT_DestroyCertificate(peer_cert);
             goto fail0;
         }
-        
+
         CERT_DestroyCertificate(peer_cert);
     }
-    
+
     // setup i/o
     if (!init_io(pio, pio->listen.sock)) {
         goto fail0;
     }
-    
+
     // change state
     pio->listen.state = LISTEN_STATE_FINISHED;
-    
+
     return;
-    
+
 fail0:
     reset_and_report_error(pio);
     return;
@@ -314,14 +314,14 @@ fail0:
 int init_io (StreamPeerIO *pio, sslsocket *sock)
 {
     ASSERT(!pio->sock)
-    
+
     // limit socket send buffer, else our scheduling is pointless
     if (pio->sock_sndbuf > 0) {
         if (!BConnection_SetSendBuffer(&sock->con, pio->sock_sndbuf)) {
             PeerLog(pio, BLOG_WARNING, "BConnection_SetSendBuffer failed");
         }
     }
-    
+
     if (pio->ssl) {
         // init BSSLConnection
         BSSLConnection_Init(&pio->sslcon, sock->ssl_prfd, 0, BReactor_PendingGroup(pio->reactor), pio, (BSSLConnection_handler)sslcon_handler);
@@ -330,41 +330,41 @@ int init_io (StreamPeerIO *pio, sslsocket *sock)
         BConnection_SendAsync_Init(&sock->con);
         BConnection_RecvAsync_Init(&sock->con);
     }
-    
+
     StreamPassInterface *send_if = (pio->ssl ? BSSLConnection_GetSendIf(&pio->sslcon) : BConnection_SendAsync_GetIf(&sock->con));
     StreamRecvInterface *recv_if = (pio->ssl ? BSSLConnection_GetRecvIf(&pio->sslcon) : BConnection_RecvAsync_GetIf(&sock->con));
-    
+
     // init receiving
     StreamRecvConnector_ConnectInput(&pio->input_connector, recv_if);
-    
+
     // init sending
     PacketStreamSender_Init(&pio->output_pss, send_if, PACKETPROTO_ENCLEN(pio->payload_mtu), BReactor_PendingGroup(pio->reactor));
     PacketPassConnector_ConnectOutput(&pio->output_connector, PacketStreamSender_GetInput(&pio->output_pss));
-    
+
     pio->sock = sock;
-    
+
     return 1;
 }
 
 void free_io (StreamPeerIO *pio)
 {
     ASSERT(pio->sock)
-    
+
     // stop using any buffers before they get freed
     if (pio->ssl) {
         BSSLConnection_ReleaseBuffers(&pio->sslcon);
     }
-    
+
     // reset decoder
     PacketProtoDecoder_Reset(&pio->input_decoder);
-    
+
     // free sending
     PacketPassConnector_DisconnectOutput(&pio->output_connector);
     PacketStreamSender_Free(&pio->output_pss);
-    
+
     // free receiving
     StreamRecvConnector_DisconnectInput(&pio->input_connector);
-    
+
     if (pio->ssl) {
         // free BSSLConnection
         BSSLConnection_Free(&pio->sslcon);
@@ -373,7 +373,7 @@ void free_io (StreamPeerIO *pio)
         BConnection_RecvAsync_Free(&pio->sock->con);
         BConnection_SendAsync_Free(&pio->sock->con);
     }
-    
+
     pio->sock = NULL;
 }
 
@@ -385,9 +385,9 @@ void sslcon_handler (StreamPeerIO *pio, int event)
     ASSERT(!(pio->mode == MODE_CONNECT) || pio->connect.state == CONNECT_STATE_FINISHED)
     ASSERT(!(pio->mode == MODE_LISTEN) || pio->listen.state == LISTEN_STATE_FINISHED)
     ASSERT(event == BSSLCONNECTION_EVENT_ERROR)
-    
+
     PeerLog(pio, BLOG_NOTICE, "SSL error");
-    
+
     reset_and_report_error(pio);
     return;
 }
@@ -398,32 +398,32 @@ SECStatus client_auth_certificate_callback (StreamPeerIO *pio, PRFileDesc *fd, P
     ASSERT(pio->mode == MODE_CONNECT)
     ASSERT(pio->connect.state == CONNECT_STATE_HANDSHAKE)
     DebugObject_Access(&pio->d_obj);
-    
+
     // This callback is used to bypass checking the server's domain name, as peers
     // don't have domain names. We byte-compare the certificate to the one reported
     // by the server anyway.
-    
+
     SECStatus ret = SECFailure;
-    
+
     CERTCertificate *server_cert = SSL_PeerCertificate(pio->connect.sock.ssl_prfd);
     if (!server_cert) {
         PeerLog(pio, BLOG_ERROR, "SSL_PeerCertificate failed");
         PORT_SetError(SSL_ERROR_BAD_CERTIFICATE);
         goto fail1;
     }
-    
+
     if (CERT_VerifyCertNow(CERT_GetDefaultCertDB(), server_cert, PR_TRUE, certUsageSSLServer, SSL_RevealPinArg(pio->connect.sock.ssl_prfd)) != SECSuccess) {
         goto fail2;
     }
-    
+
     // compare to certificate provided by the server
     if (!compare_certificate(pio, server_cert)) {
         PORT_SetError(SSL_ERROR_BAD_CERTIFICATE);
         goto fail2;
     }
-    
+
     ret = SECSuccess;
-    
+
 fail2:
     CERT_DestroyCertificate(server_cert);
 fail1:
@@ -436,23 +436,23 @@ SECStatus client_client_auth_data_callback (StreamPeerIO *pio, PRFileDesc *fd, C
     ASSERT(pio->mode == MODE_CONNECT)
     ASSERT(pio->connect.state == CONNECT_STATE_HANDSHAKE)
     DebugObject_Access(&pio->d_obj);
-    
+
     CERTCertificate *cert = CERT_DupCertificate(pio->connect.ssl_cert);
     if (!cert) {
         PeerLog(pio, BLOG_ERROR, "CERT_DupCertificate failed");
         goto fail0;
     }
-    
+
     SECKEYPrivateKey *key = SECKEY_CopyPrivateKey(pio->connect.ssl_key);
     if (!key) {
         PeerLog(pio, BLOG_ERROR, "SECKEY_CopyPrivateKey failed");
         goto fail1;
     }
-    
+
     *pRetCert = cert;
     *pRetKey = key;
     return SECSuccess;
-    
+
 fail1:
     CERT_DestroyCertificate(cert);
 fail0:
@@ -462,13 +462,13 @@ fail0:
 int compare_certificate (StreamPeerIO *pio, CERTCertificate *cert)
 {
     ASSERT(pio->ssl)
-    
+
     SECItem der = cert->derCert;
     if (der.len != pio->ssl_peer_cert_len || memcmp(der.data, pio->ssl_peer_cert, der.len)) {
         PeerLog(pio, BLOG_NOTICE, "Client certificate doesn't match");
         return 0;
     }
-    
+
     return 1;
 }
 
@@ -534,17 +534,17 @@ void reset_state (StreamPeerIO *pio)
         default:
             ASSERT(0);
     }
-    
+
     // set mode none
     pio->mode = MODE_NONE;
-    
+
     ASSERT(!pio->sock)
 }
 
 void reset_and_report_error (StreamPeerIO *pio)
 {
     reset_state(pio);
-    
+
     pio->handler_error(pio->user);
     return;
 }
@@ -569,7 +569,7 @@ int StreamPeerIO_Init (
     ASSERT(payload_mtu >= 0)
     ASSERT(PacketPassInterface_GetMTU(user_recv_if) >= payload_mtu)
     ASSERT(handler_error)
-    
+
     // init arguments
     pio->reactor = reactor;
     pio->twd = twd;
@@ -584,13 +584,13 @@ int StreamPeerIO_Init (
     pio->logfunc = logfunc;
     pio->handler_error = handler_error;
     pio->user = user;
-    
+
     // check payload MTU
     if (pio->payload_mtu > PACKETPROTO_MAXPAYLOAD) {
         PeerLog(pio, BLOG_ERROR, "payload MTU is too large");
         goto fail0;
     }
-    
+
     // init receiveing objects
     StreamRecvConnector_Init(&pio->input_connector, BReactor_PendingGroup(pio->reactor));
     if (!PacketProtoDecoder_Init(&pio->input_decoder, StreamRecvConnector_GetOutput(&pio->input_connector), user_recv_if, BReactor_PendingGroup(pio->reactor), pio,
@@ -599,7 +599,7 @@ int StreamPeerIO_Init (
         PeerLog(pio, BLOG_ERROR, "FlowErrorDomain_Init failed");
         goto fail1;
     }
-    
+
     // init sending objects
     PacketCopier_Init(&pio->output_user_copier, pio->payload_mtu, BReactor_PendingGroup(pio->reactor));
     PacketProtoEncoder_Init(&pio->output_user_ppe, PacketCopier_GetOutput(&pio->output_user_copier), BReactor_PendingGroup(pio->reactor));
@@ -608,16 +608,16 @@ int StreamPeerIO_Init (
         PeerLog(pio, BLOG_ERROR, "SinglePacketBuffer_Init failed");
         goto fail2;
     }
-    
+
     // set mode none
     pio->mode = MODE_NONE;
-    
+
     // set no socket
     pio->sock = NULL;
-    
+
     DebugObject_Init(&pio->d_obj);
     return 1;
-    
+
 fail2:
     PacketPassConnector_Free(&pio->output_connector);
     PacketProtoEncoder_Free(&pio->output_user_ppe);
@@ -635,13 +635,13 @@ void StreamPeerIO_Free (StreamPeerIO *pio)
 
     // reset state
     reset_state(pio);
-    
+
     // free sending objects
     SinglePacketBuffer_Free(&pio->output_user_spb);
     PacketPassConnector_Free(&pio->output_connector);
     PacketProtoEncoder_Free(&pio->output_user_ppe);
     PacketCopier_Free(&pio->output_user_copier);
-    
+
     // free receiveing objects
     PacketProtoDecoder_Free(&pio->input_decoder);
     StreamRecvConnector_Free(&pio->input_connector);
@@ -650,42 +650,42 @@ void StreamPeerIO_Free (StreamPeerIO *pio)
 PacketPassInterface * StreamPeerIO_GetSendInput (StreamPeerIO *pio)
 {
     DebugObject_Access(&pio->d_obj);
-    
+
     return PacketCopier_GetInput(&pio->output_user_copier);
 }
 
 int StreamPeerIO_Connect (StreamPeerIO *pio, BAddr addr, uint64_t password, CERTCertificate *ssl_cert, SECKEYPrivateKey *ssl_key)
 {
     DebugObject_Access(&pio->d_obj);
-    
+
     // reset state
     reset_state(pio);
-    
+
     // check address
     if (!BConnection_AddressSupported(addr)) {
         PeerLog(pio, BLOG_ERROR, "BConnection_AddressSupported failed");
         goto fail0;
     }
-    
+
     // init connector
     if (!BConnector_Init(&pio->connect.connector, addr, pio->reactor, pio, (BConnector_handler)connector_handler)) {
         PeerLog(pio, BLOG_ERROR, "BConnector_Init failed");
         goto fail0;
     }
-    
+
     // remember data
     if (pio->ssl) {
         pio->connect.ssl_cert = ssl_cert;
         pio->connect.ssl_key = ssl_key;
     }
     pio->connect.password = htol64(password);
-    
+
     // set state
     pio->mode = MODE_CONNECT;
     pio->connect.state = CONNECT_STATE_CONNECTING;
-    
+
     return 1;
-    
+
 fail0:
     return 0;
 }
@@ -694,19 +694,19 @@ void StreamPeerIO_Listen (StreamPeerIO *pio, PasswordListener *listener, uint64_
 {
     DebugObject_Access(&pio->d_obj);
     ASSERT(listener->ssl == pio->ssl)
-    
+
     // reset state
     reset_state(pio);
-    
+
     // add PasswordListener entry
     uint64_t newpass = PasswordListener_AddEntry(listener, &pio->listen.pwentry, (PasswordListener_handler_client)listener_handler_client, pio);
-    
+
     // remember data
     pio->listen.listener = listener;
-    
+
     // set state
     pio->mode = MODE_LISTEN;
     pio->listen.state = LISTEN_STATE_LISTENER;
-    
+
     *password = newpass;
 }

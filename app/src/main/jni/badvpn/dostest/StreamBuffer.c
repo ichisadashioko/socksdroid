@@ -1,9 +1,9 @@
 /**
  * @file StreamBuffer.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,13 +38,13 @@ static void input_handler_done (void *vo, int data_len)
     StreamBuffer *o = (StreamBuffer *)vo;
     ASSERT(data_len > 0)
     ASSERT(data_len <= o->buf_size - (o->buf_start + o->buf_used))
-    
+
     // remember if buffer was empty
     int was_empty = (o->buf_used == 0);
-    
+
     // increment buf_used by the amount that was received
     o->buf_used += data_len;
-    
+
     // start another receive operation unless buffer is full
     if (o->buf_used < o->buf_size - o->buf_start) {
         int end = o->buf_start + o->buf_used;
@@ -54,7 +54,7 @@ static void input_handler_done (void *vo, int data_len)
         // wrap around
         StreamRecvInterface_Receiver_Recv(o->input, o->buf, o->buf_start);
     }
-    
+
     // if buffer was empty before, start send operation
     if (was_empty) {
         StreamPassInterface_Sender_Send(o->output, o->buf + o->buf_start, o->buf_used);
@@ -68,20 +68,20 @@ static void output_handler_done (void *vo, int data_len)
     ASSERT(data_len > 0)
     ASSERT(data_len <= o->buf_used)
     ASSERT(data_len <= o->buf_size - o->buf_start)
-    
+
     // remember if buffer was full
     int was_full = (o->buf_used == o->buf_size);
-    
+
     // increment buf_start and decrement buf_used by the
     // amount that was sent
     o->buf_start += data_len;
     o->buf_used -= data_len;
-    
+
     // wrap around buf_start
     if (o->buf_start == o->buf_size) {
         o->buf_start = 0;
     }
-    
+
     // start receive operation if buffer was full
     if (was_full) {
         int end;
@@ -95,7 +95,7 @@ static void output_handler_done (void *vo, int data_len)
         }
         StreamRecvInterface_Receiver_Recv(o->input, o->buf + end, avail);
     }
-    
+
     // start another receive send unless buffer is empty
     if (o->buf_used > 0) {
         int to_send = bmin_int(o->buf_used, o->buf_size - o->buf_start);
@@ -108,32 +108,32 @@ int StreamBuffer_Init (StreamBuffer *o, int buf_size, StreamRecvInterface *input
     ASSERT(buf_size > 0)
     ASSERT(input)
     ASSERT(output)
-    
+
     // remember arguments
     o->buf_size = buf_size;
     o->input = input;
     o->output = output;
-    
+
     // allocate buffer memory
     o->buf = (uint8_t *)BAllocSize(bsize_fromint(o->buf_size));
     if (!o->buf) {
         goto fail0;
     }
-    
+
     // set initial buffer state
     o->buf_start = 0;
     o->buf_used = 0;
-    
+
     // set receive and send done callbacks
     StreamRecvInterface_Receiver_Init(o->input, input_handler_done, o);
     StreamPassInterface_Sender_Init(o->output, output_handler_done, o);
-    
+
     // start receive operation
     StreamRecvInterface_Receiver_Recv(o->input, o->buf, o->buf_size);
-    
+
     DebugObject_Init(&o->d_obj);
     return 1;
-    
+
 fail0:
     return 0;
 }
@@ -141,7 +141,7 @@ fail0:
 void StreamBuffer_Free (StreamBuffer *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     // free buffer memory
     BFree(o->buf);
 }

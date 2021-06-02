@@ -1,9 +1,9 @@
 /**
  * @file NCDValParser.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -102,84 +102,84 @@ static int tokenizer_output (void *user, int token, char *value, size_t value_le
 {
     struct parser_state *state = user;
     ASSERT(!state->error_flags)
-    
+
     if (token == NCD_ERROR) {
         state->error_flags |= ERROR_FLAG_TOKENIZATION;
         goto fail;
     }
-    
+
     struct token minor;
     minor.str = value;
     minor.len = value_len;
-    
+
     switch (token) {
         case NCD_EOF: {
             Parse(state->parser, 0, minor, state);
         } break;
-        
+
         case NCD_TOKEN_CURLY_OPEN: {
             Parse(state->parser, CURLY_OPEN, minor, state);
         } break;
-        
+
         case NCD_TOKEN_CURLY_CLOSE: {
             Parse(state->parser, CURLY_CLOSE, minor, state);
         } break;
-        
+
         case NCD_TOKEN_COMMA: {
             Parse(state->parser, COMMA, minor, state);
         } break;
-        
+
         case NCD_TOKEN_STRING: {
             Parse(state->parser, STRING, minor, state);
         } break;
-        
+
         case NCD_TOKEN_COLON: {
             Parse(state->parser, COLON, minor, state);
         } break;
-        
+
         case NCD_TOKEN_BRACKET_OPEN: {
             Parse(state->parser, BRACKET_OPEN, minor, state);
         } break;
-        
+
         case NCD_TOKEN_BRACKET_CLOSE: {
             Parse(state->parser, BRACKET_CLOSE, minor, state);
         } break;
-        
+
         default:
             state->error_flags |= ERROR_FLAG_TOKENIZATION;
             free_token(minor);
             goto fail;
     }
-    
+
     if (state->error_flags) {
         goto fail;
     }
-    
+
     return 1;
-    
+
 fail:
     ASSERT(state->error_flags)
-    
+
     if ((state->error_flags & ERROR_FLAG_MEMORY)) {
         BLog(BLOG_ERROR, "line %zu, character %zu: memory allocation error", line, line_char);
     }
-    
+
     if ((state->error_flags & ERROR_FLAG_TOKENIZATION)) {
         BLog(BLOG_ERROR, "line %zu, character %zu: tokenization error", line, line_char);
     }
-    
+
     if ((state->error_flags & ERROR_FLAG_SYNTAX)) {
         BLog(BLOG_ERROR, "line %zu, character %zu: syntax error", line, line_char);
     }
-    
+
     if ((state->error_flags & ERROR_FLAG_DUPLICATE_KEY)) {
         BLog(BLOG_ERROR, "line %zu, character %zu: duplicate key in map error", line, line_char);
     }
-    
+
     if ((state->error_flags & ERROR_FLAG_DEPTH)) {
         BLog(BLOG_ERROR, "line %zu, character %zu: depth limit exceeded", line, line_char);
     }
-    
+
     return 0;
 }
 
@@ -188,36 +188,36 @@ int NCDValParser_Parse (const char *str, size_t str_len, NCDValMem *mem, NCDValR
     ASSERT(str_len == 0 || str)
     ASSERT(mem)
     ASSERT(out_value)
-    
+
     int ret = 0;
-    
+
     struct parser_state state;
     state.value = NCDVal_NewInvalid();
     state.error_flags = 0;
-    
+
     if (!NCDValCons_Init(&state.cons, mem)) {
         BLog(BLOG_ERROR, "NCDValCons_Init failed");
         goto fail0;
     }
-    
+
     if (!(state.parser = ParseAlloc(malloc))) {
         BLog(BLOG_ERROR, "ParseAlloc failed");
         goto fail1;
     }
-    
+
     NCDConfigTokenizer_Tokenize((char *)str, str_len, tokenizer_output, &state);
-    
+
     ParseFree(state.parser, free);
-    
+
     if (state.error_flags) {
         goto fail1;
     }
-    
+
     ASSERT(!NCDVal_IsInvalid(state.value))
-    
+
     *out_value = state.value;
     ret = 1;
-    
+
 fail1:
     NCDValCons_Free(&state.cons);
 fail0:

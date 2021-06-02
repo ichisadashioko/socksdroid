@@ -1,9 +1,9 @@
 /**
  * @file BEncryption.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Block cipher encryption abstraction.
  */
 
@@ -99,7 +99,7 @@ typedef struct {
 
 /**
  * Checks if the given cipher number is valid.
- * 
+ *
  * @param cipher cipher number
  * @return 1 if valid, 0 if not
  */
@@ -107,7 +107,7 @@ int BEncryption_cipher_valid (int cipher);
 
 /**
  * Returns the block size of a cipher.
- * 
+ *
  * @param cipher cipher number. Must be valid.
  * @return block size in bytes
  */
@@ -115,7 +115,7 @@ int BEncryption_cipher_block_size (int cipher);
 
 /**
  * Returns the key size of a cipher.
- * 
+ *
  * @param cipher cipher number. Must be valid.
  * @return key size in bytes
  */
@@ -125,7 +125,7 @@ int BEncryption_cipher_key_size (int cipher);
  * Initializes the object.
  * {@link BSecurity_GlobalInitThreadSafe} must have been done if this object
  * will be used from a non-main thread.
- * 
+ *
  * @param enc the object
  * @param mode whether encryption or decryption is to be done, or both.
  *             Must be a bitwise-OR of at least one of BENCRYPTION_MODE_ENCRYPT
@@ -137,7 +137,7 @@ void BEncryption_Init (BEncryption *enc, int mode, int cipher, uint8_t *key);
 
 /**
  * Frees the object.
- * 
+ *
  * @param enc the object
  */
 void BEncryption_Free (BEncryption *enc);
@@ -146,7 +146,7 @@ void BEncryption_Free (BEncryption *enc);
  * Encrypts data.
  * The object must have been initialized with mode including
  * BENCRYPTION_MODE_ENCRYPT.
- * 
+ *
  * @param enc the object
  * @param in data to encrypt
  * @param out ciphertext output
@@ -161,7 +161,7 @@ void BEncryption_Encrypt (BEncryption *enc, uint8_t *in, uint8_t *out, int len, 
  * Decrypts data.
  * The object must have been initialized with mode including
  * BENCRYPTION_MODE_DECRYPT.
- * 
+ *
  * @param enc the object
  * @param in data to decrypt
  * @param out plaintext output

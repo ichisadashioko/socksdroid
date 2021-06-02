@@ -1,9 +1,9 @@
 /**
  * @file BHash.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Cryptographic hash funtions abstraction.
  */
 
@@ -51,7 +51,7 @@
 
 /**
  * Checks if the given hash type number is valid.
- * 
+ *
  * @param type hash type number
  * @return 1 if valid, 0 if not
  */
@@ -59,7 +59,7 @@ int BHash_type_valid (int type);
 
 /**
  * Returns the size of a hash.
- * 
+ *
  * @param cipher hash type number. Must be valid.
  * @return hash size in bytes
  */
@@ -69,7 +69,7 @@ int BHash_size (int type);
  * Calculates a hash.
  * {@link BSecurity_GlobalInitThreadSafe} must have been done if this is
  * being called from a non-main thread.
- * 
+ *
  * @param type hash type number. Must be valid.
  * @param data data to calculate the hash of
  * @param data_len length of data

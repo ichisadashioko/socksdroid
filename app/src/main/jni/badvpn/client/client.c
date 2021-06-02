@@ -1,9 +1,9 @@
 /**
  * @file client.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -370,17 +370,17 @@ int main (int argc, char *argv[])
     if (argc <= 0) {
         return 1;
     }
-    
+
     // open standard streams
     open_standard_streams();
-    
+
     // parse command-line arguments
     if (!parse_arguments(argc, argv)) {
         fprintf(stderr, "Failed to parse arguments\n");
         print_help(argv[0]);
         goto fail0;
     }
-    
+
     // handle --help and --version
     if (options.help) {
         print_version();
@@ -391,7 +391,7 @@ int main (int argc, char *argv[])
         print_version();
         return 0;
     }
-    
+
     // initialize logger
     switch (options.logger) {
         case LOGGER_STDOUT:
@@ -408,7 +408,7 @@ int main (int argc, char *argv[])
         default:
             ASSERT(0);
     }
-    
+
     // configure logger channels
     for (int i = 0; i < BLOG_NUM_CHANNELS; i++) {
         if (options.loglevels[i] >= 0) {
@@ -418,13 +418,13 @@ int main (int argc, char *argv[])
             BLog_SetChannelLoglevel(i, options.loglevel);
         }
     }
-    
+
     BLog(BLOG_NOTICE, "initializing "GLOBAL_PRODUCT_NAME" "PROGRAM_NAME" "GLOBAL_VERSION);
-    
+
     if (options.ssl) {
         // init NSPR
         PR_Init(PR_USER_THREAD, PR_PRIORITY_NORMAL, 0);
-        
+
         // register local NSPR file types
         if (!DummyPRFileDesc_GlobalInit()) {
             BLog(BLOG_ERROR, "DummyPRFileDesc_GlobalInit failed");
@@ -434,65 +434,65 @@ int main (int argc, char *argv[])
             BLog(BLOG_ERROR, "BSSLConnection_GlobalInit failed");
             goto fail01;
         }
-        
+
         // init NSS
         if (NSS_Init(options.nssdb) != SECSuccess) {
             BLog(BLOG_ERROR, "NSS_Init failed (%d)", (int)PR_GetError());
             goto fail01;
         }
-        
+
         // set cipher policy
         if (NSS_SetDomesticPolicy() != SECSuccess) {
             BLog(BLOG_ERROR, "NSS_SetDomesticPolicy failed (%d)", (int)PR_GetError());
             goto fail02;
         }
-        
+
         // init server cache
         if (SSL_ConfigServerSessionIDCache(0, 0, 0, NULL) != SECSuccess) {
             BLog(BLOG_ERROR, "SSL_ConfigServerSessionIDCache failed (%d)", (int)PR_GetError());
             goto fail02;
         }
-        
+
         // open server certificate and private key
         if (!open_nss_cert_and_key(options.client_cert_name, &client_cert, &client_key)) {
             BLog(BLOG_ERROR, "Cannot open certificate and key");
             goto fail03;
         }
     }
-    
+
     // initialize network
     if (!BNetwork_GlobalInit()) {
         BLog(BLOG_ERROR, "BNetwork_GlobalInit failed");
         goto fail1;
     }
-    
+
     // init time
     BTime_Init();
-    
+
     // process arguments
     if (!process_arguments()) {
         BLog(BLOG_ERROR, "Failed to process arguments");
         goto fail1;
     }
-    
+
     // init reactor
     if (!BReactor_Init(&ss)) {
         BLog(BLOG_ERROR, "BReactor_Init failed");
         goto fail1;
     }
-    
+
     // setup signal handler
     if (!BSignal_Init(&ss, signal_handler, NULL)) {
         BLog(BLOG_ERROR, "BSignal_Init failed");
         goto fail2;
     }
-    
+
     // init thread work dispatcher
     if (!BThreadWorkDispatcher_Init(&twd, &ss, options.threads)) {
         BLog(BLOG_ERROR, "BThreadWorkDispatcher_Init failed");
         goto fail3;
     }
-    
+
     // init BSecurity
     if (BThreadWorkDispatcher_UsingThreads(&twd)) {
         if (!BSecurity_GlobalInitThreadSafe()) {
@@ -500,7 +500,7 @@ int main (int argc, char *argv[])
             goto fail4;
         }
     }
-    
+
     // init listeners
     int num_listeners = 0;
     if (options.transport_mode == TRANSPORT_MODE_TCP) {
@@ -513,50 +513,50 @@ int main (int argc, char *argv[])
             num_listeners++;
         }
     }
-    
+
     // init device
     if (!BTap_Init(&device, &ss, options.tapdev, device_error_handler, NULL, 0)) {
         BLog(BLOG_ERROR, "BTap_Init failed");
         goto fail8;
     }
-    
+
     // remember device MTU
     device_mtu = BTap_GetMTU(&device);
-    
+
     BLog(BLOG_INFO, "device MTU is %d", device_mtu);
-    
+
     // calculate data MTU
     if (device_mtu > INT_MAX - DATAPROTO_MAX_OVERHEAD) {
         BLog(BLOG_ERROR, "Device MTU is too large");
         goto fail9;
     }
     data_mtu = DATAPROTO_MAX_OVERHEAD + device_mtu;
-    
+
     // init device input
     if (!DataProtoSource_Init(&device_dpsource, BTap_GetOutput(&device), device_dpsource_handler, NULL, &ss)) {
         BLog(BLOG_ERROR, "DataProtoSource_Init failed");
         goto fail9;
     }
-    
+
     // init device output
     if (!DPReceiveDevice_Init(&device_output_dprd, device_mtu, (DPReceiveDevice_output_func)BTap_Send, &device, &ss, options.send_buffer_relay_size, PEER_RELAY_FLOW_INACTIVITY_TIME)) {
         BLog(BLOG_ERROR, "DPReceiveDevice_Init failed");
         goto fail10;
     }
-    
+
     // init peers list
     LinkedList1_Init(&peers);
     num_peers = 0;
-    
+
     // init frame decider
     FrameDecider_Init(&frame_decider, options.max_macs, options.max_groups, options.igmp_group_membership_interval, options.igmp_last_member_query_time, &ss);
-    
+
     // init relays list
     LinkedList1_Init(&relays);
-    
+
     // init need relay list
     LinkedList1_Init(&waiting_relay_peers);
-    
+
     // start connecting to server
     if (!ServerConnection_Init(&server, &ss, &twd, server_addr, SC_KEEPALIVE_INTERVAL, SERVER_BUFFER_MIN_PACKETS, options.ssl, ssl_flags(), client_cert, client_key, server_name, NULL,
                                server_handler_error, server_handler_ready, server_handler_newclient, server_handler_endclient, server_handler_message
@@ -564,37 +564,37 @@ int main (int argc, char *argv[])
         BLog(BLOG_ERROR, "ServerConnection_Init failed");
         goto fail11;
     }
-    
+
     // set server not ready
     server_ready = 0;
-    
+
     // set no dying flow
     dying_server_flow = NULL;
-    
+
     // enter event loop
     BLog(BLOG_NOTICE, "entering event loop");
     BReactor_Exec(&ss);
-    
+
     if (server_ready) {
         // allow freeing server queue flows
         PacketPassFairQueue_PrepareFree(&server_queue);
-        
+
         // make ServerConnection stop using buffers from peers before they are freed
         ServerConnection_ReleaseBuffers(&server);
     }
-    
+
     // free peers
     LinkedList1Node *node;
     while (node = LinkedList1_GetFirst(&peers)) {
         struct peer_data *peer = UPPER_OBJECT(node, struct peer_data, list_node);
         peer_remove(peer, 1);
     }
-    
+
     // free dying server flow
     if (dying_server_flow) {
         server_flow_free(dying_server_flow);
     }
-    
+
     if (server_ready) {
         PacketPassFairQueue_Free(&server_queue);
     }
@@ -646,7 +646,7 @@ fail0:
 void terminate (void)
 {
     BLog(BLOG_NOTICE, "tearing down");
-    
+
     // exit event loop
     BReactor_Quit(&ss, 0);
 }
@@ -714,7 +714,7 @@ int parse_arguments (int argc, char *argv[])
     if (argc <= 0) {
         return 0;
     }
-    
+
     options.help = 0;
     options.version = 0;
     options.logger = LOGGER_STDOUT;
@@ -752,9 +752,9 @@ int parse_arguments (int argc, char *argv[])
     options.igmp_last_member_query_time = DEFAULT_IGMP_LAST_MEMBER_QUERY_TIME;
     options.allow_peer_talk_without_ssl = 0;
     options.max_peers = DEFAULT_MAX_PEERS;
-    
+
     int have_fragmentation_latency = 0;
-    
+
     int i;
     for (i = 1; i < argc; i++) {
         char *arg = argv[i];
@@ -1150,61 +1150,61 @@ int parse_arguments (int argc, char *argv[])
             return 0;
         }
     }
-    
+
     if (options.help || options.version) {
         return 1;
     }
-    
+
     if (options.ssl != !!options.nssdb) {
         fprintf(stderr, "False: --ssl <=> --nssdb\n");
         return 0;
     }
-    
+
     if (options.ssl != !!options.client_cert_name) {
         fprintf(stderr, "False: --ssl <=> --client-cert-name\n");
         return 0;
     }
-    
+
     if (!options.server_addr) {
         fprintf(stderr, "False: --server-addr\n");
         return 0;
     }
-    
+
     if (options.transport_mode < 0) {
         fprintf(stderr, "False: --transport-mode\n");
         return 0;
     }
-    
+
     if ((options.transport_mode == TRANSPORT_MODE_UDP) != (options.encryption_mode >= 0)) {
         fprintf(stderr, "False: UDP <=> --encryption-mode\n");
         return 0;
     }
-    
+
     if ((options.transport_mode == TRANSPORT_MODE_UDP) != (options.hash_mode >= 0)) {
         fprintf(stderr, "False: UDP <=> --hash-mode\n");
         return 0;
     }
-    
+
     if (!(!(options.otp_mode != SPPROTO_OTP_MODE_NONE) || (options.transport_mode == TRANSPORT_MODE_UDP))) {
         fprintf(stderr, "False: --otp => UDP\n");
         return 0;
     }
-    
+
     if (!(!have_fragmentation_latency || (options.transport_mode == TRANSPORT_MODE_UDP))) {
         fprintf(stderr, "False: --fragmentation-latency => UDP\n");
         return 0;
     }
-    
+
     if (!(!options.peer_ssl || (options.ssl && options.transport_mode == TRANSPORT_MODE_TCP))) {
         fprintf(stderr, "False: --peer-ssl => (--ssl && TCP)\n");
         return 0;
     }
-    
+
     if (!(!(options.peer_tcp_socket_sndbuf >= 0) || options.transport_mode == TRANSPORT_MODE_TCP)) {
         fprintf(stderr, "False: --peer-tcp-socket-sndbuf => TCP\n");
         return 0;
     }
-    
+
     return 1;
 }
 
@@ -1216,7 +1216,7 @@ int process_arguments (void)
         BLog(BLOG_ERROR, "server addr: BAddr_Parse failed");
         return 0;
     }
-    
+
     // override server name if requested
     if (options.server_name) {
         if (strlen(options.server_name) >= sizeof(server_name)) {
@@ -1225,19 +1225,19 @@ int process_arguments (void)
         }
         strcpy(server_name, options.server_name);
     }
-    
+
     // resolve bind addresses and external addresses
     num_bind_addrs = 0;
     for (int i = 0; i < options.num_bind_addrs; i++) {
         struct bind_addr_option *addr = &options.bind_addrs[i];
         struct bind_addr *out = &bind_addrs[num_bind_addrs];
-        
+
         // read addr
         if (!BAddr_Parse(&out->addr, addr->addr, NULL, 0)) {
             BLog(BLOG_ERROR, "bind addr: BAddr_Parse failed");
             return 0;
         }
-        
+
         // read num ports
         if (options.transport_mode == TRANSPORT_MODE_UDP) {
             if (addr->num_ports < 0) {
@@ -1250,13 +1250,13 @@ int process_arguments (void)
             BLog(BLOG_ERROR, "bind addr: num ports given, but not using UDP");
             return 0;
         }
-        
+
         // read ext addrs
         out->num_ext_addrs = 0;
         for (int j = 0; j < addr->num_ext_addrs; j++) {
             struct ext_addr_option *eaddr = &addr->ext_addrs[j];
             struct ext_addr *eout = &out->ext_addrs[out->num_ext_addrs];
-            
+
             // read addr
             if (string_begins_with(eaddr->addr, "{server_reported}:")) {
                 char *colon = strstr(eaddr->addr, ":");
@@ -1275,20 +1275,20 @@ int process_arguments (void)
                     return 0;
                 }
             }
-            
+
             // read scope
             if (strlen(eaddr->scope) >= sizeof(eout->scope)) {
                 BLog(BLOG_ERROR, "ext addr: too long");
                 return 0;
             }
             strcpy(eout->scope, eaddr->scope);
-            
+
             out->num_ext_addrs++;
         }
-        
+
         num_bind_addrs++;
     }
-    
+
     // initialize SPProto parameters
     if (options.transport_mode == TRANSPORT_MODE_UDP) {
         sp_params.encryption_mode = options.encryption_mode;
@@ -1298,7 +1298,7 @@ int process_arguments (void)
             sp_params.otp_num = options.otp_num;
         }
     }
-    
+
     return 1;
 }
 
@@ -1317,7 +1317,7 @@ int ssl_flags (void)
 void signal_handler (void *unused)
 {
     BLog(BLOG_NOTICE, "termination requested");
-    
+
     terminate();
 }
 
@@ -1329,35 +1329,35 @@ void peer_add (peerid_t id, int flags, const uint8_t *cert, int cert_len)
     ASSERT(id != my_id)
     ASSERT(cert_len >= 0)
     ASSERT(cert_len <= SCID_NEWCLIENT_MAX_CERT_LEN)
-    
+
     // allocate structure
     struct peer_data *peer = (struct peer_data *)malloc(sizeof(*peer));
     if (!peer) {
         BLog(BLOG_ERROR, "peer %d: failed to allocate memory", (int)id);
         goto fail0;
     }
-    
+
     // remember id
     peer->id = id;
-    
+
     // remember flags
     peer->flags = flags;
-    
+
     // set no common name
     peer->common_name = NULL;
-    
+
     if (options.ssl) {
         // remember certificate
         memcpy(peer->cert, cert, cert_len);
         peer->cert_len = cert_len;
-        
+
         // make sure that CERT_DecodeCertFromPackage will interpretet the input as raw DER and not base64,
         // in which case following workaroud wouldn't help
         if (!(cert_len > 0 && (cert[0] & 0x1f) == 0x10)) {
             peer_log(peer, BLOG_ERROR, "certificate does not look like DER");
             goto fail1;
         }
-        
+
         // copy the certificate and append it a good load of zero bytes,
         // hopefully preventing the crappy CERT_DecodeCertFromPackage from crashing
         // by reading past the of its input
@@ -1368,7 +1368,7 @@ void peer_add (peerid_t id, int flags, const uint8_t *cert, int cert_len)
         }
         memcpy(certbuf, cert, cert_len);
         memset(certbuf + cert_len, 0, 100);
-        
+
         // decode certificate, so we can extract the common name
         CERTCertificate *nsscert = CERT_DecodeCertFromPackage((char *)certbuf, cert_len);
         if (!nsscert) {
@@ -1376,45 +1376,45 @@ void peer_add (peerid_t id, int flags, const uint8_t *cert, int cert_len)
             free(certbuf);
             goto fail1;
         }
-        
+
         free(certbuf);
-        
+
         // remember common name
         if (!(peer->common_name = CERT_GetCommonName(&nsscert->subject))) {
             peer_log(peer, BLOG_ERROR, "CERT_GetCommonName failed");
             CERT_DestroyCertificate(nsscert);
             goto fail1;
         }
-        
+
         CERT_DestroyCertificate(nsscert);
     }
-    
+
     // init and set init job (must be before initing server flow so we can send)
     BPending_Init(&peer->job_init, BReactor_PendingGroup(&ss), (BPending_handler)peer_job_init, peer);
     BPending_Set(&peer->job_init);
-    
+
     // init server flow
     if (!(peer->server_flow = server_flow_init())) {
         peer_log(peer, BLOG_ERROR, "server_flow_init failed");
         goto fail2;
     }
-    
+
     if ((peer->flags & SCID_NEWCLIENT_FLAG_SSL) && !options.ssl) {
         peer_log(peer, BLOG_ERROR, "peer requires talking with SSL, but we're not using SSL!?");
         goto fail3;
     }
-    
+
     if (options.ssl && !(peer->flags & SCID_NEWCLIENT_FLAG_SSL) && !options.allow_peer_talk_without_ssl) {
         peer_log(peer, BLOG_ERROR, "peer requires talking without SSL, but we don't allow that");
         goto fail3;
     }
-    
+
     // choose chat SSL mode
     int chat_ssl_mode = PEERCHAT_SSL_NONE;
     if ((peer->flags & SCID_NEWCLIENT_FLAG_SSL)) {
         chat_ssl_mode = (peer_am_master(peer) ? PEERCHAT_SSL_SERVER : PEERCHAT_SSL_CLIENT);
     }
-    
+
     // init chat
     if (!PeerChat_Init(&peer->chat, peer->id, chat_ssl_mode, ssl_flags(), client_cert, client_key, peer->cert, peer->cert_len, BReactor_PendingGroup(&ss), &twd, peer,
         (BLog_logfunc)peer_logfunc,
@@ -1424,56 +1424,56 @@ void peer_add (peerid_t id, int flags, const uint8_t *cert, int cert_len)
         peer_log(peer, BLOG_ERROR, "PeerChat_Init failed");
         goto fail3;
     }
-    
+
     // set no message
     peer->chat_send_msg_len = -1;
-    
+
     // connect server flow to chat
     server_flow_connect(peer->server_flow, PeerChat_GetSendOutput(&peer->chat));
-    
+
     // set have chat
     peer->have_chat = 1;
-    
+
     // set have no resetpeer
     peer->have_resetpeer = 0;
-    
+
     // init local flow
     if (!DataProtoFlow_Init(&peer->local_dpflow, &device_dpsource, my_id, peer->id, options.send_buffer_size, -1, NULL, NULL)) {
         peer_log(peer, BLOG_ERROR, "DataProtoFlow_Init failed");
         goto fail4;
     }
-    
+
     // init frame decider peer
     if (!FrameDeciderPeer_Init(&peer->decider_peer, &frame_decider, peer, (BLog_logfunc)peer_logfunc)) {
         peer_log(peer, BLOG_ERROR, "FrameDeciderPeer_Init failed");
         goto fail5;
     }
-    
+
     // init receive peer
     DPReceivePeer_Init(&peer->receive_peer, &device_output_dprd, peer->id, &peer->decider_peer, !!(peer->flags & SCID_NEWCLIENT_FLAG_RELAY_CLIENT));
-    
+
     // have no link
     peer->have_link = 0;
-    
+
     // have no relaying
     peer->relaying_peer = NULL;
-    
+
     // not waiting for relay
     peer->waiting_relay = 0;
-    
+
     // init reset timer
     BTimer_Init(&peer->reset_timer, PEER_RETRY_TIME, (BTimer_handler)peer_reset_timer_handler, peer);
-    
+
     // is not relay server
     peer->is_relay = 0;
-    
+
     // init binding
     peer->binding = 0;
-    
+
     // add to peers list
     LinkedList1_Append(&peers, &peer->list_node);
     num_peers++;
-    
+
     switch (chat_ssl_mode) {
         case PEERCHAT_SSL_NONE:
             peer_log(peer, BLOG_INFO, "initialized; talking to peer in plaintext mode");
@@ -1485,9 +1485,9 @@ void peer_add (peerid_t id, int flags, const uint8_t *cert, int cert_len)
             peer_log(peer, BLOG_INFO, "initialized; talking to peer in SSL server mode");
             break;
     }
-    
+
     return;
-    
+
 fail5:
     DataProtoFlow_Free(&peer->local_dpflow);
 fail4:
@@ -1509,60 +1509,60 @@ fail0:
 void peer_remove (struct peer_data *peer, int exiting)
 {
     peer_log(peer, BLOG_INFO, "removing");
-    
+
     // cleanup connections
     peer_cleanup_connections(peer);
-    
+
     ASSERT(!peer->have_link)
     ASSERT(!peer->relaying_peer)
     ASSERT(!peer->waiting_relay)
     ASSERT(!peer->is_relay)
-    
+
     // remove from peers list
     LinkedList1_Remove(&peers, &peer->list_node);
     num_peers--;
-    
+
     // free reset timer
     BReactor_RemoveTimer(&ss, &peer->reset_timer);
-    
+
     // free receive peer
     DPReceivePeer_Free(&peer->receive_peer);
-    
+
     // free frame decider
     FrameDeciderPeer_Free(&peer->decider_peer);
-    
+
     // free local flow
     DataProtoFlow_Free(&peer->local_dpflow);
-    
+
     // free chat
     if (peer->have_chat) {
         peer_free_chat(peer);
     }
-    
+
     // free resetpeer
     if (peer->have_resetpeer) {
         // disconnect resetpeer source from server flow
         server_flow_disconnect(peer->server_flow);
-        
+
         // free resetpeer source
         SinglePacketSource_Free(&peer->resetpeer_source);
     }
-    
+
     // free/die server flow
     if (exiting || !PacketPassFairQueueFlow_IsBusy(&peer->server_flow->qflow)) {
         server_flow_free(peer->server_flow);
     } else {
         server_flow_die(peer->server_flow);
     }
-    
+
     // free jobs
     BPending_Free(&peer->job_init);
-    
+
     // free common name
     if (peer->common_name) {
         PORT_Free(peer->common_name);
     }
-    
+
     // free peer structure
     free(peer);
 }
@@ -1592,13 +1592,13 @@ int peer_am_master (struct peer_data *peer)
 void peer_free_chat (struct peer_data *peer)
 {
     ASSERT(peer->have_chat)
-    
+
     // disconnect chat from server flow
     server_flow_disconnect(peer->server_flow);
-    
+
     // free chat
     PeerChat_Free(&peer->chat);
-    
+
     // set have no chat
     peer->have_chat = 0;
 }
@@ -1608,13 +1608,13 @@ int peer_init_link (struct peer_data *peer)
     ASSERT(!peer->have_link)
     ASSERT(!peer->relaying_peer)
     ASSERT(!peer->waiting_relay)
-    
+
     ASSERT(!peer->is_relay)
-    
+
     // init receive receiver
     DPReceiveReceiver_Init(&peer->receive_receiver, &peer->receive_peer);
     PacketPassInterface *recv_if = DPReceiveReceiver_GetInput(&peer->receive_receiver);
-    
+
     // init transport-specific link objects
     PacketPassInterface *link_if;
     if (options.transport_mode == TRANSPORT_MODE_UDP) {
@@ -1631,16 +1631,16 @@ int peer_init_link (struct peer_data *peer)
             peer_log(peer, BLOG_ERROR, "DatagramPeerIO_Init failed");
             goto fail1;
         }
-        
+
         if (SPPROTO_HAVE_OTP(sp_params)) {
             // init send seed state
             peer->pio.udp.sendseed_nextid = 0;
             peer->pio.udp.sendseed_sent = 0;
-            
+
             // init send seed job
             BPending_Init(&peer->pio.udp.job_send_seed, BReactor_PendingGroup(&ss), (BPending_handler)peer_job_send_seed, peer);
         }
-        
+
         link_if = DatagramPeerIO_GetSendInput(&peer->pio.udp.pio);
     } else {
         // init StreamPeerIO
@@ -1657,27 +1657,27 @@ int peer_init_link (struct peer_data *peer)
             peer_log(peer, BLOG_ERROR, "StreamPeerIO_Init failed");
             goto fail1;
         }
-        
+
         link_if = StreamPeerIO_GetSendInput(&peer->pio.tcp.pio);
     }
-    
+
     // init sending
     if (!DataProtoSink_Init(&peer->send_dp, &ss, link_if, PEER_KEEPALIVE_INTERVAL, PEER_KEEPALIVE_RECEIVE_TIMER, (DataProtoSink_handler)peer_dataproto_handler, peer)) {
         peer_log(peer, BLOG_ERROR, "DataProto_Init failed");
         goto fail2;
     }
-    
+
     // attach local flow to our DataProtoSink
     DataProtoFlow_Attach(&peer->local_dpflow, &peer->send_dp);
-    
+
     // attach receive peer to our DataProtoSink
     DPReceivePeer_AttachSink(&peer->receive_peer, &peer->send_dp);
-    
+
     // set have link
     peer->have_link = 1;
-    
+
     return 1;
-    
+
 fail2:
     if (options.transport_mode == TRANSPORT_MODE_UDP) {
         if (SPPROTO_HAVE_OTP(sp_params)) {
@@ -1696,19 +1696,19 @@ void peer_free_link (struct peer_data *peer)
 {
     ASSERT(peer->have_link)
     ASSERT(!peer->is_relay)
-    
+
     ASSERT(!peer->relaying_peer)
     ASSERT(!peer->waiting_relay)
-    
+
     // detach receive peer from our DataProtoSink
     DPReceivePeer_DetachSink(&peer->receive_peer);
-    
+
     // detach local flow from our DataProtoSink
     DataProtoFlow_Detach(&peer->local_dpflow);
-    
+
     // free sending
     DataProtoSink_Free(&peer->send_dp);
-    
+
     // free transport-specific link objects
     if (options.transport_mode == TRANSPORT_MODE_UDP) {
         if (SPPROTO_HAVE_OTP(sp_params)) {
@@ -1718,10 +1718,10 @@ void peer_free_link (struct peer_data *peer)
     } else {
         StreamPeerIO_Free(&peer->pio.tcp.pio);
     }
-    
+
     // free receive receiver
     DPReceiveReceiver_Free(&peer->receive_receiver);
-    
+
     // set have no link
     peer->have_link = 0;
 }
@@ -1740,7 +1740,7 @@ void peer_cleanup_connections (struct peer_data *peer)
     else if (peer->waiting_relay) {
         peer_unregister_need_relay(peer);
     }
-    
+
     ASSERT(!peer->have_link)
     ASSERT(!peer->relaying_peer)
     ASSERT(!peer->waiting_relay)
@@ -1751,19 +1751,19 @@ void peer_enable_relay_provider (struct peer_data *peer)
 {
     ASSERT(peer->have_link)
     ASSERT(!peer->is_relay)
-    
+
     ASSERT(!peer->relaying_peer)
     ASSERT(!peer->waiting_relay)
-    
+
     // add to relays list
     LinkedList1_Append(&relays, &peer->relay_list_node);
-    
+
     // init users list
     LinkedList1_Init(&peer->relay_users);
-    
+
     // set is relay
     peer->is_relay = 1;
-    
+
     // assign relays
     assign_relays();
 }
@@ -1771,30 +1771,30 @@ void peer_enable_relay_provider (struct peer_data *peer)
 void peer_disable_relay_provider (struct peer_data *peer)
 {
     ASSERT(peer->is_relay)
-    
+
     ASSERT(peer->have_link)
     ASSERT(!peer->relaying_peer)
     ASSERT(!peer->waiting_relay)
-    
+
     // disconnect relay users
     LinkedList1Node *list_node;
     while (list_node = LinkedList1_GetFirst(&peer->relay_users)) {
         struct peer_data *relay_user = UPPER_OBJECT(list_node, struct peer_data, relaying_list_node);
         ASSERT(relay_user->relaying_peer == peer)
-        
+
         // disconnect relay user
         peer_free_relaying(relay_user);
-        
+
         // add it to need relay list
         peer_register_need_relay(relay_user);
     }
-    
+
     // remove from relays list
     LinkedList1_Remove(&relays, &peer->relay_list_node);
-    
+
     // set is not relay
     peer->is_relay = 0;
-    
+
     // assign relays
     assign_relays();
 }
@@ -1805,18 +1805,18 @@ void peer_install_relaying (struct peer_data *peer, struct peer_data *relay)
     ASSERT(!peer->have_link)
     ASSERT(!peer->waiting_relay)
     ASSERT(relay->is_relay)
-    
+
     ASSERT(!peer->is_relay)
     ASSERT(relay->have_link)
-    
+
     peer_log(peer, BLOG_INFO, "installing relaying through %d", (int)relay->id);
-    
+
     // add to relay's users list
     LinkedList1_Append(&relay->relay_users, &peer->relaying_list_node);
-    
+
     // attach local flow to relay
     DataProtoFlow_Attach(&peer->local_dpflow, &relay->send_dp);
-    
+
     // set relaying
     peer->relaying_peer = relay;
 }
@@ -1824,22 +1824,22 @@ void peer_install_relaying (struct peer_data *peer, struct peer_data *relay)
 void peer_free_relaying (struct peer_data *peer)
 {
     ASSERT(peer->relaying_peer)
-    
+
     ASSERT(!peer->have_link)
     ASSERT(!peer->waiting_relay)
-    
+
     struct peer_data *relay = peer->relaying_peer;
     ASSERT(relay->is_relay)
     ASSERT(relay->have_link)
-    
+
     peer_log(peer, BLOG_INFO, "uninstalling relaying through %d", (int)relay->id);
-    
+
     // detach local flow from relay
     DataProtoFlow_Detach(&peer->local_dpflow);
-    
+
     // remove from relay's users list
     LinkedList1_Remove(&relay->relay_users, &peer->relaying_list_node);
-    
+
     // set not relaying
     peer->relaying_peer = NULL;
 }
@@ -1847,22 +1847,22 @@ void peer_free_relaying (struct peer_data *peer)
 void peer_need_relay (struct peer_data *peer)
 {
     ASSERT(!peer->is_relay)
-    
+
     if (peer->waiting_relay) {
         // already waiting for relay, do nothing
         return;
     }
-    
+
     if (peer->have_link) {
         peer_free_link(peer);
     }
     else if (peer->relaying_peer) {
         peer_free_relaying(peer);
     }
-    
+
     // register the peer as needing a relay
     peer_register_need_relay(peer);
-    
+
     // assign relays
     assign_relays();
 }
@@ -1872,12 +1872,12 @@ void peer_register_need_relay (struct peer_data *peer)
     ASSERT(!peer->waiting_relay)
     ASSERT(!peer->have_link)
     ASSERT(!peer->relaying_peer)
-    
+
     ASSERT(!peer->is_relay)
-    
+
     // add to need relay list
     LinkedList1_Append(&waiting_relay_peers, &peer->waiting_relay_list_node);
-    
+
     // set waiting relay
     peer->waiting_relay = 1;
 }
@@ -1885,14 +1885,14 @@ void peer_register_need_relay (struct peer_data *peer)
 void peer_unregister_need_relay (struct peer_data *peer)
 {
     ASSERT(peer->waiting_relay)
-    
+
     ASSERT(!peer->have_link)
     ASSERT(!peer->relaying_peer)
     ASSERT(!peer->is_relay)
-    
+
     // remove from need relay list
     LinkedList1_Remove(&waiting_relay_peers, &peer->waiting_relay_list_node);
-    
+
     // set not waiting relay
     peer->waiting_relay = 0;
 }
@@ -1900,10 +1900,10 @@ void peer_unregister_need_relay (struct peer_data *peer)
 void peer_reset (struct peer_data *peer)
 {
     peer_log(peer, BLOG_NOTICE, "resetting");
-    
+
     // cleanup connections
     peer_cleanup_connections(peer);
-    
+
     if (peer_am_master(peer)) {
         // if we're the master, schedule retry
         BReactor_SetTimer(&ss, &peer->reset_timer);
@@ -1917,10 +1917,10 @@ void peer_resetpeer (struct peer_data *peer)
 {
     ASSERT(peer->have_chat)
     ASSERT(!peer->have_resetpeer)
-    
+
     // free chat
     peer_free_chat(peer);
-    
+
     // build resetpeer packet
     struct packetproto_header pp_header;
     struct sc_header sc_header;
@@ -1931,13 +1931,13 @@ void peer_resetpeer (struct peer_data *peer)
     memcpy(peer->resetpeer_packet, &pp_header, sizeof(pp_header));
     memcpy(peer->resetpeer_packet + sizeof(pp_header), &sc_header, sizeof(sc_header));
     memcpy(peer->resetpeer_packet + sizeof(pp_header) + sizeof(sc_header), &sc_resetpeer, sizeof(sc_resetpeer));
-    
+
     // init resetpeer sourse
     SinglePacketSource_Init(&peer->resetpeer_source, peer->resetpeer_packet, sizeof(peer->resetpeer_packet), BReactor_PendingGroup(&ss));
-    
+
     // connect server flow to resetpeer source
     server_flow_connect(peer->server_flow, SinglePacketSource_GetOutput(&peer->resetpeer_source));
-    
+
     // set have resetpeer
     peer->have_resetpeer = 1;
 }
@@ -1946,9 +1946,9 @@ void peer_chat_handler_error (struct peer_data *peer)
 {
     ASSERT(peer->have_chat)
     ASSERT(!peer->have_resetpeer)
-    
+
     peer_log(peer, BLOG_ERROR, "chat error, sending resetpeer");
-    
+
     peer_resetpeer(peer);
 }
 
@@ -1957,21 +1957,21 @@ void peer_chat_handler_message (struct peer_data *peer, uint8_t *data, int data_
     ASSERT(peer->have_chat)
     ASSERT(data_len >= 0)
     ASSERT(data_len <= SC_MAX_MSGLEN)
-    
+
     // parse message
     msgParser parser;
     if (!msgParser_Init(&parser, data, data_len)) {
         peer_log(peer, BLOG_NOTICE, "msg: failed to parse");
         return;
     }
-    
+
     // read message
     uint16_t type = 0; // to remove warning
     ASSERT_EXECUTE(msgParser_Gettype(&parser, &type))
     uint8_t *payload = NULL; // to remove warning
     int payload_len = 0; // to remove warning
     ASSERT_EXECUTE(msgParser_Getpayload(&parser, &payload, &payload_len))
-    
+
     // dispatch according to message type
     switch (type) {
         case MSGID_YOUCONNECT:
@@ -2006,7 +2006,7 @@ void peer_msg_youconnect (struct peer_data *peer, uint8_t *data, int data_len)
         peer_log(peer, BLOG_WARNING, "msg_youconnect: failed to parse");
         return;
     }
-    
+
     // try addresses
     BAddr addr;
     while (1) {
@@ -2018,14 +2018,14 @@ void peer_msg_youconnect (struct peer_data *peer, uint8_t *data, int data_len)
             peer_send_simple(peer, MSGID_CANNOTCONNECT);
             return;
         }
-        
+
         // parse address message
         msg_youconnect_addrParser aparser;
         if (!msg_youconnect_addrParser_Init(&aparser, addrmsg_data, addrmsg_len)) {
             peer_log(peer, BLOG_WARNING, "msg_youconnect: failed to parse address message");
             return;
         }
-        
+
         // check if the address scope is known
         uint8_t *name_data = NULL; // to remove warning
         int name_len = 0; // to remove warning
@@ -2034,7 +2034,7 @@ void peer_msg_youconnect (struct peer_data *peer, uint8_t *data, int data_len)
         if (!(name = address_scope_known(name_data, name_len))) {
             continue;
         }
-        
+
         // read address
         uint8_t *addr_data = NULL; // to remove warning
         int addr_len = 0; // to remove warning
@@ -2043,17 +2043,17 @@ void peer_msg_youconnect (struct peer_data *peer, uint8_t *data, int data_len)
             peer_log(peer, BLOG_WARNING, "msg_youconnect: failed to read address");
             continue;
         }
-        
+
         peer_log(peer, BLOG_NOTICE, "msg_youconnect: using address in scope '%s'", name);
         break;
     }
-    
+
     // discard further addresses
     msg_youconnectParser_Forwardaddr(&parser);
-    
+
     uint8_t *key = NULL;
     uint64_t password = 0;
-    
+
     // read additonal parameters
     if (options.transport_mode == TRANSPORT_MODE_UDP) {
         if (SPPROTO_HAVE_ENCRYPTION(sp_params)) {
@@ -2073,14 +2073,14 @@ void peer_msg_youconnect (struct peer_data *peer, uint8_t *data, int data_len)
             return;
         }
     }
-    
+
     if (!msg_youconnectParser_GotEverything(&parser)) {
         peer_log(peer, BLOG_WARNING, "msg_youconnect: stray data");
         return;
     }
-    
+
     peer_log(peer, BLOG_INFO, "connecting");
-    
+
     peer_connect(peer, addr, key, password);
 }
 
@@ -2090,14 +2090,14 @@ void peer_msg_cannotconnect (struct peer_data *peer, uint8_t *data, int data_len
         peer_log(peer, BLOG_WARNING, "msg_cannotconnect: invalid length");
         return;
     }
-    
+
     if (!peer->binding) {
         peer_log(peer, BLOG_WARNING, "msg_cannotconnect: not binding");
         return;
     }
-    
+
     peer_log(peer, BLOG_INFO, "peer could not connect");
-    
+
     // continue trying bind addresses
     peer_bind(peer);
     return;
@@ -2109,9 +2109,9 @@ void peer_msg_cannotbind (struct peer_data *peer, uint8_t *data, int data_len)
         peer_log(peer, BLOG_WARNING, "msg_cannotbind: invalid length");
         return;
     }
-    
+
     peer_log(peer, BLOG_INFO, "peer cannot bind");
-    
+
     if (!peer_am_master(peer)) {
         peer_start_binding(peer);
     } else {
@@ -2128,7 +2128,7 @@ void peer_msg_seed (struct peer_data *peer, uint8_t *data, int data_len)
         peer_log(peer, BLOG_WARNING, "msg_seed: failed to parse");
         return;
     }
-    
+
     // read message
     uint16_t seed_id = 0; // to remove warning
     ASSERT_EXECUTE(msg_seedParser_Getseed_id(&parser, &seed_id))
@@ -2138,37 +2138,37 @@ void peer_msg_seed (struct peer_data *peer, uint8_t *data, int data_len)
     uint8_t *iv = NULL; // to remove warning
     int iv_len = 0; // to remove warning
     ASSERT_EXECUTE(msg_seedParser_Getiv(&parser, &iv, &iv_len))
-    
+
     if (options.transport_mode != TRANSPORT_MODE_UDP) {
         peer_log(peer, BLOG_WARNING, "msg_seed: not in UDP mode");
         return;
     }
-    
+
     if (!SPPROTO_HAVE_OTP(sp_params)) {
         peer_log(peer, BLOG_WARNING, "msg_seed: OTPs disabled");
         return;
     }
-    
+
     if (key_len != BEncryption_cipher_key_size(sp_params.otp_mode)) {
         peer_log(peer, BLOG_WARNING, "msg_seed: wrong key length");
         return;
     }
-    
+
     if (iv_len != BEncryption_cipher_block_size(sp_params.otp_mode)) {
         peer_log(peer, BLOG_WARNING, "msg_seed: wrong IV length");
         return;
     }
-    
+
     if (!peer->have_link) {
         peer_log(peer, BLOG_WARNING, "msg_seed: have no link");
         return;
     }
-    
+
     peer_log(peer, BLOG_DEBUG, "received OTP receive seed");
-    
+
     // add receive seed
     DatagramPeerIO_AddOTPRecvSeed(&peer->pio.udp.pio, seed_id, key, iv);
-    
+
     // remember seed ID so we can confirm it from peer_udp_pio_handler_seed_ready
     peer->pio.udp.pending_recvseed_id = seed_id;
 }
@@ -2180,41 +2180,41 @@ void peer_msg_confirmseed (struct peer_data *peer, uint8_t *data, int data_len)
         peer_log(peer, BLOG_WARNING, "msg_confirmseed: failed to parse");
         return;
     }
-    
+
     // read message
     uint16_t seed_id = 0; // to remove warning
     ASSERT_EXECUTE(msg_confirmseedParser_Getseed_id(&parser, &seed_id))
-    
+
     if (options.transport_mode != TRANSPORT_MODE_UDP) {
         peer_log(peer, BLOG_WARNING, "msg_confirmseed: not in UDP mode");
         return;
     }
-    
+
     if (!SPPROTO_HAVE_OTP(sp_params)) {
         peer_log(peer, BLOG_WARNING, "msg_confirmseed: OTPs disabled");
         return;
     }
-    
+
     if (!peer->have_link) {
         peer_log(peer, BLOG_WARNING, "msg_confirmseed: have no link");
         return;
     }
-    
+
     if (!peer->pio.udp.sendseed_sent) {
         peer_log(peer, BLOG_WARNING, "msg_confirmseed: no seed has been sent");
         return;
     }
-    
+
     if (seed_id != peer->pio.udp.sendseed_sent_id) {
         peer_log(peer, BLOG_WARNING, "msg_confirmseed: invalid seed: expecting %d, received %d", (int)peer->pio.udp.sendseed_sent_id, (int)seed_id);
         return;
     }
-    
+
     peer_log(peer, BLOG_DEBUG, "OTP send seed confirmed");
-    
+
     // no longer waiting for confirmation
     peer->pio.udp.sendseed_sent = 0;
-    
+
     // start using the seed
     DatagramPeerIO_SetOTPSendSeed(&peer->pio.udp.pio, peer->pio.udp.sendseed_sent_id, peer->pio.udp.sendseed_sent_key, peer->pio.udp.sendseed_sent_iv);
 }
@@ -2225,14 +2225,14 @@ void peer_msg_youretry (struct peer_data *peer, uint8_t *data, int data_len)
         peer_log(peer, BLOG_WARNING, "msg_youretry: invalid length");
         return;
     }
-    
+
     if (!peer_am_master(peer)) {
         peer_log(peer, BLOG_WARNING, "msg_youretry: we are not master");
         return;
     }
-    
+
     peer_log(peer, BLOG_NOTICE, "requests reset");
-    
+
     peer_reset(peer);
 }
 
@@ -2241,7 +2241,7 @@ void peer_udp_pio_handler_seed_warning (struct peer_data *peer)
     ASSERT(options.transport_mode == TRANSPORT_MODE_UDP)
     ASSERT(SPPROTO_HAVE_OTP(sp_params))
     ASSERT(peer->have_link)
-    
+
     // generate and send a new seed
     if (!peer->pio.udp.sendseed_sent) {
         BPending_Set(&peer->pio.udp.job_send_seed);
@@ -2253,7 +2253,7 @@ void peer_udp_pio_handler_seed_ready (struct peer_data *peer)
     ASSERT(options.transport_mode == TRANSPORT_MODE_UDP)
     ASSERT(SPPROTO_HAVE_OTP(sp_params))
     ASSERT(peer->have_link)
-    
+
     // send confirmation
     peer_send_confirmseed(peer, peer->pio.udp.pending_recvseed_id);
 }
@@ -2262,9 +2262,9 @@ void peer_udp_pio_handler_error (struct peer_data *peer)
 {
     ASSERT(options.transport_mode == TRANSPORT_MODE_UDP)
     ASSERT(peer->have_link)
-    
+
     peer_log(peer, BLOG_NOTICE, "UDP connection failed");
-    
+
     peer_reset(peer);
     return;
 }
@@ -2273,9 +2273,9 @@ void peer_tcp_pio_handler_error (struct peer_data *peer)
 {
     ASSERT(options.transport_mode == TRANSPORT_MODE_TCP)
     ASSERT(peer->have_link)
-    
+
     peer_log(peer, BLOG_NOTICE, "TCP connection failed");
-    
+
     peer_reset(peer);
     return;
 }
@@ -2283,9 +2283,9 @@ void peer_tcp_pio_handler_error (struct peer_data *peer)
 void peer_reset_timer_handler (struct peer_data *peer)
 {
     ASSERT(peer_am_master(peer))
-    
+
     BLog(BLOG_NOTICE, "retry timer expired");
-    
+
     // start setup process
     peer_start_binding(peer);
 }
@@ -2294,7 +2294,7 @@ void peer_start_binding (struct peer_data *peer)
 {
     peer->binding = 1;
     peer->binding_addrpos = 0;
-    
+
     peer_bind(peer);
 }
 
@@ -2303,34 +2303,34 @@ void peer_bind (struct peer_data *peer)
     ASSERT(peer->binding)
     ASSERT(peer->binding_addrpos >= 0)
     ASSERT(peer->binding_addrpos <= num_bind_addrs)
-    
+
     while (peer->binding_addrpos < num_bind_addrs) {
         // if there are no external addresses, skip bind address
         if (bind_addrs[peer->binding_addrpos].num_ext_addrs == 0) {
             peer->binding_addrpos++;
             continue;
         }
-        
+
         // try to bind
         int cont;
         peer_bind_one_address(peer, peer->binding_addrpos, &cont);
-        
+
         // increment address counter
         peer->binding_addrpos++;
-        
+
         if (!cont) {
             return;
         }
     }
-    
+
     peer_log(peer, BLOG_NOTICE, "no more addresses to bind to");
-    
+
     // no longer binding
     peer->binding = 0;
-    
+
     // tell the peer we failed to bind
     peer_send_simple(peer, MSGID_CANNOTBIND);
-    
+
     // if we are the slave, setup relaying
     if (!peer_am_master(peer)) {
         if (!peer->is_relay) {
@@ -2344,7 +2344,7 @@ void peer_bind_one_address (struct peer_data *peer, int addr_index, int *cont)
     ASSERT(addr_index >= 0)
     ASSERT(addr_index < num_bind_addrs)
     ASSERT(bind_addrs[addr_index].num_ext_addrs > 0)
-    
+
     // get a fresh link
     peer_cleanup_connections(peer);
     if (!peer_init_link(peer)) {
@@ -2353,11 +2353,11 @@ void peer_bind_one_address (struct peer_data *peer, int addr_index, int *cont)
         peer_reset(peer);
         return;
     }
-    
+
     if (options.transport_mode == TRANSPORT_MODE_UDP) {
         // get addr
         struct bind_addr *addr = &bind_addrs[addr_index];
-        
+
         // try binding to all ports in the range
         int port_add;
         for (port_add = 0; port_add < addr->num_ports; port_add++) {
@@ -2372,33 +2372,33 @@ void peer_bind_one_address (struct peer_data *peer, int addr_index, int *cont)
             *cont = 1;
             return;
         }
-        
+
         uint8_t key[BENCRYPTION_MAX_KEY_SIZE];
-        
+
         // generate and set encryption key
         if (SPPROTO_HAVE_ENCRYPTION(sp_params)) {
             BRandom_randomize(key, BEncryption_cipher_key_size(sp_params.encryption_mode));
             DatagramPeerIO_SetEncryptionKey(&peer->pio.udp.pio, key);
         }
-        
+
         // schedule sending OTP seed
         if (SPPROTO_HAVE_OTP(sp_params)) {
             BPending_Set(&peer->pio.udp.job_send_seed);
         }
-        
+
         // send connectinfo
         peer_send_conectinfo(peer, addr_index, port_add, key, 0);
     } else {
         // order StreamPeerIO to listen
         uint64_t pass;
         StreamPeerIO_Listen(&peer->pio.tcp.pio, &listeners[addr_index], &pass);
-        
+
         // send connectinfo
         peer_send_conectinfo(peer, addr_index, 0, NULL, pass);
     }
-    
+
     peer_log(peer, BLOG_NOTICE, "bound to address number %d", addr_index);
-    
+
     *cont = 0;
 }
 
@@ -2411,7 +2411,7 @@ void peer_connect (struct peer_data *peer, BAddr addr, uint8_t* encryption_key, 
         peer_reset(peer);
         return;
     }
-    
+
     if (options.transport_mode == TRANSPORT_MODE_UDP) {
         // order DatagramPeerIO to connect
         if (!DatagramPeerIO_Connect(&peer->pio.udp.pio, addr)) {
@@ -2419,12 +2419,12 @@ void peer_connect (struct peer_data *peer, BAddr addr, uint8_t* encryption_key, 
             peer_reset(peer);
             return;
         }
-        
+
         // set encryption key
         if (SPPROTO_HAVE_ENCRYPTION(sp_params)) {
             DatagramPeerIO_SetEncryptionKey(&peer->pio.udp.pio, encryption_key);
         }
-        
+
         // generate and send a send seed
         if (SPPROTO_HAVE_OTP(sp_params)) {
             BPending_Set(&peer->pio.udp.job_send_seed);
@@ -2445,13 +2445,13 @@ static int peer_start_msg (struct peer_data *peer, void **data, int type, int le
     ASSERT(len <= MSG_MAX_PAYLOAD)
     ASSERT(!(len > 0) || data)
     ASSERT(peer->chat_send_msg_len == -1)
-    
+
     // make sure we have chat
     if (!peer->have_chat) {
         peer_log(peer, BLOG_ERROR, "cannot send message, chat is down");
         return 0;
     }
-    
+
 #ifdef SIMULATE_PEER_OUT_OF_BUFFER
     uint8_t x;
     BRandom_randomize(&x, sizeof(x));
@@ -2461,7 +2461,7 @@ static int peer_start_msg (struct peer_data *peer, void **data, int type, int le
         return 0;
     }
 #endif
-    
+
     // obtain buffer location
     uint8_t *packet;
     if (!PeerChat_StartMessage(&peer->chat, &packet)) {
@@ -2469,17 +2469,17 @@ static int peer_start_msg (struct peer_data *peer, void **data, int type, int le
         peer_resetpeer(peer);
         return 0;
     }
-    
+
     // write fields
     msgWriter writer;
     msgWriter_Init(&writer, packet);
     msgWriter_Addtype(&writer, type);
     uint8_t *payload_dst = msgWriter_Addpayload(&writer, len);
     msgWriter_Finish(&writer);
-    
+
     // set have message
     peer->chat_send_msg_len = len;
-    
+
     if (data) {
         *data = payload_dst;
     }
@@ -2490,10 +2490,10 @@ static void peer_end_msg (struct peer_data *peer)
 {
     ASSERT(peer->chat_send_msg_len >= 0)
     ASSERT(peer->have_chat)
-    
+
     // submit packet to buffer
     PeerChat_EndMessage(&peer->chat, msg_SIZEtype + msg_SIZEpayload(peer->chat_send_msg_len));
-    
+
     // set no message
     peer->chat_send_msg_len = -1;
 }
@@ -2511,19 +2511,19 @@ void peer_send_conectinfo (struct peer_data *peer, int addr_index, int port_adju
     ASSERT(addr_index >= 0)
     ASSERT(addr_index < num_bind_addrs)
     ASSERT(bind_addrs[addr_index].num_ext_addrs > 0)
-    
+
     // get address
     struct bind_addr *bind_addr = &bind_addrs[addr_index];
-    
+
     // remember encryption key size
     int key_size = 0; // to remove warning
     if (options.transport_mode == TRANSPORT_MODE_UDP && SPPROTO_HAVE_ENCRYPTION(sp_params)) {
         key_size = BEncryption_cipher_key_size(sp_params.encryption_mode);
     }
-    
+
     // calculate message length ..
     int msg_len = 0;
-    
+
     // addresses
     for (int i = 0; i < bind_addr->num_ext_addrs; i++) {
         int addrmsg_len =
@@ -2531,76 +2531,76 @@ void peer_send_conectinfo (struct peer_data *peer, int addr_index, int port_adju
             msg_youconnect_addr_SIZEaddr(addr_size(bind_addr->ext_addrs[i].addr));
         msg_len += msg_youconnect_SIZEaddr(addrmsg_len);
     }
-    
+
     // encryption key
     if (options.transport_mode == TRANSPORT_MODE_UDP && SPPROTO_HAVE_ENCRYPTION(sp_params)) {
         msg_len += msg_youconnect_SIZEkey(key_size);
     }
-    
+
     // password
     if (options.transport_mode == TRANSPORT_MODE_TCP) {
         msg_len += msg_youconnect_SIZEpassword;
     }
-    
+
     // check if it's too big (because of the addresses)
     if (msg_len > MSG_MAX_PAYLOAD) {
         BLog(BLOG_ERROR, "cannot send too big youconnect message");
         return;
     }
-        
+
     // start message
     uint8_t *msg;
     if (!peer_start_msg(peer, (void **)&msg, MSGID_YOUCONNECT, msg_len)) {
         return;
     }
-        
+
     // init writer
     msg_youconnectWriter writer;
     msg_youconnectWriter_Init(&writer, msg);
-        
+
     // write addresses
     for (int i = 0; i < bind_addr->num_ext_addrs; i++) {
         int name_len = strlen(bind_addr->ext_addrs[i].scope);
         int addr_len = addr_size(bind_addr->ext_addrs[i].addr);
-        
+
         // get a pointer for writing the address
         int addrmsg_len =
             msg_youconnect_addr_SIZEname(name_len) +
             msg_youconnect_addr_SIZEaddr(addr_len);
         uint8_t *addrmsg_dst = msg_youconnectWriter_Addaddr(&writer, addrmsg_len);
-        
+
         // init address writer
         msg_youconnect_addrWriter awriter;
         msg_youconnect_addrWriter_Init(&awriter, addrmsg_dst);
-        
+
         // write scope
         uint8_t *name_dst = msg_youconnect_addrWriter_Addname(&awriter, name_len);
         memcpy(name_dst, bind_addr->ext_addrs[i].scope, name_len);
-        
+
         // write address with adjusted port
         BAddr addr = bind_addr->ext_addrs[i].addr;
         BAddr_SetPort(&addr, hton16(ntoh16(BAddr_GetPort(&addr)) + port_adjust));
         uint8_t *addr_dst = msg_youconnect_addrWriter_Addaddr(&awriter, addr_len);
         addr_write(addr_dst, addr);
-        
+
         // finish address writer
         msg_youconnect_addrWriter_Finish(&awriter);
     }
-    
+
     // write encryption key
     if (options.transport_mode == TRANSPORT_MODE_UDP && SPPROTO_HAVE_ENCRYPTION(sp_params)) {
         uint8_t *key_dst = msg_youconnectWriter_Addkey(&writer, key_size);
         memcpy(key_dst, enckey, key_size);
     }
-    
+
     // write password
     if (options.transport_mode == TRANSPORT_MODE_TCP) {
         msg_youconnectWriter_Addpassword(&writer, pass);
     }
-    
+
     // finish writer
     msg_youconnectWriter_Finish(&writer);
-    
+
     // end message
     peer_end_msg(peer);
 }
@@ -2609,7 +2609,7 @@ void peer_send_confirmseed (struct peer_data *peer, uint16_t seed_id)
 {
     ASSERT(options.transport_mode == TRANSPORT_MODE_UDP)
     ASSERT(SPPROTO_HAVE_OTP(sp_params))
-    
+
     // send confirmation
     int msg_len = msg_confirmseed_SIZEseed_id;
     uint8_t *msg;
@@ -2626,17 +2626,17 @@ void peer_send_confirmseed (struct peer_data *peer, uint16_t seed_id)
 void peer_dataproto_handler (struct peer_data *peer, int up)
 {
     ASSERT(peer->have_link)
-    
+
     if (up) {
         peer_log(peer, BLOG_INFO, "up");
-        
+
         // if it can be a relay provided, enable it
         if ((peer->flags & SCID_NEWCLIENT_FLAG_RELAY_SERVER) && !peer->is_relay) {
             peer_enable_relay_provider(peer);
         }
     } else {
         peer_log(peer, BLOG_INFO, "down");
-        
+
         // if it is a relay provider, disable it
         if (peer->is_relay) {
             peer_disable_relay_provider(peer);
@@ -2652,14 +2652,14 @@ struct peer_data * find_peer_by_id (peerid_t id)
             return peer;
         }
     }
-    
+
     return NULL;
 }
 
 void device_error_handler (void *unused)
 {
     BLog(BLOG_ERROR, "device error");
-    
+
     terminate();
 }
 
@@ -2667,10 +2667,10 @@ void device_dpsource_handler (void *unused, const uint8_t *frame, int frame_len)
 {
     ASSERT(frame_len >= 0)
     ASSERT(frame_len <= device_mtu)
-    
+
     // give frame to decider
     FrameDecider_AnalyzeAndDecide(&frame_decider, frame, frame_len);
-    
+
     // forward frame to peers
     FrameDeciderPeer *decider_peer = FrameDecider_NextDestination(&frame_decider);
     while (decider_peer) {
@@ -2687,10 +2687,10 @@ void assign_relays (void)
     while (list_node = LinkedList1_GetFirst(&waiting_relay_peers)) {
         struct peer_data *peer = UPPER_OBJECT(list_node, struct peer_data, waiting_relay_list_node);
         ASSERT(peer->waiting_relay)
-        
+
         ASSERT(!peer->relaying_peer)
         ASSERT(!peer->have_link)
-        
+
         // get a relay
         LinkedList1Node *list_node2 = LinkedList1_GetFirst(&relays);
         if (!list_node2) {
@@ -2699,10 +2699,10 @@ void assign_relays (void)
         }
         struct peer_data *relay = UPPER_OBJECT(list_node2, struct peer_data, relay_list_node);
         ASSERT(relay->is_relay)
-        
+
         // no longer waiting for relay
         peer_unregister_need_relay(peer);
-        
+
         // install the relay
         peer_install_relaying(peer, relay);
     }
@@ -2711,30 +2711,30 @@ void assign_relays (void)
 char * address_scope_known (uint8_t *name, int name_len)
 {
     ASSERT(name_len >= 0)
-    
+
     for (int i = 0; i < options.num_scopes; i++) {
         if (name_len == strlen(options.scopes[i]) && !memcmp(name, options.scopes[i], name_len)) {
             return options.scopes[i];
         }
     }
-    
+
     return NULL;
 }
 
 void server_handler_error (void *user)
 {
     BLog(BLOG_ERROR, "server connection failed, exiting");
-    
+
     terminate();
 }
 
 void server_handler_ready (void *user, peerid_t param_my_id, uint32_t ext_ip)
 {
     ASSERT(!server_ready)
-    
+
     // remember our ID
     my_id = param_my_id;
-    
+
     // store server reported addresses
     for (int i = 0; i < num_bind_addrs; i++) {
         struct bind_addr *addr = &bind_addrs[i];
@@ -2753,20 +2753,20 @@ void server_handler_ready (void *user, peerid_t param_my_id, uint32_t ext_ip)
             }
         }
     }
-    
+
     // give receive device the ID
     DPReceiveDevice_SetPeerID(&device_output_dprd, my_id);
-    
+
     // init server queue
     if (!PacketPassFairQueue_Init(&server_queue, ServerConnection_GetSendInterface(&server), BReactor_PendingGroup(&ss), 0, 1)) {
         BLog(BLOG_ERROR, "PacketPassFairQueue_Init failed");
         terminate();
         return;
     }
-    
+
     // set server ready
     server_ready = 1;
-    
+
     BLog(BLOG_INFO, "server: ready, my ID is %d", (int)my_id);
 }
 
@@ -2775,44 +2775,44 @@ void server_handler_newclient (void *user, peerid_t peer_id, int flags, const ui
     ASSERT(server_ready)
     ASSERT(cert_len >= 0)
     ASSERT(cert_len <= SCID_NEWCLIENT_MAX_CERT_LEN)
-    
+
     // check if the peer already exists
     if (find_peer_by_id(peer_id)) {
         BLog(BLOG_WARNING, "server: newclient: peer already known");
         return;
     }
-    
+
     // make sure it's not the same ID as us
     if (peer_id == my_id) {
         BLog(BLOG_WARNING, "server: newclient: peer has our ID");
         return;
     }
-    
+
     // check if there is spece for the peer
     if (num_peers >= options.max_peers) {
         BLog(BLOG_WARNING, "server: newclient: no space for new peer (maximum number reached)");
         return;
     }
-    
+
     if (!options.ssl && cert_len > 0) {
         BLog(BLOG_WARNING, "server: newclient: certificate supplied, but not using TLS");
         return;
     }
-    
+
     peer_add(peer_id, flags, cert, cert_len);
 }
 
 void server_handler_endclient (void *user, peerid_t peer_id)
 {
     ASSERT(server_ready)
-    
+
     // find peer
     struct peer_data *peer = find_peer_by_id(peer_id);
     if (!peer) {
         BLog(BLOG_WARNING, "server: endclient: peer %d not known", (int)peer_id);
         return;
     }
-    
+
     // remove peer
     peer_remove(peer, 0);
 }
@@ -2822,20 +2822,20 @@ void server_handler_message (void *user, peerid_t peer_id, uint8_t *data, int da
     ASSERT(server_ready)
     ASSERT(data_len >= 0)
     ASSERT(data_len <= SC_MAX_MSGLEN)
-    
+
     // find peer
     struct peer_data *peer = find_peer_by_id(peer_id);
     if (!peer) {
         BLog(BLOG_WARNING, "server: message: peer not known");
         return;
     }
-    
+
     // make sure we have chat
     if (!peer->have_chat) {
         peer_log(peer, BLOG_ERROR, "cannot process message, chat is down");
         return;
     }
-    
+
     // pass message to chat
     PeerChat_InputReceived(&peer->chat, data, data_len);
 }
@@ -2846,21 +2846,21 @@ void peer_job_send_seed (struct peer_data *peer)
     ASSERT(SPPROTO_HAVE_OTP(sp_params))
     ASSERT(peer->have_link)
     ASSERT(!peer->pio.udp.sendseed_sent)
-    
+
     peer_log(peer, BLOG_DEBUG, "sending OTP send seed");
-    
+
     int key_len = BEncryption_cipher_key_size(sp_params.otp_mode);
     int iv_len = BEncryption_cipher_block_size(sp_params.otp_mode);
-    
+
     // generate seed
     peer->pio.udp.sendseed_sent_id = peer->pio.udp.sendseed_nextid;
     BRandom_randomize(peer->pio.udp.sendseed_sent_key, key_len);
     BRandom_randomize(peer->pio.udp.sendseed_sent_iv, iv_len);
-    
+
     // set as sent, increment next seed ID
     peer->pio.udp.sendseed_sent = 1;
     peer->pio.udp.sendseed_nextid++;
-    
+
     // send seed to the peer
     int msg_len = msg_seed_SIZEseed_id + msg_seed_SIZEkey(key_len) + msg_seed_SIZEiv(iv_len);
     if (msg_len > MSG_MAX_PAYLOAD) {
@@ -2893,31 +2893,31 @@ void peer_job_init (struct peer_data *peer)
 struct server_flow * server_flow_init (void)
 {
     ASSERT(server_ready)
-    
+
     // allocate structure
     struct server_flow *flow = (struct server_flow *)malloc(sizeof(*flow));
     if (!flow) {
         BLog(BLOG_ERROR, "malloc failed");
         goto fail0;
     }
-    
+
     // init queue flow
     PacketPassFairQueueFlow_Init(&flow->qflow, &server_queue);
-    
+
     // init connector
     PacketRecvConnector_Init(&flow->connector, sizeof(struct packetproto_header) + SC_MAX_ENC, BReactor_PendingGroup(&ss));
-    
+
     // init encoder buffer
     if (!SinglePacketBuffer_Init(&flow->encoder_buffer, PacketRecvConnector_GetOutput(&flow->connector), PacketPassFairQueueFlow_GetInput(&flow->qflow), BReactor_PendingGroup(&ss))) {
         BLog(BLOG_ERROR, "SinglePacketBuffer_Init failed");
         goto fail1;
     }
-    
+
     // set not connected
     flow->connected = 0;
-    
+
     return flow;
-    
+
 fail1:
     PacketRecvConnector_Free(&flow->connector);
     PacketPassFairQueueFlow_Free(&flow->qflow);
@@ -2930,21 +2930,21 @@ void server_flow_free (struct server_flow *flow)
 {
     PacketPassFairQueueFlow_AssertFree(&flow->qflow);
     ASSERT(!flow->connected)
-    
+
     // remove dying flow reference
     if (flow == dying_server_flow) {
         dying_server_flow = NULL;
     }
-    
+
     // free encoder buffer
     SinglePacketBuffer_Free(&flow->encoder_buffer);
-    
+
     // free connector
     PacketRecvConnector_Free(&flow->connector);
-    
+
     // free queue flow
     PacketPassFairQueueFlow_Free(&flow->qflow);
-    
+
     // free structure
     free(flow);
 }
@@ -2954,10 +2954,10 @@ void server_flow_die (struct server_flow *flow)
     ASSERT(PacketPassFairQueueFlow_IsBusy(&flow->qflow))
     ASSERT(!flow->connected)
     ASSERT(!dying_server_flow)
-    
+
     // request notification when flow is done
     PacketPassFairQueueFlow_SetBusyHandler(&flow->qflow, (PacketPassFairQueue_handler_busy)server_flow_qflow_handler_busy, flow);
-    
+
     // set dying flow
     dying_server_flow = flow;
 }
@@ -2967,7 +2967,7 @@ void server_flow_qflow_handler_busy (struct server_flow *flow)
     ASSERT(flow == dying_server_flow)
     ASSERT(!flow->connected)
     PacketPassFairQueueFlow_AssertFree(&flow->qflow);
-    
+
     // finally free flow
     server_flow_free(flow);
 }
@@ -2976,10 +2976,10 @@ void server_flow_connect (struct server_flow *flow, PacketRecvInterface *input)
 {
     ASSERT(!flow->connected)
     ASSERT(flow != dying_server_flow)
-    
+
     // connect input
     PacketRecvConnector_ConnectInput(&flow->connector, input);
-    
+
     // set connected
     flow->connected = 1;
 }
@@ -2988,10 +2988,10 @@ void server_flow_disconnect (struct server_flow *flow)
 {
     ASSERT(flow->connected)
     ASSERT(flow != dying_server_flow)
-    
+
     // disconnect input
     PacketRecvConnector_DisconnectInput(&flow->connector);
-    
+
     // set not connected
     flow->connected = 0;
 }

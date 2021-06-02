@@ -1,9 +1,9 @@
 /**
  * @file btimer_example.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -54,13 +54,13 @@ void handle_timer (BTimer *bt)
 int main ()
 {
     BLog_InitStdout();
-    
+
     #ifdef BADVPN_USE_WINAPI
     srand(time(NULL));
     #else
     srandom(time(NULL));
     #endif
-    
+
     // init time
     BTime_Init();
 
@@ -68,7 +68,7 @@ int main ()
         DEBUG("BReactor_Init failed");
         return 1;
     }
-    
+
     BTimer timers[TIMER_NUM];
 
     int i;
@@ -77,7 +77,7 @@ int main ()
         BTimer_Init(timer, 0, (BTimer_handler)handle_timer, timer);
         BReactor_SetTimer(&sys, timer);
     }
-    
+
     int ret = BReactor_Exec(&sys);
     BReactor_Free(&sys);
     return ret;

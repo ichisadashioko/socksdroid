@@ -1,9 +1,9 @@
 /**
  * @file if.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,15 +25,15 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Conditional module.
- * 
+ *
  * Synopsis: if(string cond)
  * Description: on initialization, transitions to UP state if cond equals "true", else
  *      remains in the DOWN state indefinitely.
- * 
+ *
  * Synopsis: ifnot(string cond)
  * Description: on initialization, transitions to UP state if cond does not equal "true", else
  *      remains in the DOWN state indefinitely.
@@ -61,17 +61,17 @@ static void new_templ (NCDModuleInst *i, const struct NCDModuleInst_new_params *
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // compute logical value of argument
     int c = ncd_read_boolean(arg);
-    
+
     // signal up if needed
     if ((is_not && !c) || (!is_not && c)) {
         NCDModuleInst_Backend_Up(i);
     }
-    
+
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }

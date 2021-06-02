@@ -2,7 +2,7 @@
 # Because pdnsd currently has a very idiosyncratic method of building documentation
 # I prefer to keep the actual build rules outside of the Makefiles an ordinary user
 # would use to compile pdnsd and therefore I have put them into separate 'doc_makefile's.
-# 
+#
 # To rebuild pdnsd docs after you have modified something that other files depend on,
 # run 'make -f doc_makefile doc' in the doc/ directory.
 # This makefile is also invoked when you build a pdnsd distribution tarball
@@ -26,7 +26,7 @@ pdnsd-ctl.8:
 	  }; \
 	}
 
-pdnsd.conf.5.in: html/doc.html html2confman.pl 
+pdnsd.conf.5.in: html/doc.html html2confman.pl
 	perl html2confman.pl $< > $@
 
 html txt:

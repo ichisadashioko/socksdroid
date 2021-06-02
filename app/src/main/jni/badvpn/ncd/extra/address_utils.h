@@ -1,9 +1,9 @@
 /**
  * @file address_utils.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -51,11 +51,11 @@ static int ncd_read_baddr (NCDValRef val, BAddr *out)
     ASSERT(!NCDVal_IsInvalid(val))
     ASSERT(NCDVal_HasOnlyContinuousStrings(val))
     ASSERT(out)
-    
+
     if (!NCDVal_IsList(val)) {
         goto fail;
     }
-    
+
     NCDValRef type_val;
     if (!NCDVal_ListReadHead(val, 1, &type_val)) {
         goto fail;
@@ -63,14 +63,14 @@ static int ncd_read_baddr (NCDValRef val, BAddr *out)
     if (!NCDVal_IsString(type_val)) {
         goto fail;
     }
-    
+
     BAddr addr;
-    
+
     if (NCDVal_StringEquals(type_val, "none")) {
         if (!NCDVal_ListRead(val, 1, &type_val)) {
             goto fail;
         }
-        
+
         addr.type = BADDR_TYPE_NONE;
     }
     else if (NCDVal_StringEquals(type_val, "ipv4")) {
@@ -82,13 +82,13 @@ static int ncd_read_baddr (NCDValRef val, BAddr *out)
         if (!NCDVal_IsString(ipaddr_val) || !NCDVal_IsString(port_val)) {
             goto fail;
         }
-        
+
         addr.type = BADDR_TYPE_IPV4;
-        
+
         if (!ipaddr_parse_ipv4_addr_bin(NCDVal_StringData(ipaddr_val), NCDVal_StringLength(ipaddr_val), &addr.ipv4.ip)) {
             goto fail;
         }
-        
+
         uintmax_t port;
         if (!ncd_read_uintmax(port_val, &port) || port > UINT16_MAX) {
             goto fail;
@@ -104,15 +104,15 @@ static int ncd_read_baddr (NCDValRef val, BAddr *out)
         if (!NCDVal_IsString(ipaddr_val) || !NCDVal_IsString(port_val)) {
             goto fail;
         }
-        
+
         addr.type = BADDR_TYPE_IPV6;
-        
+
         struct ipv6_addr i6addr;
         if (!ipaddr6_parse_ipv6_addr_bin(NCDVal_StringData(ipaddr_val), NCDVal_StringLength(ipaddr_val), &i6addr)) {
             goto fail;
         }
         memcpy(addr.ipv6.ip, i6addr.bytes, 16);
-        
+
         uintmax_t port;
         if (!ncd_read_uintmax(port_val, &port) || port > UINT16_MAX) {
             goto fail;
@@ -122,10 +122,10 @@ static int ncd_read_baddr (NCDValRef val, BAddr *out)
     else {
         goto fail;
     }
-    
+
     *out = addr;
     return 1;
-    
+
 fail:
     return 0;
 }
@@ -134,9 +134,9 @@ static NCDValRef ncd_make_baddr (BAddr addr, NCDValMem *mem)
 {
     BAddr_Assert(&addr);
     ASSERT(mem)
-    
+
     NCDValRef val;
-    
+
     switch (addr.type) {
         default:
         case BADDR_TYPE_NONE: {
@@ -144,41 +144,41 @@ static NCDValRef ncd_make_baddr (BAddr addr, NCDValMem *mem)
             if (NCDVal_IsInvalid(val)) {
                 goto fail;
             }
-            
+
             const char *str = (addr.type == BADDR_TYPE_NONE ? "none" : "unknown");
             NCDValRef type_val = NCDVal_NewString(mem, str);
             if (NCDVal_IsInvalid(type_val)) {
                 goto fail;
             }
-            
+
             if (!NCDVal_ListAppend(val, type_val)) {
                 goto fail;
             }
         } break;
-        
+
         case BADDR_TYPE_IPV4: {
             val = NCDVal_NewList(mem, 3);
             if (NCDVal_IsInvalid(val)) {
                 goto fail;
             }
-            
+
             NCDValRef type_val = NCDVal_NewString(mem, "ipv4");
             if (NCDVal_IsInvalid(type_val)) {
                 goto fail;
             }
-            
+
             char ipaddr_buf[IPADDR_PRINT_MAX];
             ipaddr_print_addr(addr.ipv4.ip, ipaddr_buf);
             NCDValRef ipaddr_val = NCDVal_NewString(mem, ipaddr_buf);
             if (NCDVal_IsInvalid(ipaddr_val)) {
                 goto fail;
             }
-            
+
             NCDValRef port_val = ncd_make_uintmax(mem, ntoh16(addr.ipv4.port));
             if (NCDVal_IsInvalid(port_val)) {
                 goto fail;
             }
-            
+
             if (!NCDVal_ListAppend(val, type_val)) {
                 goto fail;
             }
@@ -189,18 +189,18 @@ static NCDValRef ncd_make_baddr (BAddr addr, NCDValMem *mem)
                 goto fail;
             }
         } break;
-        
+
         case BADDR_TYPE_IPV6: {
             val = NCDVal_NewList(mem, 3);
             if (NCDVal_IsInvalid(val)) {
                 goto fail;
             }
-            
+
             NCDValRef type_val = NCDVal_NewString(mem, "ipv6");
             if (NCDVal_IsInvalid(type_val)) {
                 goto fail;
             }
-            
+
             char ipaddr_buf[IPADDR6_PRINT_MAX];
             struct ipv6_addr i6addr;
             memcpy(i6addr.bytes, addr.ipv6.ip, 16);
@@ -209,12 +209,12 @@ static NCDValRef ncd_make_baddr (BAddr addr, NCDValMem *mem)
             if (NCDVal_IsInvalid(ipaddr_val)) {
                 goto fail;
             }
-            
+
             NCDValRef port_val = ncd_make_uintmax(mem, ntoh16(addr.ipv6.port));
             if (NCDVal_IsInvalid(port_val)) {
                 goto fail;
             }
-            
+
             if (!NCDVal_ListAppend(val, type_val)) {
                 goto fail;
             }
@@ -226,9 +226,9 @@ static NCDValRef ncd_make_baddr (BAddr addr, NCDValMem *mem)
             }
         } break;
     }
-    
+
     return val;
-    
+
 fail:
     return NCDVal_NewInvalid();
 }
@@ -237,26 +237,26 @@ static int ncd_read_bconnection_addr (NCDValRef val, struct BConnection_addr *ou
 {
     ASSERT(!NCDVal_IsInvalid(val))
     ASSERT(NCDVal_HasOnlyContinuousStrings(val))
-    
+
     if (!NCDVal_IsList(val)) {
         goto fail;
     }
-    
+
     NCDValRef protocol_arg;
     NCDValRef data_arg;
     if (!NCDVal_ListRead(val, 2, &protocol_arg, &data_arg)) {
         goto fail;
     }
-    
+
     if (!NCDVal_IsString(protocol_arg)) {
         goto fail;
     }
-    
+
     if (NCDVal_StringEquals(protocol_arg, "unix")) {
         if (!NCDVal_IsStringNoNulls(data_arg)) {
             goto fail;
         }
-        
+
         *out_addr = BConnection_addr_unix(NCDVal_StringData(data_arg), NCDVal_StringLength(data_arg));
     }
     else if (NCDVal_StringEquals(protocol_arg, "tcp")) {
@@ -264,15 +264,15 @@ static int ncd_read_bconnection_addr (NCDValRef val, struct BConnection_addr *ou
         if (!ncd_read_baddr(data_arg, &baddr)) {
             goto fail;
         }
-        
+
         *out_addr = BConnection_addr_baddr(baddr);
     }
     else {
         goto fail;
     }
-    
+
     return 1;
-    
+
 fail:
     return 0;
 }

@@ -1,9 +1,9 @@
 /**
  * @file net_ipv6_route.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,15 +25,15 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * IPv6 route module.
- * 
+ *
  * Synopsis:
  *     net.ipv6.route(string dest, string dest_prefix, string gateway, string metric, string ifname)
  *     net.ipv6.route(string cidr_dest, string gateway, string metric, string ifname)
- * 
+ *
  * Description:
  *     Adds an IPv6 route to the system's routing table on initiailzation, and
  *     removes it on deinitialization. The second form takes the destination in
@@ -74,7 +74,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef dest_arg;
     NCDValRef dest_prefix_arg = NCDVal_NewInvalid();
@@ -94,7 +94,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // read dest
     if (NCDVal_IsInvalid(dest_prefix_arg)) {
         if (!ipaddr6_parse_ipv6_ifaddr_bin(NCDVal_StringData(dest_arg), NCDVal_StringLength(dest_arg), &o->dest)) {
@@ -111,7 +111,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
             goto fail0;
         }
     }
-    
+
     // read gateway and choose type
     if (NCDVal_StringEquals(gateway_arg, "none")) {
         o->type = TYPE_IFONLY;
@@ -125,7 +125,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         }
         o->type = TYPE_NORMAL;
     }
-    
+
     // read metric
     uintmax_t metric;
     if (!ncd_read_uintmax(metric_arg, &metric) || metric > INT_MAX) {
@@ -133,13 +133,13 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         goto fail0;
     }
     o->metric = metric;
-    
+
     // null terminate ifname
     if (!NCDVal_StringNullTerminate(ifname_arg, &o->ifname_nts)) {
         ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
         goto fail0;
     }
-    
+
     // add route
     int res = 0; // to remove warning
     switch (o->type) {
@@ -158,11 +158,11 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "failed to add route");
         goto fail1;
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(o->i);
     return;
-    
+
 fail1:
     NCDValNullTermString_Free(&o->ifname_nts);
 fail0:
@@ -172,7 +172,7 @@ fail0:
 static void func_die (void *vo)
 {
     struct instance *o = vo;
-    
+
     // remove route
     int res = 0; // to remove warning
     switch (o->type) {
@@ -190,10 +190,10 @@ static void func_die (void *vo)
     if (!res) {
         ModuleLog(o->i, BLOG_ERROR, "failed to remove route");
     }
-    
+
     // free ifname nts
     NCDValNullTermString_Free(&o->ifname_nts);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 

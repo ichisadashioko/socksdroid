@@ -1,9 +1,9 @@
 /**
  * @file print.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,26 +25,26 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Modules for printing to standard output.
- * 
+ *
  * Synopsis:
  *   print([string str ...])
  * Description:
  *   On initialization, prints strings to standard output.
- * 
+ *
  * Synopsis:
  *   println([string str ...])
  * Description:
  *   On initialization, prints strings to standard output, and a newline.
- * 
+ *
  * Synopsis:
  *   rprint([string str ...])
  * Description:
  *   On deinitialization, prints strings to standard output.
- * 
+ *
  * Synopsis:
  *   rprintln([string str ...])
  * Description:
@@ -69,7 +69,7 @@ struct rprint_instance {
 static int check_args (NCDModuleInst *i, const struct NCDModuleInst_new_params *params)
 {
     size_t num_args = NCDVal_ListCount(params->args);
-    
+
     for (size_t j = 0; j < num_args; j++) {
         NCDValRef arg = NCDVal_ListGet(params->args, j);
         if (!NCDVal_IsString(arg)) {
@@ -77,20 +77,20 @@ static int check_args (NCDModuleInst *i, const struct NCDModuleInst_new_params *
             return 0;
         }
     }
-    
+
     return 1;
 }
 
 static void do_print (NCDModuleInst *i, NCDValRef args, int ln)
 {
     size_t num_args = NCDVal_ListCount(args);
-    
+
     for (size_t j = 0; j < num_args; j++) {
         NCDValRef arg = NCDVal_ListGet(args, j);
         ASSERT(NCDVal_IsString(arg))
-        
+
         b_cstring arg_cstr = NCDVal_StringCstring(arg);
-        
+
         B_CSTRING_LOOP_RANGE(arg_cstr, 0, arg_cstr.length, pos, chunk_data, chunk_length, {
             size_t chunk_pos = 0;
             while (chunk_pos < chunk_length) {
@@ -102,7 +102,7 @@ static void do_print (NCDModuleInst *i, NCDValRef args, int ln)
             }
         })
     }
-    
+
 out:
     if (ln) {
         printf("\n");
@@ -115,14 +115,14 @@ static void rprint_func_new_common (void *vo, NCDModuleInst *i, const struct NCD
     o->i = i;
     o->args = params->args;
     o->ln = ln;
-    
+
     if (!check_args(i, params)) {
         goto fail0;
     }
-    
+
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -130,9 +130,9 @@ fail0:
 static void rprint_func_die (void *vo)
 {
     struct rprint_instance *o = vo;
-    
+
     do_print(o->i, o->args, o->ln);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
@@ -141,12 +141,12 @@ static void print_func_new (void *unused, NCDModuleInst *i, const struct NCDModu
     if (!check_args(i, params)) {
         goto fail0;
     }
-    
+
     do_print(i, params->args, 0);
-    
+
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -156,12 +156,12 @@ static void println_func_new (void *unused, NCDModuleInst *i, const struct NCDMo
     if (!check_args(i, params)) {
         goto fail0;
     }
-    
+
     do_print(i, params->args, 1);
-    
+
     NCDModuleInst_Backend_Up(i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }

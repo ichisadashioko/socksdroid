@@ -1,9 +1,9 @@
 /**
  * @file RandomPacketSink.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -48,11 +48,11 @@ typedef struct {
 static void _RandomPacketSink_input_handler_send (RandomPacketSink *s, uint8_t *data, int data_len)
 {
     DebugObject_Access(&s->d_obj);
-    
+
     printf("sink: send '");
     size_t res = fwrite(data, data_len, 1, stdout);
     B_USE(res)
-    
+
     uint8_t r;
     BRandom_randomize(&r, sizeof(r));
     if (r&(uint8_t)1) {
@@ -67,7 +67,7 @@ static void _RandomPacketSink_input_handler_send (RandomPacketSink *s, uint8_t *
 static void _RandomPacketSink_input_handler_requestcancel (RandomPacketSink *s)
 {
     DebugObject_Access(&s->d_obj);
-    
+
     printf("sink: cancelled\n");
     BReactor_RemoveTimer(s->reactor, &s->timer);
     PacketPassInterface_Done(&s->input);
@@ -76,7 +76,7 @@ static void _RandomPacketSink_input_handler_requestcancel (RandomPacketSink *s)
 static void _RandomPacketSink_timer_handler (RandomPacketSink *s)
 {
     DebugObject_Access(&s->d_obj);
-    
+
     PacketPassInterface_Done(&s->input);
 }
 
@@ -84,24 +84,24 @@ static void RandomPacketSink_Init (RandomPacketSink *s, BReactor *reactor, int m
 {
     // init arguments
     s->reactor = reactor;
-    
+
     // init input
     PacketPassInterface_Init(&s->input, mtu, (PacketPassInterface_handler_send)_RandomPacketSink_input_handler_send, s, BReactor_PendingGroup(reactor));
     PacketPassInterface_EnableCancel(&s->input, (PacketPassInterface_handler_requestcancel)_RandomPacketSink_input_handler_requestcancel);
-    
+
     // init timer
     BTimer_Init(&s->timer, ms, (BTimer_handler)_RandomPacketSink_timer_handler, s);
-    
+
     DebugObject_Init(&s->d_obj);
 }
 
 static void RandomPacketSink_Free (RandomPacketSink *s)
 {
     DebugObject_Free(&s->d_obj);
-    
+
     // free timer
     BReactor_RemoveTimer(s->reactor, &s->timer);
-    
+
     // free input
     PacketPassInterface_Free(&s->input);
 }
@@ -109,7 +109,7 @@ static void RandomPacketSink_Free (RandomPacketSink *s)
 static PacketPassInterface * RandomPacketSink_GetInput (RandomPacketSink *s)
 {
     DebugObject_Access(&s->d_obj);
-    
+
     return &s->input;
 }
 

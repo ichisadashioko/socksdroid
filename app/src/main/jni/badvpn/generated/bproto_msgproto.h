@@ -67,7 +67,7 @@ void msgWriter_Addtype (msgWriter *o, uint16_t v)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->type_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(1);
@@ -471,7 +471,7 @@ int msg_youconnectWriter_Finish (msg_youconnectWriter *o)
 uint8_t * msg_youconnectWriter_Addaddr (msg_youconnectWriter *o, int len)
 {
     ASSERT(o->used >= 0)
-    
+
     ASSERT(len >= 0 && len <= UINT32_MAX)
 
     struct BProto_header_s header;
@@ -522,7 +522,7 @@ void msg_youconnectWriter_Addpassword (msg_youconnectWriter *o, uint64_t v)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->password_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(3);
@@ -1399,7 +1399,7 @@ void msg_seedWriter_Addseed_id (msg_seedWriter *o, uint16_t v)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->seed_id_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(1);
@@ -1902,7 +1902,7 @@ void msg_confirmseedWriter_Addseed_id (msg_confirmseedWriter *o, uint16_t v)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->seed_id_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(1);
@@ -2119,4 +2119,3 @@ void msg_confirmseedParser_Forwardseed_id (msg_confirmseedParser *o)
 {
     o->seed_id_pos = o->seed_id_span;
 }
-

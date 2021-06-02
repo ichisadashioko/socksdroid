@@ -166,7 +166,7 @@ process main {
     v->get("b") vB2;
     val_equal(vB2, "vB") a;
     assert(a);
-    
+
     value("") v;
     v->append("ab");
     v->append("cde");
@@ -175,7 +175,7 @@ process main {
     v->append("f");
     val_equal(v, "abcdeabcdef") a;
     assert(a);
-    
+
     value({}) v;
     v->insert("1") ins_v;
     v->insert("2");
@@ -187,7 +187,7 @@ process main {
     assert(a);
     val_equal(ins_v, "1") a;
     assert(a);
-    
+
     value({}) v;
     imperative("<none>", {}, "check5", {}, "10000");
     v->insert_undo("1");
@@ -196,7 +196,7 @@ process main {
     v->insert_undo("4");
     val_equal(v, {"1", "2", "3", "4"})  a;
     assert(a);
-    
+
     buffer() buf;
     buf->append("123");
     value(buf) v;
@@ -214,7 +214,7 @@ process main {
     v->substr(numbuf) sub_v;
     val_equal(sub_v, "345") a;
     assert(a);
-    
+
     concat("hello", "world") cnc;
     value(cnc) v;
     val_equal(v, "helloworld") a;
@@ -228,7 +228,7 @@ process main {
     v->substr("1") sub_v;
     val_equal(sub_v, "elloworld!!") a;
     assert(a);
-    
+
     exit("0");
 }
 

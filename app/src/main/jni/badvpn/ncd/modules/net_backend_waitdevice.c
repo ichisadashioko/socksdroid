@@ -1,9 +1,9 @@
 /**
  * @file net_backend_waitdevice.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,11 +25,11 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Module which waits for the presence of a network interface.
- * 
+ *
  * Synopsis: net.backend.waitdevice(string ifname)
  * Description: statement is UP when a network interface named ifname
  *   exists, and DOWN when it does not.
@@ -64,10 +64,10 @@ static void client_handler (struct instance *o, char *devpath, int have_map, BSt
     if (o->devpath && !strcmp(devpath, o->devpath) && !NCDUdevManager_Query(o->i->params->iparams->umanager, o->devpath)) {
         // free devpath
         free(o->devpath);
-        
+
         // set no devpath
         o->devpath = NULL;
-        
+
         // signal down
         NCDModuleInst_Backend_Down(o->i);
     } else {
@@ -75,40 +75,40 @@ static void client_handler (struct instance *o, char *devpath, int have_map, BSt
         if (!cache_map) {
             goto out;
         }
-        
+
         int match_res = regexec(&o->reg, devpath, 0, NULL, 0);
         const char *interface = BStringMap_Get(cache_map, "INTERFACE");
         const char *ifindex_str = BStringMap_Get(cache_map, "IFINDEX");
-        
+
         uintmax_t ifindex;
         if (!(!match_res && interface && strlen(interface) == o->ifname_len && !memcmp(interface, o->ifname, o->ifname_len) && ifindex_str && parse_unsigned_integer(ifindex_str, &ifindex))) {
             goto out;
         }
-        
+
         if (o->devpath && (strcmp(o->devpath, devpath) || o->ifindex != ifindex)) {
             // free devpath
             free(o->devpath);
-            
+
             // set no devpath
             o->devpath = NULL;
-            
+
             // signal down
             NCDModuleInst_Backend_Down(o->i);
         }
-        
+
         if (!o->devpath) {
             // grab devpath
             o->devpath = devpath;
             devpath = NULL;
-            
+
             // remember ifindex
             o->ifindex = ifindex;
-            
+
             // signal up
             NCDModuleInst_Backend_Up(o->i);
         }
     }
-    
+
 out:
     free(devpath);
     if (have_map) {
@@ -120,7 +120,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // check arguments
     NCDValRef arg;
     if (!NCDVal_ListRead(params->args, 1, &arg)) {
@@ -133,20 +133,20 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     }
     o->ifname = NCDVal_StringData(arg);
     o->ifname_len = NCDVal_StringLength(arg);
-    
+
     // init client
     NCDUdevClient_Init(&o->client, o->i->params->iparams->umanager, o, (NCDUdevClient_handler)client_handler);
-    
+
     // compile regex
     if (regcomp(&o->reg, DEVPATH_REGEX, REG_EXTENDED)) {
         ModuleLog(o->i, BLOG_ERROR, "regcomp failed");
         goto fail1;
     }
-    
+
     // set no devpath
     o->devpath = NULL;
     return;
-    
+
 fail1:
     NCDUdevClient_Free(&o->client);
 fail0:
@@ -156,18 +156,18 @@ fail0:
 static void func_die (void *vo)
 {
     struct instance *o = vo;
-    
+
     // free devpath
     if (o->devpath) {
         free(o->devpath);
     }
-    
+
     // free regex
     regfree(&o->reg);
-    
+
     // free client
     NCDUdevClient_Free(&o->client);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 

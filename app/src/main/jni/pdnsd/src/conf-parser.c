@@ -2115,4 +2115,3 @@ static const char *zone_add(zone_array *za, const char *zone, unsigned int len)
   memcpy(z,rhn,sz);
   return NULL;
 }
-

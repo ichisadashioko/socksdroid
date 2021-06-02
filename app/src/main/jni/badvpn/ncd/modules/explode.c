@@ -1,9 +1,9 @@
 /**
  * @file explode.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,12 +25,12 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Synopsis:
  *   explode(string delimiter, string input [, string limit])
- * 
+ *
  * Description:
  *   Splits the string 'input' into a list of components. The first component
  *   is the part of 'input' until the first occurence of 'delimiter', if any.
@@ -38,7 +38,7 @@
  *   via the same procedure, starting with the part of 'input' after the first
  *   substring.
  *   'delimiter' must be nonempty.
- * 
+ *
  * Variables:
  *   list (empty) - the components of 'input', determined based on 'delimiter'
  */
@@ -74,7 +74,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef delimiter_arg;
     NCDValRef input_arg;
@@ -87,7 +87,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     size_t limit = SIZE_MAX;
     if (!NCDVal_IsInvalid(limit_arg)) {
         uintmax_t n;
@@ -98,32 +98,32 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         n--;
         limit = (n <= SIZE_MAX ? n : SIZE_MAX);
     }
-    
+
     const char *del_data = NCDVal_StringData(delimiter_arg);
     size_t del_len = NCDVal_StringLength(delimiter_arg);
-    
+
     if (del_len == 0) {
         ModuleLog(i, BLOG_ERROR, "delimiter must be nonempty");
         goto fail0;
     }
-    
+
     size_t *table = BAllocArray(del_len, sizeof(table[0]));
     if (!table) {
         ModuleLog(i, BLOG_ERROR, "ExpArray_init failed");
         goto fail0;
     }
-    
+
     build_substring_backtrack_table(del_data, del_len, table);
-    
+
     if (!ExpArray_init(&o->arr, sizeof(struct substring), 8)) {
         ModuleLog(i, BLOG_ERROR, "ExpArray_init failed");
         goto fail1;
     }
     o->num = 0;
-    
+
     const char *data = NCDVal_StringData(input_arg);
     size_t len = NCDVal_StringLength(input_arg);
-    
+
     while (1) {
         size_t start;
         int is_end = 0;
@@ -131,34 +131,34 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
             start = len;
             is_end = 1;
         }
-        
+
         if (!ExpArray_resize(&o->arr, o->num + 1)) {
             ModuleLog(i, BLOG_ERROR, "ExpArray_init failed");
             goto fail2;
         }
-        
+
         struct substring *elem = &((struct substring *)o->arr.v)[o->num];
-        
+
         if (!(elem->data = BAlloc(start))) {
             ModuleLog(i, BLOG_ERROR, "BAlloc failed");
             goto fail2;
         }
-        
+
         memcpy(elem->data, data, start);
         elem->len = start;
         o->num++;
-        
+
         if (is_end) {
             break;
         }
-        
+
         data += start + del_len;
         len -= start + del_len;
         limit--;
     }
-    
+
     BFree(table);
-    
+
     // signal up
     NCDModuleInst_Backend_Up(i);
     return;
@@ -177,19 +177,19 @@ fail0:
 static void func_die (void *vo)
 {
     struct instance *o = vo;
-    
+
     while (o->num-- > 0) {
         BFree(((struct substring *)o->arr.v)[o->num].data);
     }
     free(o->arr.v);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
 static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out)
 {
     struct instance *o = vo;
-    
+
     if (name == NCD_STRING_EMPTY) {
         *out = NCDVal_NewList(mem, o->num);
         if (NCDVal_IsInvalid(*out)) {
@@ -207,9 +207,9 @@ static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValR
         }
         return 1;
     }
-    
+
     return 0;
-    
+
 fail:
     *out = NCDVal_NewInvalid();
     return 1;

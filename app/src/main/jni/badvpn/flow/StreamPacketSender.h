@@ -1,9 +1,9 @@
 /**
  * @file StreamPacketSender.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -38,7 +38,7 @@
  * Object which breaks an input stream into output packets. The resulting
  * packets will have positive length, and, when concatenated, will form the
  * original stream.
- * 
+ *
  * Input is with {@link StreamPassInterface}.
  * Output is with {@link PacketPassInterface}.
  */
@@ -52,7 +52,7 @@ typedef struct {
 
 /**
  * Initializes the object.
- * 
+ *
  * @param o the object
  * @param output output interface. Its MTU must be >0.
  * @param pg pending group we live in
@@ -61,14 +61,14 @@ void StreamPacketSender_Init (StreamPacketSender *o, PacketPassInterface *output
 
 /**
  * Frees the object.
- * 
+ *
  * @param o the object
  */
 void StreamPacketSender_Free (StreamPacketSender *o);
 
 /**
  * Returns the input interface.
- * 
+ *
  * @param o the object
  * @return input interface
  */

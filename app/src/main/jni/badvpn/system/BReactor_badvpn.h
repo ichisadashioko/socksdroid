@@ -1,9 +1,9 @@
 /**
  * @file BReactor_badvpn.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Event loop that supports file desciptor (Linux) or HANDLE (Windows) events
  * and timers.
  */
@@ -196,16 +196,16 @@ typedef struct BFileDescriptor_t {
     void *user;
     int active;
     int waitEvents;
-    
+
     #ifdef BADVPN_USE_EPOLL
     struct BFileDescriptor_t **epoll_returned_ptr;
     #endif
-    
+
     #ifdef BADVPN_USE_KEVENT
     int kevent_tag;
     int **kevent_returned_ptr;
     #endif
-    
+
     #ifdef BADVPN_USE_POLL
     LinkedList1Node poll_enabled_fds_list_node;
     int poll_returned_index;
@@ -238,37 +238,37 @@ void BFileDescriptor_Init (BFileDescriptor *bs, int fd, BFileDescriptor_handler 
 typedef struct {
     int exiting;
     int exit_code;
-    
+
     // jobs
     BPendingGroup pending_jobs;
-    
+
     // timers
     BReactor__TimersTree timers_tree;
     LinkedList1 timers_expired_list;
-    
+
     // limits
     LinkedList1 active_limits_list;
-    
+
     #ifdef BADVPN_USE_WINAPI
     LinkedList1 iocp_list;
     HANDLE iocp_handle;
     LinkedList1 iocp_ready_list;
     #endif
-    
+
     #ifdef BADVPN_USE_EPOLL
     int efd; // epoll fd
     struct epoll_event epoll_results[BSYSTEM_MAX_RESULTS]; // epoll returned events buffer
     int epoll_results_num; // number of events in the array
     int epoll_results_pos; // number of events processed so far
     #endif
-    
+
     #ifdef BADVPN_USE_KEVENT
     int kqueue_fd;
     struct kevent kevent_results[BSYSTEM_MAX_RESULTS];
     int kevent_results_num;
     int kevent_results_pos;
     #endif
-    
+
     #ifdef BADVPN_USE_POLL
     LinkedList1 poll_enabled_fds_list;
     int poll_num_enabled_fds;
@@ -277,7 +277,7 @@ typedef struct {
     struct pollfd *poll_results_pollfds;
     BFileDescriptor **poll_results_bfds;
     #endif
-    
+
     DebugObject d_obj;
     #ifndef BADVPN_USE_WINAPI
     DebugCounter d_fds_counter;
@@ -409,7 +409,7 @@ void BReactor_RemoveTimer (BReactor *bsys, BTimer *bt);
  * and must not be accessed by other means.
  * All {@link BPending} and {@link BSmallPending} objects using this group must be
  * freed before freeing the reactor.
- * 
+ *
  * @param bsys the object
  * @return pending group for scheduling jobs for the reactor to execute
  */
@@ -421,12 +421,12 @@ BPendingGroup * BReactor_PendingGroup (BReactor *bsys);
  *   - {@link BReactor_Quit} is called.
  * The reference job must be reached before the job list empties.
  * The reference job will not be executed.
- * 
+ *
  * WARNING: Use with care. This should only be used to to work around third-party software
  * that does not integrade into the jobs system. In particular, you should think about:
  *   - the effects the jobs to be executed may have, and
  *   - the environment those jobs expect to be executed in.
- * 
+ *
  * @param bsys the object
  * @param ref reference job. It is not accessed in any way, only its address is compared to
  *            pending jobs before they are executed.
@@ -488,7 +488,7 @@ typedef struct {
  * and is reset to zero every time the event loop performs a wait.
  * If the event loop has processed all detected events, and before performing
  * a wait, it determines that timers have expired, the counter will not be reset.
- * 
+ *
  * @param o the object
  * @param reactor reactor the object is tied to
  * @param limit maximum counter value. Must be >0.
@@ -497,14 +497,14 @@ void BReactorLimit_Init (BReactorLimit *o, BReactor *reactor, int limit);
 
 /**
  * Frees a limit object.
- * 
+ *
  * @param o the object
  */
 void BReactorLimit_Free (BReactorLimit *o);
 
 /**
  * Attempts to increment the counter of a limit object.
- * 
+ *
  * @param o the object
  * @return 1 if the counter was lesser than the limit and was incremented,
  *         0 if the counter was greater or equal to the limit and could not be
@@ -514,7 +514,7 @@ int BReactorLimit_Increment (BReactorLimit *o);
 
 /**
  * Sets the limit of a limit object.
- * 
+ *
  * @param o the object
  * @param limit new limit. Must be >0.
  */

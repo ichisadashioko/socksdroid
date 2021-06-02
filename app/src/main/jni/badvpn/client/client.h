@@ -1,9 +1,9 @@
 /**
  * @file client.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -108,46 +108,46 @@ struct server_flow {
 struct peer_data {
     // peer identifier
     peerid_t id;
-    
+
     // flags provided by the server
     int flags;
-    
+
     // certificate reported by the server, defined only if using SSL
     uint8_t cert[SCID_NEWCLIENT_MAX_CERT_LEN];
     int cert_len;
     char *common_name;
-    
+
     // init job
     BPending job_init;
-    
+
     // server flow
     struct server_flow *server_flow;
-    
+
     // chat
     int have_chat;
     PeerChat chat;
     int chat_send_msg_len;
-    
+
     // resetpeer source (when chat fails)
     int have_resetpeer;
     uint8_t resetpeer_packet[sizeof(struct packetproto_header) + sizeof(struct sc_header) + sizeof(struct sc_client_resetpeer)];
     SinglePacketSource resetpeer_source;
-    
+
     // local flow
     DataProtoFlow local_dpflow;
-    
+
     // frame decider peer
     FrameDeciderPeer decider_peer;
-    
+
     // receive peer
     DPReceivePeer receive_peer;
-    
+
     // flag if link objects are initialized
     int have_link;
-    
+
     // receive receiver
     DPReceiveReceiver receive_receiver;
-    
+
     // transport-specific link objects
     union {
         struct {
@@ -164,30 +164,30 @@ struct peer_data {
             StreamPeerIO pio;
         } tcp;
     } pio;
-    
+
     // link sending
     DataProtoSink send_dp;
-    
+
     // relaying objects
     struct peer_data *relaying_peer; // peer through which we are relaying, or NULL
     LinkedList1Node relaying_list_node; // node in relay peer's relay_users
-    
+
     // waiting for relay data
     int waiting_relay;
     LinkedList1Node waiting_relay_list_node;
-    
+
     // retry timer
     BTimer reset_timer;
-    
+
     // relay server specific
     int is_relay;
     LinkedList1Node relay_list_node;
     LinkedList1 relay_users;
-    
+
     // binding state
     int binding;
     int binding_addrpos;
-    
+
     // peers linked list node
     LinkedList1Node list_node;
 };

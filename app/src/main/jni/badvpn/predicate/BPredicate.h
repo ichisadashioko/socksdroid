@@ -1,9 +1,9 @@
 /**
  * @file BPredicate.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,35 +25,35 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Object that parses and evaluates a logical expression.
  * Allows the user to define custom functions than can be
  * used in the expression.
- * 
+ *
  * Syntax and semantics for logical expressions:
- * 
+ *
  *   - true
  *     Logical true constant. Evaluates to 1.
- * 
+ *
  *   - false
  *     Logical false constant. Evaluates to 0.
- * 
+ *
  *   - NOT expression
  *     Logical negation. If the expression evaluates to error, the
  *     negation evaluates to error.
- * 
+ *
  *   - expression OR expression
  *     Logical disjunction. The second expression is only evaluated
  *     if the first expression evaluates to false. If a sub-expression
  *     evaluates to error, the disjunction evaluates to error.
- * 
+ *
  *   - expression AND expression
  *     Logical conjunction. The second expression is only evaluated
  *     if the first expression evaluates to true. If a sub-expression
  *     evaluates to error, the conjunction evaluates to error.
- * 
+ *
  *   - function(arg, ..., arg)
  *     Evaluation of a user-provided function (function is the name of the
  *     function, [a-zA-Z0-9_]+).
@@ -89,7 +89,7 @@
 
 /**
  * Handler function called when evaluating a custom function in the predicate.
- * 
+ *
  * @param user value passed to {@link BPredicateFunction_Init}
  * @param args arguments to the function. Points to an array of pointers (as many as the
  *             function has arguments), where each pointer points to either to an int or
@@ -128,7 +128,7 @@ typedef struct {
 
 /**
  * Initializes the object.
- * 
+ *
  * @param p the object
  * @param str logical expression
  * @return 1 on success, 0 on failure
@@ -139,7 +139,7 @@ int BPredicate_Init (BPredicate *p, char *str) WARN_UNUSED;
  * Frees the object.
  * Must have no custom functions.
  * Must not be called from function handlers.
- * 
+ *
  * @param p the object
  */
 void BPredicate_Free (BPredicate *p);
@@ -147,7 +147,7 @@ void BPredicate_Free (BPredicate *p);
 /**
  * Evaluates the logical expression.
  * Must not be called from function handlers.
- * 
+ *
  * @param p the object
  * @return 1 for true, 0 for false, -1 for error
  */
@@ -156,7 +156,7 @@ int BPredicate_Eval (BPredicate *p);
 /**
  * Registers a custom function for {@link BPredicate}.
  * Must not be called from function handlers.
- * 
+ *
  * @param o the object
  * @param p predicate to register the function for
  * @param args array of argument types. Each type is either PREDICATE_TYPE_BOOL or PREDICATE_TYPE_STRING.
@@ -169,7 +169,7 @@ void BPredicateFunction_Init (BPredicateFunction *o, BPredicate *p, char *name, 
 /**
  * Removes a custom function for {@link BPredicate}.
  * Must not be called from function handlers.
- * 
+ *
  * @param o the object
  */
 void BPredicateFunction_Free (BPredicateFunction *o);

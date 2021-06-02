@@ -67,4 +67,3 @@ return $parser->semantic;
 
 7. You now have the computed semantic value of whatever you parsed. Add salt
 	and pepper to taste, and serve.
-

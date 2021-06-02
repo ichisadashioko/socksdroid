@@ -1,9 +1,9 @@
 /**
  * @file BUnixSignal.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Object for catching unix signals.
  */
 
@@ -49,7 +49,7 @@ struct BUnixSignal_s;
 
 /**
  * Handler function called when a signal is received.
- * 
+ *
  * @param user as in {@link BUnixSignal_Init}
  * @param signo signal number. Will be one of the signals provided to {@link signals}.
  */
@@ -80,32 +80,32 @@ typedef struct BUnixSignal_s {
     sigset_t signals;
     BUnixSignal_handler handler;
     void *user;
-    
+
     #ifdef BADVPN_USE_SIGNALFD
     int signalfd_fd;
     BFileDescriptor signalfd_bfd;
     #endif
-    
+
     #ifdef BADVPN_USE_KEVENT
     struct BUnixSignal_kevent_entry *entries;
     int num_entries;
     #endif
-    
+
     #ifdef BADVPN_USE_SELFPIPE
     struct BUnixSignal_selfpipe_entry *entries;
     int num_entries;
     #endif
-    
+
     DebugObject d_obj;
 } BUnixSignal;
 
 /**
  * Initializes the object.
  * {@link BLog_Init} must have been done.
- * 
+ *
  * WARNING: for every signal number there should be at most one {@link BUnixSignal}
  * object handling it (or anything else that could interfere).
- * 
+ *
  * This blocks the signal using sigprocmask() and sets up signalfd() for receiving
  * signals.
  *
@@ -120,7 +120,7 @@ int BUnixSignal_Init (BUnixSignal *o, BReactor *reactor, sigset_t signals, BUnix
 
 /**
  * Frees the object.
- * 
+ *
  * @param o the object
  * @param unblock whether to unblock the signals using sigprocmask(). Not unblocking it
  *                can be used while the program is exiting gracefully to prevent the

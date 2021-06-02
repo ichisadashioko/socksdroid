@@ -1,9 +1,9 @@
 /**
  * @file DatagramPeerIO.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Object for comminicating with a peer using a datagram socket.
  */
 
@@ -75,7 +75,7 @@ typedef void (*DatagramPeerIO_handler_otp_warning) (void *user);
 
 /**
  * Handler called when OTP generation for a new receive seed is finished.
- * 
+ *
  * @param user as in {@link DatagramPeerIO_SetHandlers}
  */
 typedef void (*DatagramPeerIO_handler_otp_ready) (void *user);
@@ -106,23 +106,23 @@ typedef struct {
     DatagramPeerIO_handler_error handler_error;
     int spproto_payload_mtu;
     int effective_socket_mtu;
-    
+
     // sending base
     FragmentProtoDisassembler send_disassembler;
     SPProtoEncoder send_encoder;
     SinglePacketBuffer send_buffer;
     PacketPassConnector send_connector;
-    
+
     // receiving
     PacketRecvConnector recv_connector;
     SinglePacketBuffer recv_buffer;
     SPProtoDecoder recv_decoder;
     PacketPassNotifier recv_notifier;
     FragmentProtoAssembler recv_assembler;
-    
+
     // mode
     int mode;
-    
+
     // datagram object
     BDatagram dgram;
 } DatagramPeerIO;

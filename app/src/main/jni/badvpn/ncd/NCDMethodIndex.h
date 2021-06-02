@@ -1,9 +1,9 @@
 /**
  * @file NCDMethodIndex.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -78,7 +78,7 @@ typedef struct {
 
 /**
  * Initializes the method index.
- * 
+ *
  * @return 1 on success, 0 on failure
  */
 int NCDMethodIndex_Init (NCDMethodIndex *o, NCDStringIndex *string_index) WARN_UNUSED;
@@ -91,7 +91,7 @@ void NCDMethodIndex_Free (NCDMethodIndex *o);
 /**
  * Adds a method to the index.
  * Duplicate methods will not be detected here.
- * 
+ *
  * @param obj_type object type of method, e.g. "cat" in "cat::meow".
  *                 Must not be NULL. Does not have to be null-terminated.
  * @param obj_type_len number of characters in obj_type
@@ -104,7 +104,7 @@ int NCDMethodIndex_AddMethod (NCDMethodIndex *o, const char *obj_type, size_t ob
 
 /**
  * Removes a method from the index.
- * 
+ *
  * @param method_name_id method name identifier
  */
 void NCDMethodIndex_RemoveMethod (NCDMethodIndex *o, int method_name_id);
@@ -113,7 +113,7 @@ void NCDMethodIndex_RemoveMethod (NCDMethodIndex *o, int method_name_id);
  * Obtains an internal integer identifier for a method name. The intention is that
  * this is stored and later passed to \link NCDMethodIndex_GetMethodModule for
  * efficient lookup of modules corresponding to methods.
- * 
+ *
  * @param method_name name of method, e.g. "meow" in "cat::meow".
  *                    Must not be NULL.
  * @return non-negative integer on success, -1 on failure
@@ -123,7 +123,7 @@ int NCDMethodIndex_GetMethodNameId (NCDMethodIndex *o, const char *method_name);
 /**
  * Looks up the module corresponding to a method. The method name is passed as an
  * identifier obtained from \link NCDMethodIndex_GetMethodNameId.
- * 
+ *
  * @param obj_type object type of method, e.g. "cat" in "cat::meow", as a string
  *                 identifier via {@link NCDStringIndex}
  * @param method_name_id method name identifier. Must have been previously returned

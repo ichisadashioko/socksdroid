@@ -122,7 +122,7 @@ void msg1Writer_Adda (msg1Writer *o, uint16_t v)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->a_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(5);
@@ -142,7 +142,7 @@ void msg1Writer_Addb (msg1Writer *o, uint32_t v)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->b_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(6);
@@ -161,8 +161,8 @@ void msg1Writer_Addb (msg1Writer *o, uint32_t v)
 void msg1Writer_Addc (msg1Writer *o, uint64_t v)
 {
     ASSERT(o->used >= 0)
-    
-    
+
+
 
     struct BProto_header_s header;
     header.id = htol16(7);
@@ -181,8 +181,8 @@ void msg1Writer_Addc (msg1Writer *o, uint64_t v)
 void msg1Writer_Addd (msg1Writer *o, uint16_t v)
 {
     ASSERT(o->used >= 0)
-    
-    
+
+
 
     struct BProto_header_s header;
     header.id = htol16(8);
@@ -202,7 +202,7 @@ void msg1Writer_Adde (msg1Writer *o, uint8_t v)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->e_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(9);
@@ -247,7 +247,7 @@ uint8_t * msg1Writer_Addg (msg1Writer *o)
 {
     ASSERT(o->used >= 0)
     ASSERT(o->g_count == 0)
-    
+
 
     struct BProto_header_s header;
     header.id = htol16(11);
@@ -1026,4 +1026,3 @@ void msg1Parser_Forwardg (msg1Parser *o)
 {
     o->g_pos = o->g_span;
 }
-

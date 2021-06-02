@@ -1,9 +1,9 @@
 /**
  * @file StreamPeerIO.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Object used for communicating with a peer over TCP.
  */
 
@@ -84,22 +84,22 @@ typedef struct {
     BLog_logfunc logfunc;
     StreamPeerIO_handler_error handler_error;
     void *user;
-    
+
     // persistent I/O modules
-    
+
     // base sending objects
     PacketCopier output_user_copier;
     PacketProtoEncoder output_user_ppe;
     SinglePacketBuffer output_user_spb;
     PacketPassConnector output_connector;
-    
+
     // receiving objects
     StreamRecvConnector input_connector;
     PacketProtoDecoder input_decoder;
-    
+
     // connection side
     int mode;
-    
+
     union {
         // listening data
         struct {
@@ -120,14 +120,14 @@ typedef struct {
             SingleStreamSender pwsender;
         } connect;
     };
-    
+
     // socket data
     sslsocket *sock;
     BSSLConnection sslcon;
-    
+
     // sending objects
     PacketStreamSender output_pss;
-    
+
     DebugObject d_obj;
 } StreamPeerIO;
 

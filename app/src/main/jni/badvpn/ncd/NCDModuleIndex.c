@@ -1,9 +1,9 @@
 /**
  * @file NCDModuleIndex.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -67,10 +67,10 @@ static struct NCDModuleIndex_base_type * find_base_type (NCDModuleIndex *o, cons
     if (!node) {
         return NULL;
     }
-    
+
     struct NCDModuleIndex_base_type *bt = UPPER_OBJECT(node, struct NCDModuleIndex_base_type, base_types_tree_node);
     ASSERT(!strcmp(bt->base_type, base_type))
-    
+
     return bt;
 }
 #endif
@@ -81,29 +81,29 @@ static int add_method (const char *type, const struct NCDInterpModule *module, N
     ASSERT(module)
     ASSERT(method_index)
     ASSERT(out_method_id)
-    
+
     const char search[] = "::";
     size_t search_len = sizeof(search) - 1;
-    
+
     size_t table[sizeof(search) - 1];
     build_substring_backtrack_table_reverse(search, search_len, table);
-    
+
     size_t pos;
     if (!find_substring_reverse(type, strlen(type), search, search_len, table, &pos)) {
         *out_method_id = -1;
         return 1;
     }
-    
+
     ASSERT(pos >= 0)
     ASSERT(pos <= strlen(type) - search_len)
     ASSERT(!memcmp(type + pos, search, search_len))
-    
+
     int method_id = NCDMethodIndex_AddMethod(method_index, type, pos, type + pos + search_len, module);
     if (method_id < 0) {
         BLog(BLOG_ERROR, "NCDMethodIndex_AddMethod failed");
         return 0;
     }
-    
+
     *out_method_id = method_id;
     return 1;
 }
@@ -111,30 +111,30 @@ static int add_method (const char *type, const struct NCDInterpModule *module, N
 int NCDModuleIndex_Init (NCDModuleIndex *o, NCDStringIndex *string_index)
 {
     ASSERT(string_index)
-    
+
     // init modules hash
     if (!NCDModuleIndex__MHash_Init(&o->modules_hash, NCDMODULEINDEX_MODULES_HASH_SIZE)) {
         BLog(BLOG_ERROR, "NCDModuleIndex__MHash_Init failed");
         goto fail0;
     }
-    
+
 #ifndef NDEBUG
     // init base types tree
     BAVL_Init(&o->base_types_tree, OFFSET_DIFF(struct NCDModuleIndex_base_type, base_type, base_types_tree_node), string_pointer_comparator, NULL);
 #endif
-    
+
     // init groups list
     LinkedList0_Init(&o->groups_list);
-    
+
     // init method index
     if (!NCDMethodIndex_Init(&o->method_index, string_index)) {
         BLog(BLOG_ERROR, "NCDMethodIndex_Init failed");
         goto fail1;
     }
-    
+
     DebugObject_Init(&o->d_obj);
     return 1;
-    
+
 fail1:
     NCDModuleIndex__MHash_Free(&o->modules_hash);
 fail0:
@@ -144,7 +144,7 @@ fail0:
 void NCDModuleIndex_Free (NCDModuleIndex *o)
 {
     DebugObject_Free(&o->d_obj);
-    
+
     // free groups
     LinkedList0Node *ln;
     while (ln = LinkedList0_GetFirst(&o->groups_list)) {
@@ -156,7 +156,7 @@ void NCDModuleIndex_Free (NCDModuleIndex *o)
         LinkedList0_Remove(&o->groups_list, &ig->groups_list_node);
         BFree(ig);
     }
-    
+
 #ifndef NDEBUG
     // free base types
     BAVLNode *tn;
@@ -166,10 +166,10 @@ void NCDModuleIndex_Free (NCDModuleIndex *o)
         BFree(bt);
     }
 #endif
-    
+
     // free method index
     NCDMethodIndex_Free(&o->method_index);
-    
+
     // free modules hash
     NCDModuleIndex__MHash_Free(&o->modules_hash);
 }
@@ -180,29 +180,29 @@ int NCDModuleIndex_AddGroup (NCDModuleIndex *o, const struct NCDModuleGroup *gro
     ASSERT(group)
     ASSERT(iparams)
     ASSERT(string_index)
-    
+
     // count modules in the group
     size_t num_modules = 0;
     while (group->modules[num_modules].type) {
         num_modules++;
     }
-    
+
     // compute allocation size
     bsize_t size = bsize_add(bsize_fromsize(sizeof(struct NCDModuleIndex_group)), bsize_mul(bsize_fromsize(num_modules), bsize_fromsize(sizeof(struct NCDModuleIndex_module))));
-    
-    // allocate group 
+
+    // allocate group
     struct NCDModuleIndex_group *ig = BAllocSize(size);
     if (!ig) {
         BLog(BLOG_ERROR, "BAllocSize failed");
         goto fail0;
     }
-    
+
     // insert to groups list
     LinkedList0_Prepend(&o->groups_list, &ig->groups_list_node);
-    
+
     // copy NCDModuleGroup
     ig->igroup.group = *group;
-    
+
     if (!group->strings) {
         // not resolving strings
         ig->igroup.strings = NULL;
@@ -212,14 +212,14 @@ int NCDModuleIndex_AddGroup (NCDModuleIndex *o, const struct NCDModuleGroup *gro
         while (group->strings[num_strings]) {
             num_strings++;
         }
-        
+
         // allocate array for string IDs
         ig->igroup.strings = BAllocArray(num_strings, sizeof(ig->igroup.strings[0]));
         if (!ig->igroup.strings) {
             BLog(BLOG_ERROR, "BAllocArray failed");
             goto fail1;
         }
-        
+
         // map strings to IDs
         for (size_t i = 0; i < num_strings; i++) {
             ig->igroup.strings[i] = NCDStringIndex_Get(string_index, group->strings[i]);
@@ -229,7 +229,7 @@ int NCDModuleIndex_AddGroup (NCDModuleIndex *o, const struct NCDModuleGroup *gro
             }
         }
     }
-    
+
     // call group init function
     if (group->func_globalinit) {
         if (!group->func_globalinit(&ig->igroup, iparams)) {
@@ -237,42 +237,42 @@ int NCDModuleIndex_AddGroup (NCDModuleIndex *o, const struct NCDModuleGroup *gro
             goto fail2;
         }
     }
-    
+
     size_t num_inited_modules = 0;
-    
+
     // initialize modules
     for (size_t i = 0; i < num_modules; i++) {
         const struct NCDModule *nm = &group->modules[i];
         struct NCDModuleIndex_module *m = &ig->modules[i];
-        
+
         // make sure a module with this name doesn't exist already
         if (find_module(o, nm->type)) {
             BLog(BLOG_ERROR, "module type '%s' already exists", nm->type);
             goto loop_fail0;
         }
-        
+
         // copy NCDModule structure
         m->imodule.module = *nm;
-        
+
         // determine base type
         const char *base_type = (nm->base_type ? nm->base_type : nm->type);
         ASSERT(base_type)
-        
+
         // map base type to ID
         m->imodule.base_type_id = NCDStringIndex_Get(string_index, base_type);
         if (m->imodule.base_type_id < 0) {
             BLog(BLOG_ERROR, "NCDStringIndex_Get failed");
             goto loop_fail0;
         }
-        
+
         // set group pointer
         m->imodule.group = &ig->igroup;
-        
+
         // register method
         if (!add_method(nm->type, &m->imodule, &o->method_index, &m->method_id)) {
             goto loop_fail0;
         }
-        
+
 #ifndef NDEBUG
         // ensure that this base_type does not appear in any other groups
         struct NCDModuleIndex_base_type *bt = find_base_type(o, base_type);
@@ -296,10 +296,10 @@ int NCDModuleIndex_AddGroup (NCDModuleIndex *o, const struct NCDModuleGroup *gro
         NCDModuleIndex__MHashRef ref = {m, m};
         int res = NCDModuleIndex__MHash_Insert(&o->modules_hash, 0, ref, NULL);
         ASSERT_EXECUTE(res)
-        
+
         num_inited_modules++;
         continue;
-        
+
 #ifndef NDEBUG
     loop_fail1:
         if (m->method_id >= 0) {
@@ -309,9 +309,9 @@ int NCDModuleIndex_AddGroup (NCDModuleIndex *o, const struct NCDModuleGroup *gro
     loop_fail0:
         goto fail3;
     }
-    
+
     return 1;
-    
+
 fail3:
     while (num_inited_modules-- > 0) {
         struct NCDModuleIndex_module *m = &ig->modules[num_inited_modules];
@@ -347,12 +347,12 @@ const struct NCDInterpModule * NCDModuleIndex_FindModule (NCDModuleIndex *o, con
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(type)
-    
+
     struct NCDModuleIndex_module *m = find_module(o, type);
     if (!m) {
         return NULL;
     }
-    
+
     return &m->imodule;
 }
 
@@ -360,13 +360,13 @@ int NCDModuleIndex_GetMethodNameId (NCDModuleIndex *o, const char *method_name)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(method_name)
-    
+
     return NCDMethodIndex_GetMethodNameId(&o->method_index, method_name);
 }
 
 const struct NCDInterpModule * NCDModuleIndex_GetMethodModule (NCDModuleIndex *o, NCD_string_id_t obj_type, int method_name_id)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return NCDMethodIndex_GetMethodModule(&o->method_index, obj_type, method_name_id);
 }

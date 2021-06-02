@@ -1,9 +1,9 @@
 /**
  * @file NCDObject.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -43,7 +43,7 @@
  * - resolving variables by name,
  * - resolving objects by name,
  * - provide information for calling method-like statements.
- * 
+ *
  * The NCDObject structure must not be stored persistently; it is only
  * valid at the time it was obtained, and any change of state in the
  * execution of the NCD program may render the object invalid.
@@ -54,7 +54,7 @@ typedef struct NCDObject_s NCDObject;
 
 /**
  * Callback function for variable resolution requests.
- * 
+ *
  * @param obj const pointer to the NCDObject this is being called for.
  *            {@link NCDObject_DataPtr} and {@link NCDObject_DataInt} can be
  *            used to retrieve state information which was passed to
@@ -74,7 +74,7 @@ typedef int (*NCDObject_func_getvar) (const NCDObject *obj, NCD_string_id_t name
 
 /**
  * Callback function for object resolution requests.
- * 
+ *
  * @param obj const pointer to the NCDObject this is being called for.
  *            {@link NCDObject_DataPtr} and {@link NCDObject_DataInt} can be
  *            used to retrieve state information which was passed to
@@ -107,7 +107,7 @@ static NCDObject NCDObject_Build (NCD_string_id_t type, void *data_ptr, NCDObjec
  * Constructs an {@link NCDObject} structure.
  * This is the full version where all supported parameters have to be provided.
  * In most cases, {@link NCDObject_Build} will suffice.
- * 
+ *
  * @param type type of the object for the purpose of calling method-like statements
  *             on the object, in form of an {@link NCDStringIndex} string identifier.
  *             May be set to -1 if the object has no methods.
@@ -167,9 +167,9 @@ static int NCDObject_GetObj (const NCDObject *o, NCD_string_id_t name, NCDObject
  * e.g. object1.object2.variable (for a named variable) or object1.object2.object3
  * (for an empty string variable). This function however receives the expression
  * as an array of string identifiers.
- * 
+ *
  * Consult the implementation for exact semantics of variable expression resolution.
- * 
+ *
  * @param o object to start the resolution with
  * @param names pointer to an array of names for the resolution. May be NULL if num_names is 0.
  * @param num_names number in names in the array
@@ -189,9 +189,9 @@ static int NCDObject_ResolveVarExprCompact (const NCDObject *o, const NCD_string
  * An object expression is usually represented in dotted form,
  * e.g. object1.object2.object3. This function however receives the expression
  * as an array of string identifiers.
- * 
+ *
  * Consult the implementation for exact semantics of object expression resolution.
- * 
+ *
  * @param o object to start the resolution with
  * @param names pointer to an array of names for the resolution. May be NULL if num_names is 0.
  * @param num_names number in names in the array
@@ -218,7 +218,7 @@ NCDObject NCDObject_Build (NCD_string_id_t type, void *data_ptr, NCDObject_func_
     ASSERT(type >= -1)
     ASSERT(func_getvar)
     ASSERT(func_getobj)
-    
+
     NCDObject obj;
     obj.type = type;
     obj.data_int = 0;
@@ -226,7 +226,7 @@ NCDObject NCDObject_Build (NCD_string_id_t type, void *data_ptr, NCDObject_func_
     obj.method_user = data_ptr;
     obj.func_getvar = func_getvar;
     obj.func_getobj = func_getobj;
-    
+
     return obj;
 }
 
@@ -235,7 +235,7 @@ NCDObject NCDObject_BuildFull (NCD_string_id_t type, void *data_ptr, int data_in
     ASSERT(type >= -1)
     ASSERT(func_getvar)
     ASSERT(func_getobj)
-    
+
     NCDObject obj;
     obj.type = type;
     obj.data_int = data_int;
@@ -243,7 +243,7 @@ NCDObject NCDObject_BuildFull (NCD_string_id_t type, void *data_ptr, int data_in
     obj.method_user = method_user;
     obj.func_getvar = func_getvar;
     obj.func_getobj = func_getobj;
-    
+
     return obj;
 }
 
@@ -272,12 +272,12 @@ int NCDObject_GetVar (const NCDObject *o, NCD_string_id_t name, NCDValMem *mem, 
     ASSERT(name >= 0)
     ASSERT(mem)
     ASSERT(out_value)
-    
+
     int res = o->func_getvar(o, name, mem, out_value);
-    
+
     ASSERT(res == 0 || res == 1)
     ASSERT(res == 0 || (NCDVal_Assert(*out_value), 1))
-    
+
     return res;
 }
 
@@ -285,11 +285,11 @@ int NCDObject_GetObj (const NCDObject *o, NCD_string_id_t name, NCDObject *out_o
 {
     ASSERT(name >= 0)
     ASSERT(out_object)
-    
+
     int res = o->func_getobj(o, name, out_object);
-    
+
     ASSERT(res == 0 || res == 1)
-    
+
     return res;
 }
 
@@ -299,7 +299,7 @@ static NCDObject NCDObject__dig_into_object (NCDObject object)
     while (NCDObject_GetObj(&object, NCD_STRING_EMPTY, &obj2)) {
         object = obj2;
     }
-    
+
     return object;
 }
 
@@ -308,25 +308,25 @@ int NCDObject_ResolveVarExprCompact (const NCDObject *o, const NCD_string_id_t *
     ASSERT(num_names == 0 || names)
     ASSERT(mem)
     ASSERT(out_value)
-    
+
     NCDObject object = NCDObject__dig_into_object(*o);
-    
+
     while (num_names > 0) {
         NCDObject obj2;
         if (!NCDObject_GetObj(&object, *names, &obj2)) {
             if (num_names == 1 && NCDObject_GetVar(&object, *names, mem, out_value)) {
                 return 1;
             }
-            
+
             return 0;
         }
-        
+
         object = NCDObject__dig_into_object(obj2);
-        
+
         names++;
         num_names--;
     }
-    
+
     return NCDObject_GetVar(&object, NCD_STRING_EMPTY, mem, out_value);
 }
 
@@ -334,21 +334,21 @@ int NCDObject_ResolveObjExprCompact (const NCDObject *o, const NCD_string_id_t *
 {
     ASSERT(num_names == 0 || names)
     ASSERT(out_object)
-    
+
     NCDObject object = NCDObject__dig_into_object(*o);
-    
+
     while (num_names > 0) {
         NCDObject obj2;
         if (!NCDObject_GetObj(&object, *names, &obj2)) {
             return 0;
         }
-        
+
         object = NCDObject__dig_into_object(obj2);
-        
+
         names++;
         num_names--;
     }
-    
+
     *out_object = object;
     return 1;
 }

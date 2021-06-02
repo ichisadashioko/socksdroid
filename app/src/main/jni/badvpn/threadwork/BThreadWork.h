@@ -1,9 +1,9 @@
 /**
  * @file BThreadWork.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * System for performing computations (possibly) in parallel with the event loop
  * in a different thread.
  */
@@ -58,14 +58,14 @@ struct BThreadWorkDispatcher_s;
 /**
  * Function called to do the work for a {@link BThreadWork}.
  * The function may be called in another thread, in parallel with the event loop.
- * 
+ *
  * @param user as work_func_user in {@link BThreadWork_Init}
  */
 typedef void (*BThreadWork_work_func) (void *user);
 
 /**
  * Handler called when a {@link BThreadWork} work is done.
- * 
+ *
  * @param user as in {@link BThreadWork_Init}
  */
 typedef void (*BThreadWork_handler_done) (void *user);
@@ -120,7 +120,7 @@ typedef struct BThreadWork_s {
 /**
  * Initializes the work dispatcher.
  * Works may be started using {@link BThreadWork_Init}.
- * 
+ *
  * @param o the object
  * @param reactor reactor we live in
  * @param num_threads_hint hint for the number of threads to use:
@@ -134,7 +134,7 @@ int BThreadWorkDispatcher_Init (BThreadWorkDispatcher *o, BReactor *reactor, int
 /**
  * Frees the work dispatcher.
  * There must be no {@link BThreadWork}'s with this dispatcher.
- * 
+ *
  * @param o the object
  */
 void BThreadWorkDispatcher_Free (BThreadWorkDispatcher *o);
@@ -142,14 +142,14 @@ void BThreadWorkDispatcher_Free (BThreadWorkDispatcher *o);
 /**
  * Determines whether threads are being used for computations, or computations
  * are done in the event loop.
- * 
+ *
  * @return 1 if threads are being used, 0 if not
  */
 int BThreadWorkDispatcher_UsingThreads (BThreadWorkDispatcher *o);
 
 /**
  * Initializes the work.
- * 
+ *
  * @param o the object
  * @param d work dispatcher
  * @param handler_done handler to call when the work is done
@@ -163,7 +163,7 @@ void BThreadWork_Init (BThreadWork *o, BThreadWorkDispatcher *d, BThreadWork_han
  * Frees the work.
  * After this function returns, the work function will either have fully executed,
  * or not called at all, and never will be.
- * 
+ *
  * @param o the object
  */
 void BThreadWork_Free (BThreadWork *o);

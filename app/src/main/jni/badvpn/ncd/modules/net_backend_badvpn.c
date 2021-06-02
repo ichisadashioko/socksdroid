@@ -1,9 +1,9 @@
 /**
  * @file net_backend_badvpn.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,11 +25,11 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * BadVPN interface module.
- * 
+ *
  * Synopsis: net.backend.badvpn(string ifname, string user, string exec, list(string) args)
  */
 
@@ -71,17 +71,17 @@ void try_process (struct instance *o)
     if (!CmdLine_Init(&c)) {
         goto fail0;
     }
-    
+
     // append exec
     if (!CmdLine_AppendNoNull(&c, o->exec, o->exec_len)) {
         goto fail1;
     }
-    
+
     // append tapdev
     if (!CmdLine_Append(&c, "--tapdev") || !CmdLine_Append(&c, o->ifname_nts.data)) {
         goto fail1;
     }
-    
+
     // append arguments
     size_t count = NCDVal_ListCount(o->args);
     for (size_t j = 0; j < count; j++) {
@@ -90,25 +90,25 @@ void try_process (struct instance *o)
             goto fail1;
         }
     }
-    
+
     // terminate cmdline
     if (!CmdLine_Finish(&c)) {
         goto fail1;
     }
-    
+
     // start process
     if (!BProcess_Init(&o->process, o->i->params->iparams->manager, (BProcess_handler)process_handler, o, ((char **)c.arr.v)[0], (char **)c.arr.v, o->user)) {
         ModuleLog(o->i, BLOG_ERROR, "BProcess_Init failed");
         goto fail1;
     }
-    
+
     CmdLine_Free(&c);
-    
+
     // set started
     o->started = 1;
-    
+
     return;
-    
+
 fail1:
     CmdLine_Free(&c);
 fail0:
@@ -120,20 +120,20 @@ fail0:
 void process_handler (struct instance *o, int normally, uint8_t normally_exit_status)
 {
     ASSERT(o->started)
-    
+
     ModuleLog(o->i, BLOG_INFO, "process terminated");
-    
+
     // free process
     BProcess_Free(&o->process);
-    
+
     // set not started
     o->started = 0;
-    
+
     if (o->dying) {
         instance_free(o);
         return;
     }
-    
+
     // set timer
     BReactor_SetTimer(o->i->params->iparams->reactor, &o->timer);
 }
@@ -141,9 +141,9 @@ void process_handler (struct instance *o, int normally, uint8_t normally_exit_st
 void timer_handler (struct instance *o)
 {
     ASSERT(!o->started)
-    
+
     ModuleLog(o->i, BLOG_INFO, "retrying");
-    
+
     // try starting process again
     try_process(o);
 }
@@ -152,7 +152,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef ifname_arg;
     NCDValRef user_arg;
@@ -167,13 +167,13 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     o->user = NCDVal_StringData(user_arg);
     o->user_len = NCDVal_StringLength(user_arg);
     o->exec = NCDVal_StringData(exec_arg);
     o->exec_len = NCDVal_StringLength(exec_arg);
     o->args = args_arg;
-    
+
     // check arguments
     size_t count = NCDVal_ListCount(o->args);
     for (size_t j = 0; j < count; j++) {
@@ -183,38 +183,38 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
             goto fail0;
         }
     }
-    
+
     // null terminate ifname
     if (!NCDVal_StringNullTerminate(ifname_arg, &o->ifname_nts)) {
         ModuleLog(i, BLOG_ERROR, "NCDVal_StringNullTerminate failed");
         goto fail0;
     }
-    
+
     // create TAP device
     if (!NCDIfConfig_make_tuntap(o->ifname_nts.data, o->user, 0)) {
         ModuleLog(o->i, BLOG_ERROR, "failed to create TAP device");
         goto fail1;
     }
-    
+
     // set device up
     if (!NCDIfConfig_set_up(o->ifname_nts.data)) {
         ModuleLog(o->i, BLOG_ERROR, "failed to set device up");
         goto fail2;
     }
-    
+
     // set not dying
     o->dying = 0;
-    
+
     // init timer
     BTimer_Init(&o->timer, RETRY_TIME, (BTimer_handler)timer_handler, o);
-    
+
     // signal up
     NCDModuleInst_Backend_Up(o->i);
-    
+
     // try starting process
     try_process(o);
     return;
-    
+
 fail2:
     if (!NCDIfConfig_remove_tuntap(o->ifname_nts.data, 0)) {
         ModuleLog(o->i, BLOG_ERROR, "failed to remove TAP device");
@@ -228,23 +228,23 @@ fail0:
 void instance_free (struct instance *o)
 {
     ASSERT(!o->started)
-    
+
     // free timer
     BReactor_RemoveTimer(o->i->params->iparams->reactor, &o->timer);
-    
+
     // set device down
     if (!NCDIfConfig_set_down(o->ifname_nts.data)) {
         ModuleLog(o->i, BLOG_ERROR, "failed to set device down");
     }
-    
+
     // free TAP device
     if (!NCDIfConfig_remove_tuntap(o->ifname_nts.data, 0)) {
         ModuleLog(o->i, BLOG_ERROR, "failed to remove TAP device");
     }
-    
+
     // free ifname nts
     NCDValNullTermString_Free(&o->ifname_nts);
-    
+
     NCDModuleInst_Backend_Dead(o->i);
 }
 
@@ -252,15 +252,15 @@ static void func_die (void *vo)
 {
     struct instance *o = vo;
     ASSERT(!o->dying)
-    
+
     if (!o->started) {
         instance_free(o);
         return;
     }
-    
+
     // request termination
     BProcess_Terminate(&o->process);
-    
+
     // remember dying
     o->dying = 1;
 }

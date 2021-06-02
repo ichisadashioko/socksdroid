@@ -1,6 +1,6 @@
 process main {
     var("0") x;
-    
+
     var("false") backtrack_check;
     backtrack_point() point;
     If (backtrack_check) {
@@ -8,36 +8,36 @@ process main {
         assert(a);
         call("phase2", {});
     };
-    
+
     process_manager() mgr;
-    
+
     mgr->start("name", "increment", {"1", "2", "false"});
     val_equal(x, "1") a;
     assert(a);
-    
+
     mgr->stop("name");
     val_equal(x, "3") a;
     assert(a);
-    
+
     mgr->start("name", "increment", {"3", "4", "true"});
     val_equal(x, "6") a;
     assert(a);
-    
+
     mgr->stop("name");
     val_equal(x, "6") a;
     assert(a);
-    
+
     mgr->start("name", "increment", {"5", "6", "false"});
     val_equal(x, "6") a;
     assert(a);
-    
+
     backtrack_check->set("true");
     point->go();
 }
 
 template phase2 {
     var("0") x;
-    
+
     var("false") backtrack_check;
     backtrack_point() point;
     If (backtrack_check) {
@@ -45,32 +45,32 @@ template phase2 {
         assert(a);
         call("phase3", {});
     };
-    
+
     process_manager() mgr;
-    
+
     mgr->start("name", "increment", {"1", "2", "true"});
     val_equal(x, "1") a;
     assert(a);
-    
+
     mgr->stop("name");
     val_equal(x, "1") a;
     assert(a);
-    
+
     mgr->start("name", "increment", {"3", "4", "true"});
     val_equal(x, "1") a;
     assert(a);
-    
+
     depend("INC_DONE");
     val_equal(x, "6") a;
     assert(a);
-    
+
     backtrack_check->set("true");
     point->go();
 }
 
 template phase3 {
     var("0") x;
-    
+
     var("false") backtrack_check;
     backtrack_point() point;
     If (backtrack_check) {
@@ -78,13 +78,13 @@ template phase3 {
         assert(a);
         exit("0");
     };
-    
+
     process_manager() mgr;
-    
+
     mgr->start("increment", {"1", "2", "false"});
     val_equal(x, "1") a;
     assert(a);
-    
+
     mgr->start("increment", {"3", "4", "false"});
     val_equal(x, "4") a;
     assert(a);

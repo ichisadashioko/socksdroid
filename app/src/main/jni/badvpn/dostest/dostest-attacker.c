@@ -1,9 +1,9 @@
 /**
  * @file dostest-attacker.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -105,17 +105,17 @@ int main (int argc, char **argv)
     if (argc <= 0) {
         return 1;
     }
-    
+
     // open standard streams
     open_standard_streams();
-    
+
     // parse command-line arguments
     if (!parse_arguments(argc, argv)) {
         fprintf(stderr, "Failed to parse arguments\n");
         print_help(argv[0]);
         goto fail0;
     }
-    
+
     // handle --help and --version
     if (options.help) {
         print_version();
@@ -126,10 +126,10 @@ int main (int argc, char **argv)
         print_version();
         return 0;
     }
-    
+
     // init loger
     BLog_InitStderr();
-    
+
     // configure logger channels
     for (int i = 0; i < BLOG_NUM_CHANNELS; i++) {
         if (options.loglevels[i] >= 0) {
@@ -139,49 +139,49 @@ int main (int argc, char **argv)
             BLog_SetChannelLoglevel(i, options.loglevel);
         }
     }
-    
+
     BLog(BLOG_NOTICE, "initializing "GLOBAL_PRODUCT_NAME" "PROGRAM_NAME" "GLOBAL_VERSION);
-    
+
     // initialize network
     if (!BNetwork_GlobalInit()) {
         BLog(BLOG_ERROR, "BNetwork_GlobalInit failed");
         goto fail1;
     }
-    
+
     // process arguments
     if (!process_arguments()) {
         BLog(BLOG_ERROR, "Failed to process arguments");
         goto fail1;
     }
-    
+
     // init time
     BTime_Init();
-    
+
     // init reactor
     if (!BReactor_Init(&reactor)) {
         BLog(BLOG_ERROR, "BReactor_Init failed");
         goto fail1;
     }
-    
+
     // setup signal handler
     if (!BSignal_Init(&reactor, signal_handler, NULL)) {
         BLog(BLOG_ERROR, "BSignal_Init failed");
         goto fail2;
     }
-    
+
     // init connections list
     LinkedList1_Init(&connections_list);
     num_connections = 0;
     num_connecting = 0;
-    
+
     // init make connections timer
     BTimer_Init(&make_connections_timer, 0, make_connections_timer_handler, NULL);
     BReactor_SetTimer(&reactor, &make_connections_timer);
-    
+
     // enter event loop
     BLog(BLOG_NOTICE, "entering event loop");
     BReactor_Exec(&reactor);
-    
+
     // free connections
     while (!LinkedList1_IsEmpty(&connections_list)) {
         struct connection *conn = UPPER_OBJECT(LinkedList1_GetFirst(&connections_list), struct connection, connections_list_node);
@@ -201,7 +201,7 @@ fail1:
 fail0:
     // finish debug objects
     DebugObjectGlobal_Finish();
-    
+
     return 1;
 }
 
@@ -238,7 +238,7 @@ int parse_arguments (int argc, char *argv[])
     for (int i = 0; i < BLOG_NUM_CHANNELS; i++) {
         options.loglevels[i] = -1;
     }
-    
+
     int i;
     for (i = 1; i < argc; i++) {
         char *arg = argv[i];
@@ -312,26 +312,26 @@ int parse_arguments (int argc, char *argv[])
             return 0;
         }
     }
-    
+
     if (options.help || options.version) {
         return 1;
     }
-    
+
     if (!options.connect_addr) {
         fprintf(stderr, "--connect-addr missing\n");
         return 0;
     }
-    
+
     if (options.max_connections == -1) {
         fprintf(stderr, "--max-connections missing\n");
         return 0;
     }
-    
+
     if (options.max_connecting == -1) {
         fprintf(stderr, "--max-connecting missing\n");
         return 0;
     }
-    
+
     return 1;
 }
 
@@ -342,14 +342,14 @@ int process_arguments (void)
         BLog(BLOG_ERROR, "connect addr: BAddr_Parse failed");
         return 0;
     }
-    
+
     return 1;
 }
 
 void signal_handler (void *unused)
 {
     BLog(BLOG_NOTICE, "termination requested");
-    
+
     // exit event loop
     BReactor_Quit(&reactor, 1);
 }
@@ -362,23 +362,23 @@ int connection_new (void)
         BLog(BLOG_ERROR, "malloc failed");
         goto fail0;
     }
-    
+
     // set not connected
     conn->connected = 0;
-    
+
     // init connector
     if (!BConnector_Init(&conn->connector, connect_addr, &reactor, conn, (BConnector_handler)connection_connector_handler)) {
         BLog(BLOG_ERROR, "BConnector_Init failed");
         goto fail1;
     }
-    
+
     // add to connections list
     LinkedList1_Append(&connections_list, &conn->connections_list_node);
     num_connections++;
     num_connecting++;
-    
+
     return 1;
-    
+
 fail1:
     free(conn);
 fail0:
@@ -393,18 +393,18 @@ void connection_free (struct connection *conn)
     if (!conn->connected) {
         num_connecting--;
     }
-    
+
     if (conn->connected) {
         // free receive interface
         BConnection_RecvAsync_Free(&conn->con);
-        
+
         // free connection
         BConnection_Free(&conn->con);
     }
-    
+
     // free connector
     BConnector_Free(&conn->connector);
-    
+
     // free structure
     free(conn);
 }
@@ -425,41 +425,41 @@ void connection_log (struct connection *conn, int level, const char *fmt, ...)
 void connection_connector_handler (struct connection *conn, int is_error)
 {
     ASSERT(!conn->connected)
-    
+
     // check for connection error
     if (is_error) {
         connection_log(conn, BLOG_INFO, "failed to connect");
         goto fail0;
     }
-    
+
     // init connection from connector
     if (!BConnection_Init(&conn->con, BConnection_source_connector(&conn->connector), &reactor, conn, (BConnection_handler)connection_connection_handler)) {
         connection_log(conn, BLOG_INFO, "BConnection_Init failed");
         goto fail0;
     }
-    
+
     // init receive interface
     BConnection_RecvAsync_Init(&conn->con);
     conn->recv_if = BConnection_RecvAsync_GetIf(&conn->con);
     StreamRecvInterface_Receiver_Init(conn->recv_if, (StreamRecvInterface_handler_done)connection_recv_handler_done, conn);
-    
+
     // start receiving
     StreamRecvInterface_Receiver_Recv(conn->recv_if, conn->buf, sizeof(conn->buf));
-    
+
     // no longer connecting
     conn->connected = 1;
     num_connecting--;
-    
+
     connection_log(conn, BLOG_INFO, "connected");
-    
+
     // schedule making connections (because of connecting limit)
     BReactor_SetTimer(&reactor, &make_connections_timer);
     return;
-    
+
 fail0:
     // free connection
     connection_free(conn);
-    
+
     // schedule making connections
     BReactor_SetTimer(&reactor, &make_connections_timer);
 }
@@ -467,16 +467,16 @@ fail0:
 void connection_connection_handler (struct connection *conn, int event)
 {
     ASSERT(conn->connected)
-    
+
     if (event == BCONNECTION_EVENT_RECVCLOSED) {
         connection_log(conn, BLOG_INFO, "connection closed");
     } else {
         connection_log(conn, BLOG_INFO, "connection error");
     }
-    
+
     // free connection
     connection_free(conn);
-    
+
     // schedule making connections
     BReactor_SetTimer(&reactor, &make_connections_timer);
 }
@@ -484,23 +484,23 @@ void connection_connection_handler (struct connection *conn, int event)
 void connection_recv_handler_done (struct connection *conn, int data_len)
 {
     ASSERT(conn->connected)
-    
+
     // receive more
     StreamRecvInterface_Receiver_Recv(conn->recv_if, conn->buf, sizeof(conn->buf));
-    
+
     connection_log(conn, BLOG_INFO, "received %d bytes", data_len);
 }
 
 void make_connections_timer_handler (void *unused)
 {
     int make_num = bmin_int(options.max_connections - num_connections, options.max_connecting - num_connecting);
-    
+
     if (make_num <= 0) {
         return;
     }
-    
+
     BLog(BLOG_INFO, "making %d connections", make_num);
-    
+
     for (int i = 0; i < make_num; i++) {
         if (!connection_new()) {
             // can happen if fd limit is reached

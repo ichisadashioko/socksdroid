@@ -1,9 +1,9 @@
 /**
  * @file NCDConfigTokenizer.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -66,14 +66,14 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
 {
     size_t line = 1;
     size_t line_char = 1;
-    
+
     while (left > 0) {
         size_t l;
         int error = 0;
         int token;
         void *token_val = NULL;
         size_t token_len = 0;
-        
+
         if (*str == '#') {
             l = 1;
             while (l < left && str[l] != '\n') {
@@ -146,7 +146,7 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
             while (l < left && is_name_char(str[l])) {
                 l++;
             }
-            
+
             // allocate buffer
             bsize_t bufsize = bsize_add(bsize_fromsize(l), bsize_fromint(1));
             char *buf;
@@ -155,11 +155,11 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
                 error = 1;
                 goto out;
             }
-            
+
             // copy and terminate
             memcpy(buf, str, l);
             buf[l] = '\0';
-            
+
             if (!strcmp(buf, "process")) {
                 token = NCD_TOKEN_PROCESS;
                 free(buf);
@@ -181,30 +181,30 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
                 BLog(BLOG_ERROR, "ExpString_Init failed");
                 goto string_fail0;
             }
-            
+
             // skip start quote
             l = 1;
-            
+
             // decode string
             while (l < left) {
                 uint8_t dec_ch;
-                
+
                 // get character
                 if (str[l] == '\\') {
                     if (left - l < 2) {
                         BLog(BLOG_ERROR, "escape character found in string but nothing follows");
                         goto string_fail1;
                     }
-                    
+
                     size_t extra = 0;
-                    
+
                     switch (str[l + 1]) {
                         case '\'':
                         case '\"':
                         case '\\':
                         case '\?':
                             dec_ch = str[l + 1]; break;
-                        
+
                         case 'a':
                             dec_ch = '\a'; break;
                         case 'b':
@@ -219,31 +219,31 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
                             dec_ch = '\t'; break;
                         case 'v':
                             dec_ch = '\v'; break;
-                        
+
                         case '0':
                             dec_ch = 0; break;
-                        
+
                         case 'x': {
                             if (left - l < 4) {
                                 BLog(BLOG_ERROR, "hexadecimal escape found in string but too little characters follow");
                                 goto string_fail1;
                             }
-                            
+
                             uintmax_t hex_val;
                             if (!parse_unsigned_hex_integer_bin(&str[l + 2], 2, &hex_val)) {
                                 BLog(BLOG_ERROR, "hexadecimal escape found in string but two hex characters don't follow");
                                 goto string_fail1;
                             }
-                            
+
                             dec_ch = hex_val;
                             extra = 2;
                         } break;
-                        
+
                         default:
                             BLog(BLOG_ERROR, "bad escape sequence in string");
                             goto string_fail1;
                     }
-                    
+
                     l += 2 + extra;
                 }
                 else if (str[l] == '"') {
@@ -253,28 +253,28 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
                     dec_ch = str[l];
                     l++;
                 }
-                
+
                 // append character to string
                 if (!ExpString_AppendByte(&estr, dec_ch)) {
                     BLog(BLOG_ERROR, "ExpString_AppendChar failed");
                     goto string_fail1;
                 }
             }
-            
+
             // make sure ending quote was found
             if (l == left) {
                 BLog(BLOG_ERROR, "missing ending quote for string");
                 goto string_fail1;
             }
-            
+
             // skip ending quote
             l++;
-            
+
             token = NCD_TOKEN_STRING;
             token_val = ExpString_Get(&estr);
             token_len = ExpString_Length(&estr);
             break;
-            
+
         string_fail1:
             ExpString_Free(&estr);
         string_fail0:
@@ -288,21 +288,21 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
             BLog(BLOG_ERROR, "unrecognized character");
             error = 1;
         }
-        
+
     out:
         // report error
         if (error) {
             output(user, NCD_ERROR, NULL, 0, line, line_char);
             return;
         }
-        
+
         // output token
         if (token) {
             if (!output(user, token, token_val, token_len, line, line_char)) {
                 return;
             }
         }
-        
+
         // update line/char counters
         for (size_t i = 0; i < l; i++) {
             if (str[i] == '\n') {
@@ -312,10 +312,10 @@ void NCDConfigTokenizer_Tokenize (char *str, size_t left, NCDConfigTokenizer_out
                 line_char++;
             }
         }
-        
+
         str += l;
         left -= l;
     }
-    
+
     output(user, NCD_EOF, NULL, 0, line, line_char);
 }

@@ -1,9 +1,9 @@
 /**
  * @file choose.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,14 +25,14 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Multiple value selection based on boolean conditions.
- * 
+ *
  * Synopsis:
  *   choose({{string cond1, result1}, ..., {string condN, resultN}}, default_result)
- * 
+ *
  * Variables:
  *   (empty) - If cond1="true" then result1,
  *             else if cond2="true" then result2,
@@ -60,7 +60,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef arg_choices;
     NCDValRef arg_default_result;
@@ -72,19 +72,19 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     // iterate choices
     int have_result = 0;
     size_t count = NCDVal_ListCount(arg_choices);
     for (size_t j = 0; j < count; j++) {
         NCDValRef c = NCDVal_ListGet(arg_choices, j);
-        
+
         // check choice type
         if (!NCDVal_IsList(c)) {
             ModuleLog(i, BLOG_ERROR, "wrong choice type");
             goto fail0;
         }
-        
+
         // read choice
         NCDValRef c_cond;
         NCDValRef c_result;
@@ -96,23 +96,23 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
             ModuleLog(i, BLOG_ERROR, "wrong choice condition type");
             goto fail0;
         }
-        
+
         // update result
         if (!have_result && ncd_read_boolean(c_cond)) {
             o->result = c_result;
             have_result = 1;
         }
     }
-    
+
     // default?
     if (!have_result) {
         o->result = arg_default_result;
     }
-    
+
     // signal up
     NCDModuleInst_Backend_Up(o->i);
     return;
-    
+
 fail0:
     NCDModuleInst_Backend_DeadError(i);
 }
@@ -120,12 +120,12 @@ fail0:
 static int func_getvar2 (void *vo, NCD_string_id_t name, NCDValMem *mem, NCDValRef *out)
 {
     struct instance *o = vo;
-    
+
     if (name == NCD_STRING_EMPTY) {
         *out = NCDVal_NewCopy(mem, o->result);
         return 1;
     }
-    
+
     return 0;
 }
 

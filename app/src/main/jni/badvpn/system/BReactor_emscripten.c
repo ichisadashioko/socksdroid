@@ -1,9 +1,9 @@
 /**
  * @file BReactor_emscripten.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -58,9 +58,9 @@ void breactor_timer_cb (BReactor *reactor, BTimer *bt)
     assert_timer(bt, reactor);
     ASSERT(bt->active);
     ASSERT(!BPendingGroup_HasJobs(&reactor->pending_jobs));
-    
+
     bt->active = 0;
-    
+
     bt->handler(bt->handler_pointer);
     dispatch_pending(reactor);
 }
@@ -68,7 +68,7 @@ void breactor_timer_cb (BReactor *reactor, BTimer *bt)
 static void small_timer_handler (void *vbt)
 {
     BSmallTimer *bt = vbt;
-    
+
     bt->handler(bt);
 }
 
@@ -83,7 +83,7 @@ void BTimer_Init (BTimer *bt, btime_t msTime, BTimer_handler handler, void *user
 int BTimer_IsRunning (BTimer *bt)
 {
     assert_timer(bt, NULL);
-    
+
     return bt->active;
 }
 
@@ -101,7 +101,7 @@ int BSmallTimer_IsRunning (BSmallTimer *bt)
 void BReactor_EmscriptenInit (BReactor *bsys)
 {
     BPendingGroup_Init(&bsys->pending_jobs);
-    
+
     DebugObject_Init(&bsys->d_obj);
 }
 
@@ -114,14 +114,14 @@ void BReactor_EmscriptenFree (BReactor *bsys)
 void BReactor_EmscriptenSync (BReactor *bsys)
 {
     DebugObject_Access(&bsys->d_obj);
-    
+
     dispatch_pending(bsys);
 }
 
 BPendingGroup * BReactor_PendingGroup (BReactor *bsys)
 {
     DebugObject_Access(&bsys->d_obj);
-    
+
     return &bsys->pending_jobs;
 }
 
@@ -134,14 +134,14 @@ void BReactor_SetTimerAfter (BReactor *bsys, BTimer *bt, btime_t after)
 {
     DebugObject_Access(&bsys->d_obj);
     assert_timer(bt, bsys);
-    
+
     if (bt->active) {
         BReactor_RemoveTimer(bsys, bt);
     }
-    
+
     char cmd[120];
     sprintf(cmd, "setTimeout(function(){Module.ccall('breactor_timer_cb','null',['number','number'],[%d,%d]);},%"PRIi64")", (int)bsys, (int)bt, after);
-    
+
     bt->active = 1;
     bt->timerid = emscripten_run_script_int(cmd);
     bt->reactor = bsys;
@@ -151,14 +151,14 @@ void BReactor_RemoveTimer (BReactor *bsys, BTimer *bt)
 {
     DebugObject_Access(&bsys->d_obj);
     assert_timer(bt, bsys);
-    
+
     if (!bt->active) {
         return;
     }
-    
+
     char cmd[30];
     sprintf(cmd, "clearTimeout(%d)", bt->timerid);
-    
+
     emscripten_run_script(cmd);
     bt->active = 0;
 }
@@ -166,7 +166,7 @@ void BReactor_RemoveTimer (BReactor *bsys, BTimer *bt)
 void BReactor_SetSmallTimer (BReactor *bsys, BSmallTimer *bt, int mode, btime_t time)
 {
     ASSERT(mode == BTIMER_SET_RELATIVE)
-    
+
     BReactor_SetTimerAfter(bsys, &bt->timer, time);
 }
 

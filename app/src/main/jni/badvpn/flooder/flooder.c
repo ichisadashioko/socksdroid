@@ -1,9 +1,9 @@
 /**
  * @file flooder.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -162,17 +162,17 @@ int main (int argc, char *argv[])
     if (argc <= 0) {
         return 1;
     }
-    
+
     // open standard streams
     open_standard_streams();
-    
+
     // parse command-line arguments
     if (!parse_arguments(argc, argv)) {
         fprintf(stderr, "Failed to parse arguments\n");
         print_help(argv[0]);
         goto fail0;
     }
-    
+
     // handle --help and --version
     if (options.help) {
         print_version();
@@ -183,7 +183,7 @@ int main (int argc, char *argv[])
         print_version();
         return 0;
     }
-    
+
     // initialize logger
     switch (options.logger) {
         case LOGGER_STDOUT:
@@ -200,7 +200,7 @@ int main (int argc, char *argv[])
         default:
             ASSERT(0);
     }
-    
+
     // configure logger channels
     for (int i = 0; i < BLOG_NUM_CHANNELS; i++) {
         if (options.loglevels[i] >= 0) {
@@ -210,71 +210,71 @@ int main (int argc, char *argv[])
             BLog_SetChannelLoglevel(i, options.loglevel);
         }
     }
-    
+
     BLog(BLOG_NOTICE, "initializing "GLOBAL_PRODUCT_NAME" "PROGRAM_NAME" "GLOBAL_VERSION);
-    
+
     // initialize network
     if (!BNetwork_GlobalInit()) {
         BLog(BLOG_ERROR, "BNetwork_GlobalInit failed");
         goto fail1;
     }
-    
+
     // init time
     BTime_Init();
-    
+
     // resolve addresses
     if (!resolve_arguments()) {
         BLog(BLOG_ERROR, "Failed to resolve arguments");
         goto fail1;
     }
-    
+
     // init reactor
     if (!BReactor_Init(&ss)) {
         BLog(BLOG_ERROR, "BReactor_Init failed");
         goto fail1;
     }
-    
+
     // setup signal handler
     if (!BSignal_Init(&ss, signal_handler, NULL)) {
         BLog(BLOG_ERROR, "BSignal_Init failed");
         goto fail1a;
     }
-    
+
     if (options.ssl) {
         // init NSPR
         PR_Init(PR_USER_THREAD, PR_PRIORITY_NORMAL, 0);
-        
+
         // register local NSPR file types
         if (!BSSLConnection_GlobalInit()) {
             BLog(BLOG_ERROR, "BSSLConnection_GlobalInit failed");
             goto fail3;
         }
-        
+
         // init NSS
         if (NSS_Init(options.nssdb) != SECSuccess) {
             BLog(BLOG_ERROR, "NSS_Init failed (%d)", (int)PR_GetError());
             goto fail2;
         }
-        
+
         // set cipher policy
         if (NSS_SetDomesticPolicy() != SECSuccess) {
             BLog(BLOG_ERROR, "NSS_SetDomesticPolicy failed (%d)", (int)PR_GetError());
             goto fail3;
         }
-        
+
         // init server cache
         if (SSL_ConfigServerSessionIDCache(0, 0, 0, NULL) != SECSuccess) {
             BLog(BLOG_ERROR, "SSL_ConfigServerSessionIDCache failed (%d)", (int)PR_GetError());
             goto fail3;
         }
-        
+
         // open server certificate and private key
         if (!open_nss_cert_and_key(options.client_cert_name, &client_cert, &client_key)) {
             BLog(BLOG_ERROR, "Cannot open certificate and key");
             goto fail4;
         }
     }
-    
+
     // start connecting to server
     if (!ServerConnection_Init(
         &server, &ss, NULL, server_addr, SC_KEEPALIVE_INTERVAL, SERVER_BUFFER_MIN_PACKETS, options.ssl, 0, client_cert, client_key, server_name, NULL,
@@ -283,21 +283,21 @@ int main (int argc, char *argv[])
         BLog(BLOG_ERROR, "ServerConnection_Init failed");
         goto fail5;
     }
-    
+
     // set server not ready
     server_ready = 0;
-    
+
     // enter event loop
     BLog(BLOG_NOTICE, "entering event loop");
     BReactor_Exec(&ss);
-    
+
     if (server_ready) {
         ServerConnection_ReleaseBuffers(&server);
         SinglePacketBuffer_Free(&flood_buffer);
         PacketProtoEncoder_Free(&flood_encoder);
         PacketRecvInterface_Free(&flood_source);
     }
-    
+
     ServerConnection_Free(&server);
 fail5:
     if (options.ssl) {
@@ -312,7 +312,7 @@ fail2:
         ASSERT_FORCE(PR_Cleanup() == PR_SUCCESS)
         PL_ArenaFinish();
     }
-    
+
     BSignal_Finish();
 fail1a:
     BReactor_Free(&ss);
@@ -321,14 +321,14 @@ fail1:
     BLog_Free();
 fail0:
     DebugObjectGlobal_Finish();
-    
+
     return 1;
 }
 
 void terminate (void)
 {
     BLog(BLOG_NOTICE, "tearing down");
-    
+
     // exit event loop
     BReactor_Quit(&ss, 0);
 }
@@ -368,7 +368,7 @@ int parse_arguments (int argc, char *argv[])
     if (argc <= 0) {
         return 0;
     }
-    
+
     options.help = 0;
     options.version = 0;
     options.logger = LOGGER_STDOUT;
@@ -386,7 +386,7 @@ int parse_arguments (int argc, char *argv[])
     options.server_name = NULL;
     options.server_addr = NULL;
     options.num_floods = 0;
-    
+
     int i;
     for (i = 1; i < argc; i++) {
         char *arg = argv[i];
@@ -516,26 +516,26 @@ int parse_arguments (int argc, char *argv[])
             return 0;
         }
     }
-    
+
     if (options.help || options.version) {
         return 1;
     }
-    
+
     if (options.ssl != !!options.nssdb) {
         fprintf(stderr, "False: --ssl <=> --nssdb\n");
         return 0;
     }
-    
+
     if (options.ssl != !!options.client_cert_name) {
         fprintf(stderr, "False: --ssl <=> --client-cert-name\n");
         return 0;
     }
-    
+
     if (!options.server_addr) {
         fprintf(stderr, "False: --server-addr\n");
         return 0;
     }
-    
+
     return 1;
 }
 
@@ -551,7 +551,7 @@ int resolve_arguments (void)
         BLog(BLOG_ERROR, "server addr: not supported");
         return 0;
     }
-    
+
     // override server name if requested
     if (options.server_name) {
         if (strlen(options.server_name) >= sizeof(server_name)) {
@@ -560,55 +560,55 @@ int resolve_arguments (void)
         }
         strcpy(server_name, options.server_name);
     }
-    
+
     return 1;
 }
 
 void signal_handler (void *unused)
 {
     BLog(BLOG_NOTICE, "termination requested");
-    
+
     terminate();
 }
 
 void server_handler_error (void *user)
 {
     BLog(BLOG_ERROR, "server connection failed, exiting");
-    
+
     terminate();
 }
 
 void server_handler_ready (void *user, peerid_t param_my_id, uint32_t ext_ip)
 {
     ASSERT(!server_ready)
-    
+
     // remember our ID
     my_id = param_my_id;
-    
+
     // init flooding
-    
+
     // init source
     PacketRecvInterface_Init(&flood_source, SC_MAX_ENC, flood_source_handler_recv, NULL, BReactor_PendingGroup(&ss));
-    
+
     // init encoder
     PacketProtoEncoder_Init(&flood_encoder, &flood_source, BReactor_PendingGroup(&ss));
-    
+
     // init buffer
     if (!SinglePacketBuffer_Init(&flood_buffer, PacketProtoEncoder_GetOutput(&flood_encoder), ServerConnection_GetSendInterface(&server), BReactor_PendingGroup(&ss))) {
         BLog(BLOG_ERROR, "SinglePacketBuffer_Init failed, exiting");
         goto fail1;
     }
-    
+
     // set not blocking
     flood_blocking = 0;
-    
+
     // set server ready
     server_ready = 1;
-    
+
     BLog(BLOG_INFO, "server: ready, my ID is %d", (int)my_id);
-    
+
     return;
-    
+
 fail1:
     PacketProtoEncoder_Free(&flood_encoder);
     PacketRecvInterface_Free(&flood_source);
@@ -618,14 +618,14 @@ fail1:
 void server_handler_newclient (void *user, peerid_t peer_id, int flags, const uint8_t *cert, int cert_len)
 {
     ASSERT(server_ready)
-    
+
     BLog(BLOG_INFO, "newclient %d", (int)peer_id);
 }
 
 void server_handler_endclient (void *user, peerid_t peer_id)
 {
     ASSERT(server_ready)
-    
+
     BLog(BLOG_INFO, "endclient %d", (int)peer_id);
 }
 
@@ -634,7 +634,7 @@ void server_handler_message (void *user, peerid_t peer_id, uint8_t *data, int da
     ASSERT(server_ready)
     ASSERT(data_len >= 0)
     ASSERT(data_len <= SC_MAX_MSGLEN)
-    
+
     BLog(BLOG_INFO, "message from %d", (int)peer_id);
 }
 
@@ -646,26 +646,26 @@ void flood_source_handler_recv (void *user, uint8_t *data)
         ASSERT(flood_next >= 0)
         ASSERT(flood_next < options.num_floods)
     }
-    
+
     if (options.num_floods == 0) {
         flood_blocking = 1;
         return;
     }
-    
+
     peerid_t peer_id = options.floods[flood_next];
     flood_next = (flood_next + 1) % options.num_floods;
-    
+
     BLog(BLOG_INFO, "message to %d", (int)peer_id);
-    
+
     struct sc_header header;
     header.type = SCID_OUTMSG;
     memcpy(data, &header, sizeof(header));
-    
+
     struct sc_client_outmsg omsg;
     omsg.clientid = htol16(peer_id);
     memcpy(data + sizeof(header), &omsg, sizeof(omsg));
-    
+
     memset(data + sizeof(struct sc_header) + sizeof(struct sc_client_outmsg), 0, SC_MAX_MSGLEN);
-    
+
     PacketRecvInterface_Done(&flood_source, sizeof(struct sc_header) + sizeof(struct sc_client_outmsg) + SC_MAX_MSGLEN);
 }

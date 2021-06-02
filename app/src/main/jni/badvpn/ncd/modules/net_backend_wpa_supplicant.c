@@ -1,9 +1,9 @@
 /**
  * @file net_backend_wpa_supplicant.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,16 +25,16 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Wireless interface module which runs wpa_supplicant to connect to a wireless network.
- * 
+ *
  * Note: wpa_supplicant does not monitor the state of rfkill switches and will fail to
  * start if the switch is of when it is started, and will stop working indefinitely if the
  * switch is turned off while it is running. Therefore, you should put a "net.backend.rfkill"
  * statement in front of the wpa_supplicant statement.
- * 
+ *
  * Synopsis: net.backend.wpa_supplicant(string ifname, string conf, string exec, list(string) args)
  * Variables:
  *   bssid - BSSID of the wireless network we connected to, or "none".
@@ -119,21 +119,21 @@ int parse_hex_digit (uint8_t d, uint8_t *out)
         case 'E': case 'e': *out = 14; return 1;
         case 'F': case 'f': *out = 15; return 1;
     }
-    
+
     return 0;
 }
 
 int parse_trying (uint8_t *data, int data_len, uint8_t *out_bssid, uint8_t **out_ssid, int *out_ssid_len)
 {
     // Trying to associate with AB:CD:EF:01:23:45 (SSID='Some SSID' freq=2462 MHz)
-    
+
     int p;
     if (!(p = data_begins_with((char *)data, data_len, "Trying to associate with "))) {
         return 0;
     }
     data += p;
     data_len -= p;
-    
+
     for (int i = 0; i < 6; i++) {
         uint8_t d1;
         uint8_t d2;
@@ -143,7 +143,7 @@ int parse_trying (uint8_t *data, int data_len, uint8_t *out_bssid, uint8_t **out
         data += 2;
         data_len -= 2;
         out_bssid[i] = ((d1 << 4) | d2);
-        
+
         if (i != 5) {
             if (data_len < 1 || data[0] != ':') {
                 return 0;
@@ -152,13 +152,13 @@ int parse_trying (uint8_t *data, int data_len, uint8_t *out_bssid, uint8_t **out
             data_len -= 1;
         }
     }
-    
+
     if (!(p = data_begins_with((char *)data, data_len, " (SSID='"))) {
         return 0;
     }
     data += p;
     data_len -= p;
-    
+
     // find last '
     uint8_t *q = NULL;
     for (int i = data_len; i > 0; i--) {
@@ -170,24 +170,24 @@ int parse_trying (uint8_t *data, int data_len, uint8_t *out_bssid, uint8_t **out
     if (!q) {
         return 0;
     }
-    
+
     *out_ssid = data;
     *out_ssid_len = q - data;
-    
+
     return 1;
 }
 
 int parse_trying_nobssid (uint8_t *data, int data_len, uint8_t **out_ssid, int *out_ssid_len)
 {
     // Trying to associate with SSID 'Some SSID'
-    
+
     int p;
     if (!(p = data_begins_with((char *)data, data_len, "Trying to associate with SSID '"))) {
         return 0;
     }
     data += p;
     data_len -= p;
-    
+
     // find last '
     uint8_t *q = NULL;
     for (int i = data_len; i > 0; i--) {
@@ -199,10 +199,10 @@ int parse_trying_nobssid (uint8_t *data, int data_len, uint8_t **out_ssid, int *
     if (!q) {
         return 0;
     }
-    
+
     *out_ssid = data;
     *out_ssid_len = q - data;
-    
+
     return 1;
 }
 
@@ -212,45 +212,45 @@ int build_cmdline (struct instance *o, CmdLine *c)
     if (!CmdLine_Init(c)) {
         goto fail0;
     }
-    
+
     // append stdbuf part
     if (!build_stdbuf_cmdline(c, o->exec, o->exec_len)) {
         goto fail1;
     }
-    
+
     // append user arguments
     size_t count = NCDVal_ListCount(o->args);
     for (size_t j = 0; j < count; j++) {
         NCDValRef arg = NCDVal_ListGet(o->args, j);
-        
+
         if (!NCDVal_IsStringNoNulls(arg)) {
             ModuleLog(o->i, BLOG_ERROR, "wrong type");
             goto fail1;
         }
-        
+
         // append argument
         if (!CmdLine_AppendNoNull(c, NCDVal_StringData(arg), NCDVal_StringLength(arg))) {
             goto fail1;
         }
     }
-    
+
     // append interface name
     if (!CmdLine_Append(c, "-i") || !CmdLine_AppendNoNull(c, o->ifname, o->ifname_len)) {
         goto fail1;
     }
-    
+
     // append config file
     if (!CmdLine_Append(c, "-c") || !CmdLine_AppendNoNull(c, o->conf, o->conf_len)) {
         goto fail1;
     }
-    
+
     // terminate cmdline
     if (!CmdLine_Finish(c)) {
         goto fail1;
     }
-    
+
     return 1;
-    
+
 fail1:
     CmdLine_Free(c);
 fail0:
@@ -260,13 +260,13 @@ fail0:
 int init_info (struct instance *o, int have_bssid, const uint8_t *bssid, const uint8_t *ssid, size_t ssid_len)
 {
     ASSERT(!o->have_info)
-    
+
     // set bssid
     o->info_have_bssid = have_bssid;
     if (have_bssid) {
         memcpy(o->info_bssid, bssid, 6);
     }
-    
+
     // set ssid
     if (!(o->info_ssid = BAllocSize(bsize_add(bsize_fromsize(ssid_len), bsize_fromsize(1))))) {
         ModuleLog(o->i, BLOG_ERROR, "BAllocSize failed");
@@ -274,20 +274,20 @@ int init_info (struct instance *o, int have_bssid, const uint8_t *bssid, const u
     }
     memcpy(o->info_ssid, ssid, ssid_len);
     o->info_ssid[ssid_len] = '\0';
-    
+
     // set have info
     o->have_info = 1;
-    
+
     return 1;
 }
 
 void free_info (struct instance *o)
 {
     ASSERT(o->have_info)
-    
+
     // free ssid
     BFree(o->info_ssid);
-    
+
     // set not have info
     o->have_info = 0;
 }
@@ -300,7 +300,7 @@ void process_error (struct instance *o)
 void process_handler_terminated (struct instance *o, int normally, uint8_t normally_exit_status)
 {
     ModuleLog(o->i, (o->dying ? BLOG_INFO : BLOG_ERROR), "process terminated");
-    
+
     // die
     instance_free(o, !o->dying);
     return;
@@ -309,19 +309,19 @@ void process_handler_terminated (struct instance *o, int normally, uint8_t norma
 void process_handler_closed (struct instance *o, int is_error)
 {
     ASSERT(o->have_pipe)
-    
+
     if (is_error) {
         ModuleLog(o->i, BLOG_ERROR, "pipe error");
     } else {
         ModuleLog(o->i, BLOG_INFO, "pipe closed");
     }
-    
+
     // free buffer
     LineBuffer_Free(&o->pipe_buffer);
-    
+
     // free input interface
     PacketPassInterface_Free(&o->pipe_input);
-    
+
     // set have no pipe
     o->have_pipe = 0;
 }
@@ -330,14 +330,14 @@ void process_pipe_handler_send (struct instance *o, uint8_t *data, int data_len)
 {
     ASSERT(o->have_pipe)
     ASSERT(data_len > 0)
-    
+
     // accept packet
     PacketPassInterface_Done(&o->pipe_input);
-    
+
     if (o->dying) {
         return;
     }
-    
+
     // strip "interface: " from beginning of line. Older wpa_supplicant versions (<1.0) don't add this
     // prefix, so don't fail if there isn't one.
     size_t l1;
@@ -346,24 +346,24 @@ void process_pipe_handler_send (struct instance *o, uint8_t *data, int data_len)
         data += l1 + l2;
         data_len -= l1 + l2;
     }
-    
+
     int have_bssid = 1;
     uint8_t bssid[6];
     uint8_t *ssid;
     int ssid_len;
     if (parse_trying(data, data_len, bssid, &ssid, &ssid_len) || (have_bssid = 0, parse_trying_nobssid(data, data_len, &ssid, &ssid_len))) {
         ModuleLog(o->i, BLOG_INFO, "trying event");
-        
+
         if (o->up) {
             ModuleLog(o->i, BLOG_ERROR, "trying unexpected!");
             process_error(o);
             return;
         }
-        
+
         if (o->have_info) {
             free_info(o);
         }
-        
+
         if (!init_info(o, have_bssid, bssid, ssid, ssid_len)) {
             ModuleLog(o->i, BLOG_ERROR, "init_info failed");
             process_error(o);
@@ -372,23 +372,23 @@ void process_pipe_handler_send (struct instance *o, uint8_t *data, int data_len)
     }
     else if (data_begins_with((char *)data, data_len, EVENT_STRING_CONNECTED)) {
         ModuleLog(o->i, BLOG_INFO, "connected event");
-        
+
         if (o->up || !o->have_info) {
             ModuleLog(o->i, BLOG_ERROR, "connected unexpected!");
             process_error(o);
             return;
         }
-        
+
         o->up = 1;
         NCDModuleInst_Backend_Up(o->i);
     }
     else if (data_begins_with((char *)data, data_len, EVENT_STRING_DISCONNECTED)) {
         ModuleLog(o->i, BLOG_INFO, "disconnected event");
-        
+
         if (o->have_info) {
             free_info(o);
         }
-        
+
         if (o->up) {
             o->up = 0;
             NCDModuleInst_Backend_Down(o->i);
@@ -400,7 +400,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
 {
     struct instance *o = vo;
     o->i = i;
-    
+
     // read arguments
     NCDValRef ifname_arg;
     NCDValRef conf_arg;
@@ -415,7 +415,7 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "wrong type");
         goto fail0;
     }
-    
+
     o->ifname = NCDVal_StringData(ifname_arg);
     o->ifname_len = NCDVal_StringLength(ifname_arg);
     o->conf = NCDVal_StringData(conf_arg);
@@ -423,20 +423,20 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
     o->exec = NCDVal_StringData(exec_arg);
     o->exec_len = NCDVal_StringLength(exec_arg);
     o->args = args_arg;
-    
+
     // set not dying
     o->dying = 0;
-    
+
     // set not up
     o->up = 0;
-    
+
     // build process cmdline
     CmdLine c;
     if (!build_cmdline(o, &c)) {
         ModuleLog(o->i, BLOG_ERROR, "failed to build cmdline");
         goto fail0;
     }
-    
+
     // init process
     if (!BInputProcess_Init(&o->process, o->i->params->iparams->reactor, o->i->params->iparams->manager, o,
                             (BInputProcess_handler_terminated)process_handler_terminated,
@@ -445,31 +445,31 @@ static void func_new (void *vo, NCDModuleInst *i, const struct NCDModuleInst_new
         ModuleLog(o->i, BLOG_ERROR, "BInputProcess_Init failed");
         goto fail1;
     }
-    
+
     // init input interface
     PacketPassInterface_Init(&o->pipe_input, MAX_LINE_LEN, (PacketPassInterface_handler_send)process_pipe_handler_send, o, BReactor_PendingGroup(o->i->params->iparams->reactor));
-    
+
     // init buffer
     if (!LineBuffer_Init(&o->pipe_buffer, BInputProcess_GetInput(&o->process), &o->pipe_input, MAX_LINE_LEN, '\n')) {
         ModuleLog(o->i, BLOG_ERROR, "LineBuffer_Init failed");
         goto fail2;
     }
-    
+
     // set have pipe
     o->have_pipe = 1;
-    
+
     // start process
     if (!BInputProcess_Start(&o->process, ((char **)c.arr.v)[0], (char **)c.arr.v, NULL)) {
         ModuleLog(o->i, BLOG_ERROR, "BInputProcess_Start failed");
         goto fail3;
     }
-    
+
     // set not have info
     o->have_info = 0;
-    
+
     CmdLine_Free(&c);
     return;
-    
+
 fail3:
     LineBuffer_Free(&o->pipe_buffer);
 fail2:
@@ -487,18 +487,18 @@ void instance_free (struct instance *o, int is_error)
     if (o->have_info) {
         free_info(o);
     }
-    
+
     if (o->have_pipe) {
         // free buffer
         LineBuffer_Free(&o->pipe_buffer);
-        
+
         // free input interface
         PacketPassInterface_Free(&o->pipe_input);
     }
-    
+
     // free process
     BInputProcess_Free(&o->process);
-    
+
     if (is_error) {
         NCDModuleInst_Backend_DeadError(o->i);
     } else {
@@ -510,10 +510,10 @@ static void func_die (void *vo)
 {
     struct instance *o = vo;
     ASSERT(!o->dying)
-    
+
     // request termination
     BInputProcess_Terminate(&o->process);
-    
+
     // remember dying
     o->dying = 1;
 }
@@ -523,26 +523,26 @@ static int func_getvar (void *vo, const char *name, NCDValMem *mem, NCDValRef *o
     struct instance *o = vo;
     ASSERT(o->up)
     ASSERT(o->have_info)
-    
+
     if (!strcmp(name, "bssid")) {
         char str[18];
-        
+
         if (!o->info_have_bssid) {
             sprintf(str, "none");
         } else {
             uint8_t *id = o->info_bssid;
             sprintf(str, "%02"PRIX8":%02"PRIX8":%02"PRIX8":%02"PRIX8":%02"PRIX8":%02"PRIX8, id[0], id[1], id[2], id[3], id[4], id[5]);
         }
-        
+
         *out = NCDVal_NewString(mem, str);
         return 1;
     }
-    
+
     if (!strcmp(name, "ssid")) {
         *out = NCDVal_NewString(mem, o->info_ssid);
         return 1;
     }
-    
+
     return 0;
 }
 

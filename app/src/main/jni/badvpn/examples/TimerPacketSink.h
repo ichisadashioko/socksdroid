@@ -1,9 +1,9 @@
 /**
  * @file TimerPacketSink.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -48,14 +48,14 @@ static void _TimerPacketSink_input_handler_send (TimerPacketSink *s, uint8_t *da
     size_t res = fwrite(data, data_len, 1, stdout);
     B_USE(res)
     printf("'\n");
-    
+
     BReactor_SetTimer(s->reactor, &s->timer);
 }
 
 static void _TimerPacketSink_input_handler_requestcancel (TimerPacketSink *s)
 {
     printf("sink: cancelled\n");
-    
+
     BReactor_RemoveTimer(s->reactor, &s->timer);
     PacketPassInterface_Done(&s->input);
 }
@@ -63,7 +63,7 @@ static void _TimerPacketSink_input_handler_requestcancel (TimerPacketSink *s)
 static void _TimerPacketSink_timer_handler (TimerPacketSink *s)
 {
     printf("sink: done\n");
-    
+
     PacketPassInterface_Done(&s->input);
 }
 
@@ -71,11 +71,11 @@ static void TimerPacketSink_Init (TimerPacketSink *s, BReactor *reactor, int mtu
 {
     // init arguments
     s->reactor = reactor;
-    
+
     // init input
     PacketPassInterface_Init(&s->input, mtu, (PacketPassInterface_handler_send)_TimerPacketSink_input_handler_send, s, BReactor_PendingGroup(s->reactor));
     PacketPassInterface_EnableCancel(&s->input, (PacketPassInterface_handler_requestcancel)_TimerPacketSink_input_handler_requestcancel);
-    
+
     // init timer
     BTimer_Init(&s->timer, ms, (BTimer_handler)_TimerPacketSink_timer_handler, s);
 }
@@ -84,7 +84,7 @@ static void TimerPacketSink_Free (TimerPacketSink *s)
 {
     // free timer
     BReactor_RemoveTimer(s->reactor, &s->timer);
-    
+
     // free input
     PacketPassInterface_Free(&s->input);
 }

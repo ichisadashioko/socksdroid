@@ -1,9 +1,9 @@
 /**
  * @file SCOutmsgEncoder.c
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -42,7 +42,7 @@ static void output_handler_recv (SCOutmsgEncoder *o, uint8_t *data)
     DebugObject_Access(&o->d_obj);
     ASSERT(!o->output_packet)
     ASSERT(data)
-    
+
     // schedule receive
     o->output_packet = data;
     PacketRecvInterface_Receiver_Recv(o->input, o->output_packet + SCOUTMSG_OVERHEAD);
@@ -52,17 +52,17 @@ static void input_handler_done (SCOutmsgEncoder *o, int in_len)
 {
     DebugObject_Access(&o->d_obj);
     ASSERT(o->output_packet)
-    
+
     // write SC header
     struct sc_header header;
     header.type = htol8(SCID_OUTMSG);
     memcpy(o->output_packet, &header, sizeof(header));
-    
+
     // write outmsg
     struct sc_client_outmsg outmsg;
     outmsg.clientid = htol16(o->peer_id);
     memcpy(o->output_packet + sizeof(header), &outmsg, sizeof(outmsg));
-    
+
     // finish output packet
     o->output_packet = NULL;
     PacketRecvInterface_Done(&o->output, SCOUTMSG_OVERHEAD + in_len);
@@ -71,20 +71,20 @@ static void input_handler_done (SCOutmsgEncoder *o, int in_len)
 void SCOutmsgEncoder_Init (SCOutmsgEncoder *o, peerid_t peer_id, PacketRecvInterface *input, BPendingGroup *pg)
 {
     ASSERT(PacketRecvInterface_GetMTU(input) <= INT_MAX - SCOUTMSG_OVERHEAD)
-    
+
     // init arguments
     o->peer_id = peer_id;
     o->input = input;
-    
+
     // init input
     PacketRecvInterface_Receiver_Init(o->input, (PacketRecvInterface_handler_done)input_handler_done, o);
-    
+
     // init output
     PacketRecvInterface_Init(&o->output, SCOUTMSG_OVERHEAD + PacketRecvInterface_GetMTU(o->input), (PacketRecvInterface_handler_recv)output_handler_recv, o, pg);
-    
+
     // set no output packet
     o->output_packet = NULL;
-    
+
     DebugObject_Init(&o->d_obj);
 }
 
@@ -99,6 +99,6 @@ void SCOutmsgEncoder_Free (SCOutmsgEncoder *o)
 PacketRecvInterface * SCOutmsgEncoder_GetOutput (SCOutmsgEncoder *o)
 {
     DebugObject_Access(&o->d_obj);
-    
+
     return &o->output;
 }

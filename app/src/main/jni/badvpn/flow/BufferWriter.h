@@ -1,9 +1,9 @@
 /**
  * @file BufferWriter.h
  * @author Ambroz Bizjak <ambrop7@gmail.com>
- * 
+ *
  * @section LICENSE
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -14,7 +14,7 @@
  * 3. Neither the name of the author nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -25,9 +25,9 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * @section DESCRIPTION
- * 
+ *
  * Object for writing packets to a {@link PacketRecvInterface} client
  * in a best-effort fashion.
  */
@@ -85,7 +85,7 @@ PacketRecvInterface * BufferWriter_GetOutput (BufferWriter *o);
  * Attempts to provide a memory location for writing a packet.
  * The object must be in not writing state.
  * On success, the object enters writing state.
- * 
+ *
  * @param o the object
  * @param buf if not NULL, on success, the memory location will be stored here.
  *            It will have space for MTU bytes.
@@ -97,7 +97,7 @@ int BufferWriter_StartPacket (BufferWriter *o, uint8_t **buf) WARN_UNUSED;
  * Submits a packet written to the buffer.
  * The object must be in writing state.
  * Yhe object enters not writing state.
- * 
+ *
  * @param o the object
  * @param len length of the packet that was written. Must be >=0 and
  *            <=MTU.
