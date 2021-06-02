@@ -5,7 +5,7 @@ import static net.typeblog.socks.util.Constants.*;
 import android.content.Context;
 import android.net.VpnService;
 
-import net.typeblog.socks.R;
+import io.github.ichisadashioko.android.vpn.R;
 
 public class Routes {
     public static void addRoutes(Context context, VpnService.Builder builder, String name) {

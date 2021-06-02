@@ -6,7 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import net.typeblog.socks.R;
+import io.github.ichisadashioko.android.vpn.R;
+
 import net.typeblog.socks.SocksVpnService;
 
 import java.io.File;

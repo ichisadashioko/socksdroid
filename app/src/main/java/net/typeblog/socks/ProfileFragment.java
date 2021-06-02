@@ -26,6 +26,8 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import io.github.ichisadashioko.android.vpn.R;
+
 import net.typeblog.socks.util.Profile;
 import net.typeblog.socks.util.ProfileManager;
 import net.typeblog.socks.util.Utility;
@@ -454,10 +456,10 @@ public class ProfileFragment extends PreferenceFragment
 
     private void startVpn() {
         mStarting = true;
-        Intent i = VpnService.prepare(getActivity());
+        Intent intent = VpnService.prepare(getActivity());
 
-        if (i != null) {
-            startActivityForResult(i, 0);
+        if (intent != null) {
+            startActivityForResult(intent, 0);
         } else {
             onActivityResult(0, Activity.RESULT_OK, null);
         }

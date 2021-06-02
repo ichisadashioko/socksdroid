@@ -1,6 +1,5 @@
 package net.typeblog.socks;
 
-import static net.typeblog.socks.BuildConfig.DEBUG;
 import static net.typeblog.socks.util.Constants.*;
 
 import android.app.Notification;
@@ -14,6 +13,8 @@ import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 import android.util.Log;
+
+import io.github.ichisadashioko.android.vpn.R;
 
 import net.typeblog.socks.util.Routes;
 import net.typeblog.socks.util.Utility;
@@ -42,10 +43,7 @@ public class SocksVpnService extends VpnService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        if (DEBUG) {
-            Log.d(TAG, "starting");
-        }
+        Log.d(TAG, "starting");
 
         if (intent == null) {
             return START_STICKY;
@@ -105,7 +103,7 @@ public class SocksVpnService extends VpnService {
         // Create an fd.
         configure(name, route, perApp, appBypass, appList, ipv6);
 
-        if (DEBUG) Log.d(TAG, "fd: " + mInterface.getFd());
+        Log.d(TAG, "fd: " + mInterface.getFd());
 
         if (mInterface != null)
             start(mInterface.getFd(), server, port, username, passwd, dns, dnsPort, ipv6, udpgw);
@@ -266,9 +264,7 @@ public class SocksVpnService extends VpnService {
             command += " --udpgw-remote-server-addr " + udpgw;
         }
 
-        if (DEBUG) {
-            Log.d(TAG, command);
-        }
+        Log.d(TAG, command);
 
         if (Utility.exec(command) != 0) {
             stopMe();

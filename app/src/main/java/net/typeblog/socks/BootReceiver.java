@@ -1,7 +1,5 @@
 package net.typeblog.socks;
 
-import static net.typeblog.socks.BuildConfig.DEBUG;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -22,9 +20,7 @@ public class BootReceiver extends BroadcastReceiver {
 
             if (p.autoConnect() && VpnService.prepare(context) == null) {
 
-                if (DEBUG) {
-                    Log.d(TAG, "starting VPN service on boot");
-                }
+                Log.d(TAG, "starting VPN service on boot");
 
                 Utility.startVpn(context, p);
             }

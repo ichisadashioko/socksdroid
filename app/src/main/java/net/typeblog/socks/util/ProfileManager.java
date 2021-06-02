@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 
-import net.typeblog.socks.R;
+import io.github.ichisadashioko.android.vpn.R;
 
 import java.util.ArrayList;
 import java.util.List;

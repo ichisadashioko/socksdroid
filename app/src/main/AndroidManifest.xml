@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="net.typeblog.socks"
+    package="io.github.ichisadashioko.android.vpn"
     tools:ignore="GoogleAppIndexingWarning,UnusedAttribute">
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -15,7 +15,7 @@
         android:extractNativeLibs="true"
         android:fullBackupContent="@xml/backup_descriptor">
         <activity
-            android:name=".MainActivity"
+            android:name="net.typeblog.socks.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,7 +25,7 @@
         </activity>
 
         <service
-            android:name=".SocksVpnService"
+            android:name="net.typeblog.socks.SocksVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE"
             android:process=":vpn">
             <intent-filter>
@@ -42,7 +42,7 @@
         </service>
 
         <receiver
-            android:name=".BootReceiver">
+            android:name="net.typeblog.socks.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
